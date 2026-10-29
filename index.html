@@ -192,6 +192,25 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .day-codes textarea { width: 100%; box-sizing: border-box; font: 11px/1.3 var(--mono); color: var(--ink, #eee); background: rgba(255,255,255,.05); border: 1px solid var(--edge); border-radius: 8px; padding: 6px; resize: none; }
 .day-codes small { grid-column: 1 / -1; color: var(--muted); }
 @media (max-width: 560px) { .day-codes { grid-template-columns: 1fr; } }
+.chip.mp { border-color: #7ad7ff; color: #e2f6ff; }
+.mpbox { position: relative; z-index: 4; margin: 8px auto 10px; width: min(560px, 46vw); box-sizing: border-box; text-align: left; padding: 10px 12px; border-radius: 12px; background: rgba(10, 16, 28, .82); border: 1px solid #2f5f86; font-size: .84rem; max-width: 560px; }
+.mpbox .mp-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mpbox .mp-top b.code { font-family: var(--mono); font-size: 1.15rem; letter-spacing: .12em; color: #7ad7ff; }
+.mpbox .mp-top button { padding: 3px 10px; font: inherit; font-size: .78rem; color: var(--ink, #eee); background: transparent; border: 1px solid var(--edge); border-radius: 999px; cursor: pointer; }
+.mpbox .mp-msg { display: block; margin-top: 6px; color: var(--lamp); }
+.mpbox ol { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.mpbox li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; padding: 4px 8px; border-radius: 7px; background: rgba(255, 255, 255, .05); }
+.mpbox li.me { outline: 1px solid rgba(122, 215, 255, .6); }
+.mpbox li .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mpbox li .st { color: var(--muted); font-family: var(--mono); font-size: .78rem; }
+.mpbox .mp-nick { display: flex; gap: 6px; align-items: center; margin-top: 8px; color: var(--muted); }
+.mpbox .mp-nick input, .mp-join input { padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
+.mp-make { margin: 12px 0 8px; }
+.mp-join { display: flex; gap: 8px; } .mp-join input { flex: 1; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.mp-note { display: block; margin-top: 8px; color: var(--lamp); min-height: 1em; }
+.rankbtn.mpbtn { border-color: #2f5f86; }
+@media (max-width: 900px) { .mpbox { width: min(560px, 94vw); } }
+@media (pointer: coarse) and (max-height: 520px) { .mpbox { margin: 0 auto 4px; padding: 5px 8px; font-size: .72rem; } .mpbox .mp-top b.code { font-size: .95rem; } .mpbox .mp-msg { margin-top: 2px; } .mpbox ol { margin-top: 4px; max-height: 52px; overflow: auto; } .mpbox li { padding: 2px 6px; } .mpbox .mp-nick { display: none; } }
 .rank-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rank-tabs button { padding: 6px 12px; font: inherit; font-size: .82rem; color: var(--muted); background: transparent; border: 1px solid var(--edge); border-radius: 999px; cursor: pointer; }
 .rank-tabs button[aria-pressed="true"] { color: var(--night); font-weight: 600; background: var(--lamp); border-color: var(--lamp); }
@@ -518,6 +537,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     <span class="chip dur" id="chDur" hidden></span>
     <span class="chip cargo" id="chCargo" hidden></span>
     <span class="chip ghost" id="chGhost" hidden></span>
+    <span class="chip mp" id="chMp" hidden></span>
   </div>
   <div class="shifter" id="shifter">
     <button class="roofbtn" id="roofBtn" hidden><b id="roofTxt">지붕 열기</b><kbd>R</kbd></button>
@@ -549,6 +569,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     <h2 id="ovTitle">야간 고속도로</h2>
     <p id="ovText">A·D로 차를 고르고 출발하세요. W로 가속하고 방향키 ↑↓로 기어를 바꿔요.</p>
     <div class="unlockbar" aria-hidden="true"><u id="unlockFill"></u></div>
+    <div class="mpbox" id="mpBox" hidden></div>
     <div class="side">
       <aside class="stats" id="statPanel" aria-live="polite"></aside>
       <aside class="chal" id="chalBox" aria-live="polite"></aside>
@@ -559,7 +580,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn" id="duelBtn">👥 2인 대결</button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn" id="ghostBtn">👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn" id="duelBtn">👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn" id="ghostBtn">👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -581,6 +602,15 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <ol class="rank-list" id="rankList"></ol>
       <div class="day-codes" id="dayCodes" hidden><div><b>내 오늘 기록 코드</b><textarea id="dayMine" rows="2" readonly></textarea><button class="rankbtn" id="dayCopy">코드 복사</button></div><div><b>친구 코드 붙여넣기</b><textarea id="dayFriend" rows="2" placeholder="친구가 보낸 오늘 기록 코드"></textarea><button class="rankbtn" id="dayAdd">랭킹에 추가</button></div><small id="dayNote"></small></div>
       <div class="rank-foot"><label>닉네임 <input id="nick" maxlength="12" placeholder="이름 없음" autocomplete="off"></label><small id="rankNote"></small></div>
+    </div>
+  </div>
+  <div class="rank" id="mpM" hidden>
+    <div class="rank-card" role="dialog" aria-modal="true" aria-labelledby="mpTitle">
+      <div class="rank-head"><h3 id="mpTitle">🌐 멀티 플레이</h3><button class="rank-x" id="mpClose" aria-label="닫기">✕</button></div>
+      <p class="dex-note">코드로 방을 만들고 친구들과 같은 도로를 달려요. 도로는 6차선으로 넓고, 차·경찰·장애물은 없어요. 방장이 출발하면 모두 같이 출발해서 5km 먼저 가는 사람이 이겨요.</p>
+      <div class="mp-make"><button class="go" id="mpMake">방 만들기</button></div>
+      <div class="mp-join"><input id="mpCode" maxlength="8" placeholder="방 코드 (예: K7Q2M)" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="rankbtn" id="mpJoin">참가</button></div>
+      <small class="mp-note" id="mpNote"></small>
     </div>
   </div>
   <div class="rank" id="metaM" hidden>
@@ -696,9 +726,19 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const KMH = 1 / 3.6;                       // km/h → m/s (one world unit is one metre)
-  const ROAD_W = 16, ROAD_LEN = 340, ROAD_Z0 = 24;
-  const LANE_X = [-5.25, -1.75, 1.75, 5.25];
-  const X_LIMIT = 6.35, SKY = 0x0a0d18;
+  // Multiplayer: a room code in the address (#room=ABCDE) or handed over by the 🌐 button before a reload. A multi page
+  // has a six-lane road and no traffic, police or obstacles; the room itself lives in the multi chunk.
+  const MP = (() => {
+    try {
+      const m = String(location.hash || '').match(/room=([A-Za-z0-9]{4,8})/); if (m) return { code: m[1].toUpperCase() };
+      const v = localStorage.getItem('nh3d-mp-next'); if (v) { localStorage.removeItem('nh3d-mp-next'); const o = JSON.parse(v); if (o && /^[A-Z0-9]{4,8}$/.test(o.code)) return { code: o.code }; }
+    } catch (e) {}
+    return null;
+  })();
+  const LANES = MP ? 6 : 4;
+  const ROAD_W = MP ? 23 : 16, ROAD_LEN = 340, ROAD_Z0 = 24;
+  const LANE_X = Array.from({ length: LANES }, (_, i) => (i - (LANES - 1) / 2) * 3.5);
+  const X_LIMIT = ROAD_W / 2 - 1.65, SKY = 0x0a0d18;
   const ADD = THREE.AdditiveBlending;
 
   const scene = new THREE.Scene();
@@ -739,8 +779,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     for (let i = 0; i < 3000; i++) { const v = 30 + Math.random() * 26 | 0; g.fillStyle = `rgb(${v},${v},${v + 5})`; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
     const m = w / ROAD_W;
     g.fillStyle = '#e8c54a'; g.fillRect(m * 0.9, 0, m * 0.18, h);
-    g.fillStyle = '#e6e8ee'; g.fillRect(m * 14.92, 0, m * 0.18, h);
-    for (let k = 1; k < 4; k++) g.fillRect(m * (1 + 3.5 * k) - m * 0.08, 0, m * 0.16, h * 0.4);
+    g.fillStyle = '#e6e8ee'; g.fillRect(m * (ROAD_W - 1.08), 0, m * 0.18, h);
+    for (let k = 1; k < LANES; k++) g.fillRect(m * (1 + 3.5 * k) - m * 0.08, 0, m * 0.16, h * 0.4);
   });
   const railTex = tex(32, 64, (g, w, h) => {
     g.fillStyle = '#2a2f38'; g.fillRect(0, 0, w, h);
@@ -821,14 +861,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (!cityGateDone && planEnd >= cityGateAt) { cityGateDone = true; addGate(); return; }
       const left = cityLen - planEnd;
       if (left < 520) { if (left > 20) addSeg(left, 0, 0); planRamp(dir, maxDeg); return; }
-      if (left > 4500 && planEnd >= forkNext) { planFork(); return; }    // a fork: two branches, two maps
+      if (!MP && left > 4500 && planEnd >= forkNext) { planFork(); return; }    // a fork: two branches, two maps
       if (straightLeft(planEnd + 1) > 0) { addSeg(Math.max(60, Math.min(900, straightLeft(planEnd + 1) + 1, left - 520)), 0, 0); return; }   // desert / bridge: dead straight
       if (Math.random() < 0.6) planTurn(dir, rnd(130, 210), Math.min(maxDeg, rnd(55, 100)), 'corner');
       else planTurn(dir, rnd(420, 600), Math.min(maxDeg, rnd(25, 45)), 'sweeper');
       addSeg(rnd(140, 240), 0, 0); return;
     }
     if (!hwGateDone && planEnd >= hwGateAt) { hwGateDone = true; addGate(); return; }
-    if (planEnd >= forkNext) { planFork(); return; }                   // a fork: two branches, two maps
+    if (!MP && planEnd >= forkNext) { planFork(); return; }                   // a fork: two branches, two maps
     if (straightLeft(planEnd + 1) > 0) { addSeg(Math.max(60, Math.min(900, straightLeft(planEnd + 1) + 1)), 0, 0); return; }   // desert / bridge: dead straight, flat out
     sinceTunnel++;                                                  // the first tunnel comes early; the mountains have more
     if (!recentFork() && (planN === 3 || (sinceTunnel >= (hw ? 2 : 3) && Math.random() < (hw ? 0.6 : 0.45)) || sinceTunnel >= 4)) { sinceTunnel = 0; planTunnel(dir, maxT, hw); return; }
@@ -1144,7 +1184,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if ((hwy && j % 3) || signNear(sc, 7)) { o.s = -1e9; continue; }               // the expressway is lit sparsely, from the median
       const side = hwy ? -1 : j % 2 === 0 ? 1 : -1, off = hwy ? -MED : HW + 0.7;
       trackAt(sc); const c = Math.cos(TF.h), sn = Math.sin(TF.h), x = TF.x + c * side * off, z = TF.z + sn * side * off;
-      if (roadNear(x, z, sc, 40, HW + 6) || inTunnel(sc, 10) || forkMouth(sc)) { o.s = -1e9; continue; }   // no poles through a tunnel roof or in a fork's mouth
+      if (roadNear(x, z, sc, 40, HW + 6) || inTunnel(sc, 10) || forkMouth(sc) || ghostNear(x, z, sc, HW + 4)) { o.s = -1e9; continue; }   // no poles through a tunnel roof or in a fork's mouth
       o.g.position.set(x, TF.y, z); o.g.rotation.y = -(TF.h + (side < 0 ? Math.PI : 0)); o.g.visible = true;
     }
   }
@@ -1516,7 +1556,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const under = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_W + 4.4, 6.4), new THREE.MeshBasicMaterial({ color: 0xdfe8ff })); under.rotation.x = Math.PI / 2; under.position.y = 7.74; g.add(under);
     const laneTex = tex(1024, 96, (c, w, h) => {
       c.fillStyle = '#05070c'; c.fillRect(0, 0, w, h);
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < LANES; k++) {
         const x0 = w * (1 + 3.5 * k) / ROAD_W, x1 = w * (4.2 + 3.5 * k) / ROAD_W;
         c.fillStyle = '#1d5fd1'; c.fillRect(x0, 8, x1 - x0, h - 16);
         c.fillStyle = '#ffffff'; c.font = `bold 46px ${SIGN_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('하이패스', (x0 + x1) / 2, h / 2 + 2);
@@ -2115,21 +2155,35 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     g.add(new THREE.Mesh(geoOf([ribbon(pts, f.s1, -HW, 0, HW, 0, 20)]), M2.road));
     g.add(new THREE.Mesh(geoOf([ribbon(inner > 0 ? pts : tail, f.s1, -HW - 2.6, -0.03, -HW, -0.03, 20), ribbon(inner > 0 ? tail : pts, f.s1, HW, -0.03, HW + 2.6, -0.03, 20)]), M2.conc));
     g.add(new THREE.Mesh(geoOf([ribbon(inner > 0 ? tail : pts, f.s1, HW + 0.25, 0.4, HW + 0.25, 0.85, 4), ribbon(inner > 0 ? pts : tail, f.s1, -HW - 0.25, 0.4, -HW - 0.25, 0.85, 4)]), M2.rail));
-    scene.add(g); return g;
+    scene.add(g);
+    for (const o of lSlots.values()) { o.g.visible = false; o.key = null; } lSlots.clear();   // lamps re-place themselves clear of the new branch
+    return g;
   }
   // the real road's guard rail on the side the other branch leaves from is left out in the mouth (s2b buildChunk asks)
   // past the split you can still cross to the other branch through the open mouth: the road switches under you
   const LATE = MOUTH + 70;
-  function forkOpen(side) { for (const f of forks) if (f.pick && f.ghosts && sp > f.s1 - 2 && (sp < f.s1 + LATE || (Math.abs(px) > X_LIMIT + 0.05 && sp < f.s1 + LATE + 250))) { const other = f.pick === 'L' ? 'R' : 'L'; if (f.ghosts[other] && (other === 'R' ? 1 : -1) === side) return true; } return false; }
+  function forkOpen(side) { for (const f of forks) if (f.pick && f.ghosts && sp > f.s1 - 2 && sp < f.s1 + MOUTH) { const other = f.pick === 'L' ? 'R' : 'L'; if (f.ghosts[other] && (other === 'R' ? 1 : -1) === side) return true; } return false; }
+  // is (x, z) on or next to the branch you are NOT on? (the real road only knows itself)
+  function ghostNear(x, z, s, pad) {
+    for (const f of forks) {
+      if (!f.pts || !f.ghosts) continue; const real = f.pick || 'R';
+      for (const side of ['L', 'R']) {
+        const P = f.pts[side]; if (side === real || !P || !f.ghosts[side]) continue;
+        const i = Math.round(s - f.s1); if (i < -40 || i > P.length + 40) continue;
+        for (let j = Math.max(0, i - 90); j < Math.min(P.length, i + 90); j += 3) { const q = P[j]; if ((q[0] - x) ** 2 + (q[2] - z) ** 2 < pad * pad) return true; }
+      }
+    }
+    return false;
+  }
   const forkMouth = s => forks.some(f => s > f.s1 - 30 && s < f.s1 + LATE);   // no lamp posts in the mouth
   const _fp = new THREE.Vector3();
-  function lateSwitch(f) {
+  function lateSwitch(f, force = false) {
     const other = f.pick === 'L' ? 'R' : 'L', P = f.pts && f.pts[other]; if (!P || !f.ghosts || !f.ghosts[other]) return;
     worldPoint(sp, px, 0, _fp); const curH = TF.h, d0 = Math.round(sp - f.s1);
     let best = -1, bd = 1e9; for (let j = Math.max(0, d0 - 40); j < Math.min(P.length, d0 + 40); j++) { const q = P[j], dd = (q[0] - _fp.x) ** 2 + (q[2] - _fp.z) ** 2; if (dd < bd) { bd = dd; best = j; } }
     if (best < 0) return;
     const q = P[best], lat = (_fp.x - q[0]) * Math.cos(q[3]) + (_fp.z - q[2]) * Math.sin(q[3]);
-    if (Math.abs(lat) > Math.abs(px) - 0.5) return;           // still nearer the road you are on
+    if (Math.abs(lat) > Math.abs(px) - (force ? 0 : 0.5)) return;           // still nearer the road you are on
     const old = f.pick; f.pick = other;
     rewindFork(f, other); dropGhost(f, other); f.ghosts[old] = buildGhost(f, old);
     sp = f.s1 + best; px = lat; hd = clamp(hd + curH - q[3], -1.15, 1.15); ensureTrack(sp + 1900);
@@ -2188,7 +2242,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     } else { forkSign.visible = false; gore.visible = false; }
     if (f && s >= f.s1 - 1 && state !== 'ready') decideFork(f);
     for (; mi < medPool.length; mi++) medPool[mi].visible = false;
-    for (const q of forks) if (q.pick && q.ghosts && state === 'play' && sp > q.s1 && sp < q.s1 + LATE + 250 && Math.abs(px) > X_LIMIT) lateSwitch(q);
+    for (const q of forks) if (q.pick && q.ghosts && state === 'play' && sp > q.s1 && sp < q.s1 + MOUTH + 200 && Math.abs(px) > X_LIMIT) lateSwitch(q, sp >= q.s1 + MOUTH);   // past the island: onto whichever road is nearer, else back along the rail
     // the branch you did not take fades from view behind you
     for (const q of forks) if (q.pick && q.ghosts) { const other = q.pick === 'L' ? 'R' : 'L'; if (s > q.s1 + 650) dropGhost(q, other); }
     while (forks.length && forks[0].pick && !forks[0].ghosts?.L && !forks[0].ghosts?.R && forks[0].s1 < s - 800) forks.shift();
@@ -3752,7 +3806,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let state = 'ready', speed = 0, dist = 0, px = 0, vx = 0, nitro = 3, boostT = 0, boost = 0, perfect = false;
   // nitro charges slower in the cheap cars: a low-unlock car gets about half the gain, the top cars the full gain
   const nitroK = c => (0.45 + 0.55 * clamp(c.unlock / 50000, 0, 1)) * (EV.nitro || 1);   // tonight's event may charge faster
-  const addNitro = v => { nitro = Math.min(3, nitro + v * nitroK(car)); };
+  const NITRO_MAX = MP ? 1 : 3;                              // multi: one bar of nitro
+  const addNitro = v => { nitro = Math.min(NITRO_MAX, nitro + v * nitroK(car)); };
   // how fast the road slides past: zero while paused or counting down (the car keeps its speed for the restart, the world must not move)
   const flowV = () => (state === 'pause' || state === 'count' || state === 'ready' ? 0 : vs);
   let sp = 0, vs = 0, hd = 0, slip = 0, steerIn = 0;                     // position along the track, along-track speed, heading vs. road, drift angle
@@ -3831,7 +3886,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   function checkMissions() {
     for (const ms of missions) if (!ms.done && ms.m[3]() >= ms.m[1]) {
-      ms.done = true; nitro = 3; sfx.ding();
+      ms.done = true; nitro = NITRO_MAX; sfx.ding();
       addCombo(1000, `미션 완료: ${ms.m[0]}`, 'var(--ok)');
     }
   }
@@ -3867,7 +3922,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function zoneScore(z) {
     if (z.scored) return; z.scored = true;
     const len = z.s1 - z.s0, share = z.drift / len;
-    if (z.kind === 'spiral' && share > 0.5) { loopDrifts++; nitro = 3; addCombo(2000, '360° 드리프트!', 'var(--nitro)'); }
+    if (z.kind === 'spiral' && share > 0.5) { loopDrifts++; nitro = NITRO_MAX; addCombo(2000, '360° 드리프트!', 'var(--nitro)'); }
     else if (share > 0.45) { cornerDrifts++; addNitro(0.8); addCombo(Math.round(600 * share), '코너 드리프트!', 'var(--lamp)'); }
   }
 
@@ -4317,6 +4372,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     activate(c, lane, z, false, c.kind === 'truck' ? rnd(85, 98) : rnd(r[0], r[1]));
   }
   function spawnTraffic() {
+    if (MP) return;                                          // multi: an empty road
     let free = traffic.filter(c => !c.active); if (!free.length) return;
     if (landAt(sp - SPAWN_Z) === 'industrial' && Math.random() < 0.55) { const t = free.filter(c => c.kind === 'truck'); if (t.length) free = t; }   // the industrial park: trucks
     if (regionAt(sp - SPAWN_Z) === 2) { spawnHighway(free); return; }
@@ -4330,6 +4386,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     activate(pick(free), lane, z, false);
   }
   function spawnOncoming() {
+    if (MP) return;
     const free = traffic.filter(c => !c.active && c.kind !== 'truck'); if (!free.length) return;
     const z = SPAWN_Z - rnd(0, 30);
     if (laneFree(0, z, 20)) activate(pick(free), 0, z, true);
@@ -4582,11 +4639,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     renderCars();
     goBtn.textContent = '다시 달리기'; showMenu(true); goBtn.focus();
     metaRunEnd();                                              // coins, achievements, levels, the duel
+    fbSaveSoon();                                              // signed in: the cloud copy follows
     hudKey = '';
   }
 
   // Wrong-way section: for 15 s the leftmost lane carries oncoming cars, and driving there doubles the score
   function updateSections(dt) {
+    if (MP) return;
     if (regionAt(sp - SPAWN_Z + 150) > 0) {                 // no wrong-way section on the on-ramp or the expressway
       if (wrongT > 0) { wrongT = 0; popup('역주행 구간 끝', 'var(--muted)'); }
       wrongWarn = 0; return;
@@ -4605,6 +4664,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   // Ramps sit on straights only. Riding up the kicker lifts the car; leaving the lip launches it.
   function spawnRamp() {
+    if (MP) return;
     const r = ramps.find(q => !q.active); if (!r) return;
     const z = SPAWN_Z - 30;
     if (!straightAt(sp - z - 60, sp - z + 60) || inTunnel(sp - z, 70)) { rampIn = 2; return; }
@@ -4631,6 +4691,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
 
   function spawnGantry() {
+    if (MP) return;
     if (!straightAt(sp + 260, sp + 320) || inTunnel(sp + 290, 40) || signNear(sp + 290, 70)) { camIn = 120; return; }
     gantry.active = true; gantry.fired = false; gantry.z = SPAWN_Z - 40; gantry.g.visible = true; placeObj(gantry.g, gantry.z, 0, 0);
   }
@@ -4652,6 +4713,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   const COP_TOP = 420;                                     // km/h
   function spawnCop() {
+    if (MP) return false;
     const c = cops.find(q => !q.active); if (!c) return;
     c.active = true; c.wrecked = false; c.leaving = false; c.oncoming = false; c.t = 0; c.cool = 0; c.rx = c.ry = c.rz = 0; c.spike = 0; c.spikeIn = rnd(6, 10);
     c.g.scale.set(1, 1, 1); for (const b of c.bar) b.visible = true; c.red.visible = c.blue.visible = true;
@@ -4764,6 +4826,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     popup('타이어 펑크!', 'var(--brake)');
   }
   function spawnSpike() {
+    if (MP) return;
     const s = spikePool.find(q => !q.active); if (!s) return;
     const z = SPAWN_Z - 40;
     if (!straightAt(sp - z - 60, sp - z + 60) || inTunnel(sp - z, 70)) return;
@@ -4776,7 +4839,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     s.active = true; s.cop = true; s.passed = false; s.z = z; s.x = LANE_X.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
     s.g.visible = true; placeObj(s.g, z, s.x, 0); return true;
   }
-  function spawnRoadblock() {                                  // three lanes shut by police cars; one lane left open
+  function spawnRoadblock() {
+    if (MP) return false;                                  // three lanes shut by police cars; one lane left open
     const free = traffic.filter(c => !c.active && c.kind !== 'truck'), z = SPAWN_Z - 20, open = pick([0, 1, 2, 3]);
     const lanes = [0, 1, 2, 3].filter(l => l !== open);
     if (free.length < 3 || !straightAt(sp - z - 60, sp - z + 60) || !lanes.every(l => laneFree(l, z, 20))) return false;
@@ -4784,7 +4848,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     popup('검문소!', 'var(--brake)');
     return true;
   }
-  function spawnConvoy() {                                     // two trucks crawl along the middle lanes, staggered
+  function spawnConvoy() {
+    if (MP) return false;                                     // two trucks crawl along the middle lanes, staggered
     const trucks = traffic.filter(c => !c.active && c.kind === 'truck'), z = SPAWN_Z - 10;
     if (trucks.length < 2 || !straightAt(sp - z - 60, sp - z + 60) || !laneFree(1, z, 30) || !laneFree(2, z - 40, 30)) return false;
     activate(trucks[0], 1, z, false, 46);
@@ -4799,7 +4864,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // Toll plazas: about 330 m before one, the road closes three lanes with stopped cars and leaves one lane open
   function updateGates() {
     for (const g of gates) {
-      if (!g.spawned && state === 'play' && g.s0 - sp < 330 && g.s0 - sp > -20) {
+      if (!MP && !g.spawned && state === 'play' && g.s0 - sp < 330 && g.s0 - sp > -20) {
         g.spawned = true;
         const free = traffic.filter(c => !c.active && c.kind !== 'truck'), z = -(g.s0 - sp), open = pick([0, 1, 2, 3]);
         const lanes = [0, 1, 2, 3].filter(l => l !== open);
@@ -4921,7 +4986,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       sfx.ding(); popup('화물을 실었어요! 배송지로 가세요', 'var(--ok)'); return;
     }
     if (c.kind === 'drop' && cargo) {
-      cargo = false; nitro = 3; sfx.ding();
+      cargo = false; nitro = NITRO_MAX; sfx.ding();
       addCombo(Math.round(1500 * (EV.cargo || 1)), '배송 완료! 니트로 가득', 'var(--ok)');
     }
   }
@@ -4991,6 +5056,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let detectT = 0, heliGrace = 0;
   const heliCount = () => helis.filter(h => h.active).length;
   function spawnHeli() {
+    if (MP) return false;
     const h = helis.find(q => !q.active); if (!h) return false;
     h.active = true; h.g.visible = true; h.z = -50; h.x = px; h.id = Math.random() * 10; h.lit = false;
     return true;
@@ -5780,6 +5846,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (touchMode && !document.fullscreenElement && stage.requestFullscreen) {   // phones: go full screen and hold landscape where the browser allows it
       try { stage.requestFullscreen().then(() => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }, () => {}); } catch (e) {}
     }
+    if (MP && !mpGo()) return;                                  // multi: the host starts everyone
     let trial = false;
     if (!isUnlocked(carIdx)) {                                  // a locked car is only here on a test drive
       if (!trialCar(carIdx)) { selectCar(0); ovText.textContent = '시승이 끝났어요. 해금된 차로 바꿨어요.'; return; }
@@ -5792,7 +5859,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // ── Revive: once a run reaches REVIVE_M (this run or your best), one crash per run is undone. No ads. ──
   let reviveUsed = false;
   const REVIVE_M = 5000;
-  const reviveOpen = () => Math.max(bestDist, dist) >= REVIVE_M;
+  const reviveOpen = () => !MP && Math.max(bestDist, dist) >= REVIVE_M;
   const reviveBtn = document.getElementById('reviveBtn'), chGhost = document.getElementById('chGhost');
   function offerRevive() {
     state = 'offer'; gp(false);
@@ -6048,6 +6115,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     hazards.push({ kind, g, on: false, st: 0, z: 0, x: 0, dir: 1, y: 0, vy: 0, passed: false });
   }
   function spawnHazard() {
+    if (MP) return false;
     const kind = 'deer';
     if (kind === 'rock' && !mLive.some(o => Math.abs(o.sc - (sp + 170)) < 150)) return false;   // rocks only where the mountains are
     const h = hazards.find(q => !q.on && q.kind === kind); if (!h) return false;
@@ -6404,7 +6472,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let litF = 0;
   function garageFrame(dt) {
     if (state === 'ready') roomS = sp;                                   // the room sits on the road at the start line
-    const show = roomS !== null && (state === 'ready' || state === 'count' || (state === 'play' && sp < roomS + 45));
+    const show = roomS !== null && (state === 'ready' || (!MP && (state === 'count' || (state === 'play' && sp < roomS + 45))));   // multi: a starting grid on the open road
     const was = room.visible; room.visible = show;
     litF += ((show && sp < roomS + 12 ? 1 : 0) - litF) * Math.min(1, dt * 3);
     hemi.intensity += litF * 0.9; amb.intensity += litF * 0.55;   // added on top of this frame's sky lighting
@@ -6418,6 +6486,461 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     shutter.position.y = 2.3 + doorY; shutter.visible = doorY < 4.3;
   }
   function garageLeave() { roomS = null; for (const o of lPool) if (o.key !== null) o.g.visible = true; }
+
+  // ── Google login (Firebase). Only on the published web address (GitHub Pages): a file or the claude.ai page cannot sign in.
+  //    Signed in: your progress (best distance, cars, coins, achievements, settings) is kept in the cloud under your account
+  //    and follows you to any device, and multiplayer rooms run through Firebase's Realtime Database instead of
+  //    device-to-device links. The config below is the public web config; access is decided by the database rules. ──
+  const FB_CFG = {
+    apiKey: 'AIzaSyAysYf9IKBdQ3jYEEIarGpKPhho-dW_FTI', authDomain: 'ujh-playground.firebaseapp.com',
+    databaseURL: 'https://ujh-playground-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'ujh-playground',
+    storageBucket: 'ujh-playground.firebasestorage.app', messagingSenderId: '652385097634', appId: '1:652385097634:web:ba43da9ec1b60de9b004fb',
+  };
+  const fbHere = location.protocol === 'https:' && /(^|\.)github\.io$|\.web\.app$|\.firebaseapp\.com$/.test(location.hostname);
+  const fb = { ready: false, user: null, auth: null, db: null, U: null, D: null };
+  const FBV = '10.12.2', fbUrl = m => `https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`;
+  const loginBtn = $('loginBtn');
+  let fbP = null;
+  function fbLoad() {
+    if (!fbHere) return Promise.reject(new Error('not here'));
+    return fbP || (fbP = Promise.all([import(fbUrl('app')), import(fbUrl('auth')), import(fbUrl('database'))]).then(([A, U, D]) => {
+      const app = A.initializeApp(FB_CFG);
+      fb.auth = U.getAuth(app); fb.db = D.getDatabase(app); fb.U = U; fb.D = D;
+      return new Promise(res => {
+        let first = true;
+        U.onAuthStateChanged(fb.auth, u => {
+          const was = fb.user && fb.user.uid; fb.user = u; fb.ready = true; syncLoginBtn();
+          if (u && u.uid !== was) onLogin(u, !first);
+          if (first) { first = false; res(fb); }
+        });
+      });
+    }));
+  }
+  function syncLoginBtn() {
+    loginBtn.hidden = !fbHere;
+    const u = fb.user;
+    loginBtn.textContent = u ? `👤 ${(u.displayName || '내 계정').split(' ')[0].slice(0, 8)} · 로그아웃` : fb.ready ? '🔑 구글 로그인' : '🔑 로그인 준비 중…';
+  }
+  let logoutArm = 0;
+  loginBtn.addEventListener('click', async () => {
+    if (!fb.ready) return;
+    if (fb.user) {                                              // a second press within 3 s signs out
+      if (Date.now() - logoutArm > 3000) { logoutArm = Date.now(); loginBtn.textContent = '한 번 더 누르면 로그아웃'; return; }
+      await fbSaveNow(); await fb.U.signOut(fb.auth); try { localStorage.removeItem('nh3d-sync-at'); } catch (e) {} location.reload(); return;
+    }
+    const prov = new fb.U.GoogleAuthProvider();
+    try { await fb.U.signInWithPopup(fb.auth, prov); }
+    catch (e) {
+      const c = (e && e.code) || '';
+      if (/popup-blocked|operation-not-supported|cancelled-popup-request/.test(c)) fb.U.signInWithRedirect(fb.auth, prov);
+      else if (/unauthorized-domain/.test(c)) popup('이 주소는 아직 로그인 허용 목록에 없어요', 'var(--brake)');
+      else if (!/popup-closed-by-user/.test(c)) popup('로그인 실패: ' + c, 'var(--brake)');
+    }
+  });
+  if (fbHere) { syncLoginBtn(); fbLoad().catch(() => { loginBtn.hidden = true; }); }
+
+  // ── cloud save: every nh3d-* setting and record (not the ghost replay) under users/<uid>/save ──
+  const SAVE_SKIP = /^nh3d-(mp-next|ghost|friend|sync-at)$/;
+  function localSave() {
+    const o = {};
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('nh3d-') && !SAVE_SKIP.test(k)) o[k] = localStorage.getItem(k); } } catch (e) {}
+    return o;
+  }
+  const bestOf = o => +((o && o['nh3d-best-dist']) || 0);
+  async function fbSaveNow() {
+    if (!fb.user) return;
+    const at = Date.now();
+    try { localStorage.setItem('nh3d-sync-at', String(at)); } catch (e) {}      // first: a page that is closing may not get past the await
+    try { await fb.D.set(fb.D.ref(fb.db, `users/${fb.user.uid}/save`), { at, d: localSave() }); } catch (e) {}
+  }
+  let saveTimer = 0;
+  const fbSaveSoon = () => { if (!fb.user) return; clearTimeout(saveTimer); saveTimer = setTimeout(fbSaveNow, 2500); };
+  document.addEventListener('visibilitychange', () => { if (document.hidden && fb.user) fbSaveNow(); });
+  async function onLogin(u, fresh) {
+    if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
+    let cloud = null;
+    try { const s = await fb.D.get(fb.D.ref(fb.db, `users/${u.uid}/save`)); cloud = s.exists() ? s.val() : null; } catch (e) { return; }
+    const local = localSave(), syncAt = +(localStorage.getItem('nh3d-sync-at') || 0);
+    // take the cloud when it is newer than this device's last sync and at least as far along; otherwise this device wins
+    const useCloud = !!(cloud && cloud.d && cloud.at > syncAt && bestOf(cloud.d) >= bestOf(local));
+    const same = cloud && cloud.d && Object.keys(cloud.d).length === Object.keys(local).length && Object.entries(cloud.d).every(([k, v]) => local[k] === v);
+    if (same) { try { localStorage.setItem('nh3d-sync-at', String(cloud.at)); } catch (e) {} if (fresh && MP) location.reload(); return; }   // nothing to change
+    if (useCloud) {
+      let pulled = ''; try { pulled = sessionStorage.getItem('nh3d-pulled') || ''; } catch (e) {}
+      if (pulled === String(cloud.at)) return;                  // never loop
+      try {
+        for (const k of Object.keys(local)) if (!(k in cloud.d) && k !== 'nh3d-mp-next') localStorage.removeItem(k);
+        for (const [k, v] of Object.entries(cloud.d)) if (k.startsWith('nh3d-') && typeof v === 'string') localStorage.setItem(k, v);
+        localStorage.setItem('nh3d-sync-at', String(cloud.at)); sessionStorage.setItem('nh3d-pulled', String(cloud.at));
+      } catch (e) { return; }
+      if (MP) { try { localStorage.setItem('nh3d-mp-next', JSON.stringify({ code: MP.code })); } catch (e) {} }
+      location.reload();
+    } else { await fbSaveNow(); if (fresh) popup('☁️ 로그인했어요. 기록이 계정에 저장돼요', 'var(--ok)'); if (fresh && MP) location.reload(); }   // a room switches to the Firebase link
+  }
+
+  // ── Multiplayer (🌐 멀티): a room code puts friends on the same six-lane road with no traffic or obstacles. The host's
+  //    출발 starts everyone at once; first to 5 km wins. Everyone else's car is drawn on YOUR road at their distance and
+  //    lane, so the road always matches. Transport: PeerJS (WebRTC, the room code is the host's id) wherever the page can
+  //    reach it — the GitHub page or the file — and the claude.ai room capability as a fallback. No server state is kept. ──
+  const mpBtn = $('mpBtn'), mpM = $('mpM'), mpBox = $('mpBox'), chMp = $('chMp'), mpNote = $('mpNote'), mpCodeEl = $('mpCode');
+  const RACE_M = 5000, MAX_P = 8;
+  const newCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 5; i++) s += A[Math.floor(Math.random() * A.length)]; return s; };
+  const cleanCode = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  function goRoom(code) {                                     // the road is built for the mode, so a room needs a fresh page
+    try { localStorage.setItem('nh3d-mp-next', JSON.stringify({ code })); } catch (e) {}
+    try { history.replaceState(null, '', location.pathname + location.search + (code ? '#room=' + code : '')); } catch (e) { try { location.hash = code ? 'room=' + code : ''; } catch (x) {} }
+    location.reload();
+  }
+  function leaveRoom() { try { localStorage.removeItem('nh3d-mp-next'); } catch (e) {} goRoom(''); }
+  mpBtn.textContent = MP ? '🌐 멀티 나가기' : '🌐 멀티';
+  if (MP) $('duelBtn').hidden = true;                          // the hot-seat duel is for one screen
+  mpBtn.addEventListener('click', () => {
+    if (MP) { leaveRoom(); return; }
+    if (state !== 'ready' && state !== 'over') return;
+    mpNote.textContent = ''; mpCodeEl.value = ''; mpM.hidden = false;
+  });
+  $('mpClose').addEventListener('click', () => { mpM.hidden = true; });
+  mpM.addEventListener('click', e => { if (e.target === mpM) mpM.hidden = true; });
+  $('mpMake').addEventListener('click', () => goRoom(newCode()));
+  $('mpJoin').addEventListener('click', () => { const c = cleanCode(mpCodeEl.value); if (c.length < 4) { mpNote.textContent = '방 코드를 4~8자로 넣어 주세요'; return; } goRoom(c); });
+  mpCodeEl.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') $('mpJoin').click(); });
+
+  // ── the network ──
+  // Two kinds of message. Position: [sp, px, hd, speed, dist, state, sentAt] about 15 times a second, on an unreliable
+  // channel (a late packet is dropped, never waited for, so nothing stalls). Info: name, car, paint, race, finish, the
+  // host's race number: twice a second and on any change. The host relays each one to everyone the moment it arrives.
+  const net = { mode: '', me: '', host: false, ok: false, msg: '', peers: {} };   // peers: id → { st, t, off }
+  const joinedAt = Date.now(), POS_GAP = 1 / 15, INFO_GAP = 0.5;
+  const ST = ['ready', 'count', 'play', 'pause', 'crash', 'over', 'offer'];
+  let posT = 0, infoT = 0, infoKey = '', uiT = 0, peer = null, hostConn = null, roomObj = null;
+  const conns = new Map();
+  const setMsg = m => { net.msg = m; uiT = 0; };
+  const entry = id => net.peers[id] || (net.peers[id] = { st: { st: 'ready', sp: 0, px: 0, hd: 0, v: 0, d: 0 }, t: 0, off: undefined, seen: performance.now() });
+  function applyQ(id, q) {
+    if (!Array.isArray(q) || q.length < 7 || id === net.me) return;
+    if (net.mode === 'fb' && !net.peers[id]) return;             // the database: a player exists once their info is there
+    const e = entry(id), now = Date.now(), lag = now - (+q[6] || now);
+    if (+q[6] < e.t) return;                                   // an older packet that arrived late
+    e.off = e.off === undefined ? lag : Math.min(e.off + 2, lag);   // clock difference + the quickest trip seen (forgets slowly)
+    e.t = +q[6]; e.seen = performance.now();
+    const st = e.st; st.sp = +q[0] || 0; st.px = +q[1] || 0; st.hd = +q[2] || 0; st.v = +q[3] || 0; st.d = +q[4] || 0; st.st = ST[q[5]] || 'ready';
+  }
+  function applyI(id, i) {
+    if (!i || typeof i !== 'object' || id === net.me) return;
+    const e = entry(id), st = e.st; e.seen = performance.now();
+    st.n = String(i.n || '').slice(0, 14); st.c = Number.isInteger(i.c) ? i.c : 0; st.p = +i.p || 0xffffff; st.r = +i.r || 0; st.f = +i.f || 0; st.j = +i.j || 0;
+    if (i.H !== undefined) st.H = +i.H || 0; else delete st.H;
+  }
+  const PJ_URL = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
+  function loadPeerJS() {
+    return new Promise((res, rej) => {
+      if (window.Peer) { res(); return; }
+      const s = document.createElement('script'); s.src = PJ_URL; s.async = true;
+      s.onload = () => { if (!window.Peer && window.peerjs) window.Peer = window.peerjs.Peer; window.Peer ? res() : rej(new Error('no Peer')); }; s.onerror = () => rej(new Error('load'));
+      document.head.appendChild(s); setTimeout(() => rej(new Error('timeout')), 12000);
+    });
+  }
+  const PJ_OPT = { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }] } };
+  const hostId = () => 'nh3d-mp-' + MP.code.toLowerCase();
+  const sendTo = (c, m) => { if (c && c.open) try { c.send(m); } catch (e) {} };
+  function relay(m, except) { for (const [id, c] of conns) if (id !== except) sendTo(c, m); }
+  function pjHost() {                                          // the first one to claim the code's id is the host
+    if (peer) { try { peer.destroy(); } catch (e) {} }
+    conns.clear(); hostConn = null; net.host = false; net.ok = false; net.mode = 'pj';
+    const p = new window.Peer(hostId(), PJ_OPT); peer = p;
+    p.on('open', id => { if (peer !== p) return; net.host = true; net.me = id; net.ok = true; net.peers = {}; setMsg(''); infoKey = ''; });
+    p.on('connection', c => {
+      if (peer !== p) return;
+      if (conns.size >= MAX_P - 1) { c.on('open', () => { for (let k = 0; k < 4; k++) setTimeout(() => sendTo(c, { full: 1 }), k * 150); setTimeout(() => { try { c.close(); } catch (e) {} }, 900); }); return; }
+      c.on('open', () => {                                     // a newcomer gets everyone at once
+        conns.set(c.peer, c);
+        sendTo(c, { id: net.me, i: myInfo() }); sendTo(c, { id: net.me, q: myPos() });
+        for (const [id, e] of Object.entries(net.peers)) if (id !== c.peer) { sendTo(c, { id, i: e.st }); }
+        uiT = 0;
+      });
+      c.on('data', d => {
+        if (!d || typeof d !== 'object') return;
+        if (d.q) { applyQ(c.peer, d.q); relay({ id: c.peer, q: d.q }, c.peer); }
+        if (d.i) { applyI(c.peer, d.i); relay({ id: c.peer, i: d.i }, c.peer); uiT = Math.min(uiT, 0.05); }
+      });
+      const gone = () => { if (!conns.has(c.peer)) return; conns.delete(c.peer); delete net.peers[c.peer]; relay({ id: c.peer, gone: 1 }); dropCar(c.peer); uiT = 0; };
+      c.on('close', gone); c.on('error', gone);
+    });
+    p.on('error', e => {
+      if (peer !== p) return;
+      if (e && e.type === 'unavailable-id') { try { p.destroy(); } catch (x) {} pjJoin(); }
+      else if (!net.ok) fallback('연결 실패 (' + ((e && e.type) || '네트워크') + ')');
+    });
+    p.on('disconnected', () => { if (peer === p) try { p.reconnect(); } catch (e) {} });   // the signalling link only; the race keeps going
+  }
+  function pjJoin() {
+    const p = new window.Peer(PJ_OPT); peer = p; net.host = false; net.ok = false;
+    p.on('open', id => {
+      if (peer !== p) return; net.me = id;
+      const c = p.connect(hostId(), { serialization: 'json', reliable: false }); hostConn = c;
+      c.on('open', () => { if (peer !== p) return; net.ok = true; net.peers = {}; setMsg(''); infoKey = ''; posT = 0; });
+      c.on('data', d => {
+        if (!d || typeof d !== 'object' || peer !== p) return;
+        if (d.full) { net.ok = false; setMsg('방이 꽉 찼어요 (최대 8명)'); try { p.destroy(); } catch (e) {} peer = null; return; }
+        if (d.gone) { delete net.peers[d.id]; dropCar(d.id); uiT = 0; return; }
+        if (d.i) { applyI(d.id, d.i); uiT = Math.min(uiT, 0.05); }
+        if (d.q) applyQ(d.id, d.q);
+      });
+      c.on('close', () => { if (peer === p) hostLost(); });
+      c.on('error', () => { if (peer === p && !c.open) hostLost(); });
+    });
+    p.on('error', e => {
+      if (peer !== p) return;
+      if (e && e.type === 'peer-unavailable') hostLost();
+      else if (!net.ok) fallback('연결 실패 (' + ((e && e.type) || '네트워크') + ')');
+    });
+    p.on('disconnected', () => { if (peer === p) try { p.reconnect(); } catch (e) {} });
+  }
+  function hostLost() {                                        // the host left: whoever claims the code first takes over
+    if (!net.ok && net.msg.startsWith('방장이 나갔어요')) return;
+    net.ok = false; net.peers = {}; for (const id of [...rCars.keys()]) dropCar(id); setMsg('방장이 나갔어요. 다시 연결하는 중…');
+    setTimeout(() => { if (MP && !net.ok) pjHost(); }, 300 + Math.random() * 1500);
+  }
+  async function roomStart() {                                  // claude.ai: the room capability
+    const C = window.claude; if (!C || typeof C.use !== 'function') return false;
+    try {
+      const room = await C.use('room'); if (!room) return false;
+      const r = await room.join('nh3d-' + MP.code.toLowerCase()); roomObj = r; net.mode = 'room'; net.ok = true; net.me = 'me'; setMsg('');
+      r.onPeers(ch => {
+        const keep = new Set();
+        for (const q of ch.peers) if (!q.sameTab && q.kind === 'viewer' && q.presence && q.presence.s && typeof q.presence.s === 'object') { keep.add(q.peer); applyI(q.peer, q.presence.s.i); applyQ(q.peer, q.presence.s.q); }
+        for (const id of Object.keys(net.peers)) if (!keep.has(id)) { delete net.peers[id]; dropCar(id); }
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+  let fellBack = false;
+  async function fallback(msg) {
+    if (fellBack) { setMsg(msg); return; }
+    fellBack = true; if (peer) { try { peer.destroy(); } catch (e) {} peer = null; }
+    if (!(await roomStart())) setMsg(msg + ' · 인터넷 연결을 확인하거나, 이 게임의 GitHub 주소에서 열어 주세요');
+  }
+  // ── Firebase (signed in on the web address): rooms/<code>/info/<uid> and rooms/<code>/pos/<uid> in the Realtime
+  //    Database. Every player talks to Google's servers, so it works on any network; leaving removes your entries. ──
+  let fbRefs = null;
+  const clean = o => JSON.parse(JSON.stringify(o));           // the database refuses undefined
+  async function fbRoom() {
+    const { D, db, user } = fb, uid = user.uid, base = `rooms/${MP.code}`;
+    const infoAll = D.ref(db, `${base}/info`), posAll = D.ref(db, `${base}/pos`);
+    try {
+      const snap = await D.get(infoAll), others = snap.exists() ? Object.keys(snap.val()).filter(k => k !== uid).length : 0;
+      if (others >= MAX_P) { net.mode = 'fb'; setMsg('방이 꽉 찼어요 (최대 8명)'); return true; }
+    } catch (e) { return false; }
+    net.mode = 'fb'; net.me = uid; net.host = false; net.peers = {};
+    const infoRef = D.ref(db, `${base}/info/${uid}`), posRef = D.ref(db, `${base}/pos/${uid}`);
+    fbRefs = { infoRef, posRef };
+    D.onDisconnect(infoRef).remove(); D.onDisconnect(posRef).remove();
+    const onI = s => { applyI(s.key, s.val()); uiT = Math.min(uiT, 0.05); }, onQ = s => applyQ(s.key, s.val());
+    D.onChildAdded(infoAll, onI); D.onChildChanged(infoAll, onI);
+    D.onChildRemoved(infoAll, s => { delete net.peers[s.key]; dropCar(s.key); uiT = 0; });
+    D.onChildAdded(posAll, onQ); D.onChildChanged(posAll, onQ);
+    D.onValue(D.ref(db, '.info/connected'), s => { const on = !!s.val(); net.ok = on; setMsg(on ? '' : '연결이 끊겼어요. 다시 연결하는 중…'); if (on) { D.onDisconnect(infoRef).remove(); D.onDisconnect(posRef).remove(); infoKey = ''; } });
+    window.addEventListener('pagehide', () => { try { D.remove(infoRef); D.remove(posRef); } catch (e) {} });
+    return true;
+  }
+  async function mpConnect() {
+    if (fbHere) {
+      try { await fbLoad(); } catch (e) {}
+      if (fb.user && await fbRoom()) return;
+      if (fb.ready && !fb.user) setMsg('연결 중… (구글 로그인하면 어떤 와이파이에서도 더 안정적으로 연결돼요)');
+    }
+    loadPeerJS().then(pjHost, () => fallback('연결 실패 (멀티 모듈을 불러오지 못했어요)'));
+  }
+  if (MP) {
+    setMsg('방에 연결하는 중…');
+    mpConnect();
+    window.addEventListener('pagehide', () => { try { peer && peer.destroy(); } catch (e) {} });   // leave at once, so the room hears it
+  }
+
+  // ── my state ──
+  let myRace = 0, raceT0 = 0, myFin = 0, hostRace = 0, seenHostRace = null, mpForce = false, slot = 0;
+  const tag = newCode().slice(0, 2), myName = () => nick || '드라이버 ' + tag;   // unnamed players still tell apart
+  const myPos = () => [Math.round(sp * 10) / 10, Math.round(px * 100) / 100, Math.round(hd * 1000) / 1000, Math.round(speed), Math.round(dist), Math.max(0, ST.indexOf(state)), Date.now()];
+  const myInfo = () => ({ n: myName(), c: carIdx, p: paintMat.color.getHex(), r: myRace, f: myFin, j: joinedAt, H: iAmHost() ? hostRace : undefined });
+  function myState() { return { ...myInfo(), st: state, sp, px, hd, v: Math.round(speed), d: Math.round(dist) }; }
+  function sendPos() {
+    const q = myPos();
+    if (net.mode === 'pj' && net.ok) { if (net.host) relay({ id: net.me, q }); else sendTo(hostConn, { q }); }
+    else if (net.mode === 'room' && roomObj) roomObj.presence({ s: { q, i: myInfo() } }).catch(() => {});
+    else if (net.mode === 'fb' && fbRefs && net.ok) fb.D.set(fbRefs.posRef, q).catch(() => {});
+  }
+  function sendInfo() {
+    if (net.mode === 'fb' && fbRefs && net.ok) { fb.D.set(fbRefs.infoRef, clean(myInfo())).catch(() => {}); return; }
+    if (net.mode !== 'pj' || !net.ok) return;
+    const i = myInfo(); if (net.host) relay({ id: net.me, i }); else sendTo(hostConn, { i });
+  }
+  // who is the host? PeerJS: the code's own id. The room capability: whoever has been in the room longest
+  function hostEntry() {
+    if (net.mode === 'pj') return net.host ? null : net.peers[hostId()] || null;
+    let best = null, bj = joinedAt; for (const q of Object.values(net.peers)) if (q.st.j < bj) { best = q; bj = q.st.j; }
+    return best;
+  }
+  const iAmHost = () => net.mode === 'pj' ? net.host : !hostEntry();
+
+  // 출발: the host starts a race for everyone; the others wait for it
+  function mpGo() {
+    if (mpForce) { mpForce = false; return true; }
+    if (!net.ok) { setMsg('아직 방에 연결되지 않았어요'); return false; }
+    if (!iAmHost()) { setMsg('방장이 출발하면 같이 출발해요'); return false; }
+    hostRace = Date.now(); joinRace(hostRace); return true;
+  }
+  function joinRace(id) {
+    myRace = id; myFin = 0; raceT0 = 0;
+    const he = hostEntry(), hid = net.mode === 'pj' ? hostId() : iAmHost() ? net.me : ((Object.entries(net.peers).find(([, e]) => e === he) || [''])[0]);
+    const ids = [net.me, ...Object.keys(net.peers)].sort((a, b) => (b === hid) - (a === hid) || (a < b ? -1 : 1)); slot = Math.max(0, ids.indexOf(net.me));   // the host takes pole
+  }
+  function startFromHost(id) {                                  // the host pressed 출발
+    if (state !== 'ready' && state !== 'over' && state !== 'offer' && state !== 'play' && state !== 'crash') return;
+    custEl && !custEl.hidden && closeCustom();
+    for (const m of document.querySelectorAll('.rank')) m.hidden = true;
+    joinRace(id); mpForce = true; start(); popup('🏁 레이스 시작! 5km 먼저 가면 승리', 'var(--lamp)');
+  }
+
+  // ── standings ──
+  const fmtT = ms => { const s = ms / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
+  function everyone() {
+    const all = [{ id: net.me || 'me', me: true, st: myState() }];
+    for (const [id, q] of Object.entries(net.peers)) all.push({ id, me: false, st: q.st });
+    return all;
+  }
+  function standings(race) {
+    const rs = everyone().filter(e => e.st.r === race);
+    const rank = e => e.st.f ? [0, e.st.f] : (e.st.st === 'play' || e.st.st === 'count' || e.st.st === 'pause') ? [1, -e.st.d] : [2, -e.st.d];
+    return rs.sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
+  }
+  const statusOf = st => st.f ? `🏁 ${fmtT(st.f)}` : st.st === 'play' || st.st === 'pause' ? `${(st.d / 1000).toFixed(2)}km` : st.st === 'count' ? '출발 준비' : st.st === 'crash' || st.st === 'over' || st.st === 'offer' ? (st.r ? `탈락 ${(st.d / 1000).toFixed(2)}km` : '대기') : '차고';
+
+  // ── the room box in the garage / results, the chip while driving ──
+  let boxKey = '', lastGo = '';
+  function renderMp() {
+    if (!MP) return;
+    const menu = state === 'ready' || state === 'over' || state === 'offer';
+    mpBox.hidden = !menu;
+    const n = 1 + Object.keys(net.peers).length, host = iAmHost(), he = hostEntry();
+    if (menu) {
+      const raceNow = myRace && state !== 'ready' ? myRace : 0;
+      const list = raceNow ? standings(raceNow) : everyone();
+      const rows = list.map((e, i) => `<li class="${e.me ? 'me' : ''}"><span>${raceNow ? i + 1 : '·'}</span><span class="who">${esc(e.st.n || '드라이버')}${e.me ? ' (나)' : ''}${(e.me ? host : e === he || (net.mode === 'pj' && e.id === hostId())) ? ' 👑' : ''} · ${esc((CARS[e.st.c] || CARS[0]).name)}</span><span class="st">${statusOf(e.st)}</span></li>`).join('');
+      const share = /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.host) ? '<button id="mpLink">링크 복사</button>' : '';
+      const key = [MP.code, n, host, net.msg, rows, share].join('|');
+      if (key !== boxKey) {
+        boxKey = key;
+        mpBox.innerHTML = `<div class="mp-top">🌐 방 코드 <b class="code">${MP.code}</b> · ${n}/${MAX_P}명 <button id="mpCopy">코드 복사</button>${share}<button id="mpLeave">나가기</button></div>`
+          + (net.msg ? `<span class="mp-msg">${esc(net.msg)}</span>` : `<span class="mp-msg">${host ? '👑 방장이에요. 출발을 누르면 모두 같이 출발해요.' : '방장이 출발하면 같이 출발해요.'}</span>`)
+          + `<ol>${rows}</ol><label class="mp-nick">닉네임 <input id="mpNick" maxlength="12" value="${esc(nick)}" placeholder="드라이버"></label>`;
+        const cp = async (t, ok) => { try { await navigator.clipboard.writeText(t); setMsg(ok); } catch (e) { setMsg(t); } };
+        $('mpCopy').onclick = () => cp(MP.code, '코드를 복사했어요! 친구에게 보내 주세요');
+        if ($('mpLink')) $('mpLink').onclick = () => cp(location.origin + location.pathname + '#room=' + MP.code, '링크를 복사했어요! 친구가 누르면 바로 이 방으로 들어와요');
+        $('mpLeave').onclick = leaveRoom;
+        const ni = $('mpNick'); ni.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') ni.blur(); });
+        ni.addEventListener('change', () => { saveNick(ni.value); try { nickEl.value = nick; } catch (e) {} boxKey = ''; });
+      }
+      // the 출발 button says who starts
+      const go = state === 'offer' ? null : host ? (state === 'over' ? '🏁 다시 레이스' : '🏁 레이스 시작') : '방장 기다리는 중';
+      if (go && go !== lastGo) { lastGo = go; goBtn.textContent = go; }
+      goBtn.disabled = !!go && !host;
+      if (raceNow && state === 'over') {                        // results: my place
+        const pl = list.findIndex(e => e.me) + 1, t = myFin ? `🏁 ${pl}위로 완주! (${fmtT(myFin)})` : `탈락 · ${pl}위`;
+        if (ovTitle.textContent !== t) ovTitle.textContent = t;
+      }
+    } else { lastGo = ''; goBtn.disabled = false; }
+    // the chip while driving
+    const driving = state === 'play' || state === 'count' || state === 'pause' || state === 'crash';
+    chMp.hidden = !driving;
+    if (driving) {
+      let t = `🌐 ${n}명`;
+      if (myRace) { const sd = standings(myRace), pl = sd.findIndex(e => e.me) + 1; t = `🏁 ${pl}위/${sd.length} · 남은 ${Math.max(0, (RACE_M - dist) / 1000).toFixed(2)}km`; }
+      if (chMp.textContent !== t) chMp.textContent = t;
+    }
+  }
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+
+  // ── other players' cars, drawn on my road at their distance and lane ──
+  const rCars = new Map();
+  function labelSprite(text) {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 64; const g = c.getContext('2d');
+    g.fillStyle = 'rgba(8,12,22,.72)'; g.beginPath(); g.roundRect ? g.roundRect(4, 8, 248, 48, 22) : g.rect(4, 8, 248, 48); g.fill();
+    g.fillStyle = '#e8f6ff'; g.font = 'bold 28px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text.slice(0, 12), 128, 33);
+    const t = new THREE.CanvasTexture(c), s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, transparent: true }));
+    s.scale.set(2.8, 0.7, 1); s.position.y = 2.3; return s;
+  }
+  function dropCar(id) { const r = rCars.get(id); if (!r) return; scene.remove(r.g); r.lab.material.map.dispose(); r.lab.material.dispose(); rCars.delete(id); }
+  function carFor(id, st) {
+    let r = rCars.get(id);
+    if (r && (r.c !== st.c || r.p !== st.p || r.n !== st.n)) { dropCar(id); r = null; }
+    if (!r) {
+      const spec = CARS[st.c] || CARS[0], paint = paintMat.clone(); paint.color.setHex(+st.p || 0xffffff);
+      const b = buildCar(spec, { paint, accent: trimMat, tail: tailMat, tailGlow, detail: false, heads: true });
+      const g = new THREE.Group(); g.add(b.group); const lab = labelSprite(String(st.n || '드라이버')); g.add(lab);
+      g.visible = false; scene.add(g); r = { g, lab, c: st.c, p: st.p, n: st.n, s: null }; rCars.set(id, r);
+    }
+    return r;
+  }
+  // Smooth motion: each car keeps moving at its last known speed every frame and is pulled gently toward where its
+  // latest packet says it is now (packet time + its speed × the time since), so a late or lost packet never jerks it.
+  function updateRemote(dt) {
+    const now = Date.now(), pnow = performance.now(), meLive = state === 'play' || state === 'count' || state === 'pause' || state === 'crash' || state === 'over' || state === 'offer';
+    for (const [id, e] of Object.entries(net.peers)) {
+      const st = e.st, r = carFor(id, st);
+      const live = meLive && e.t && pnow - e.seen < 4000 && (st.st === 'play' || st.st === 'count' || st.st === 'pause' || st.st === 'crash');
+      if (!live || (myRace && st.r !== myRace)) { r.g.visible = false; r.s = null; continue; }
+      const age = clamp((now - e.t - (e.off || 0)) / 1000, 0, 0.6), v = st.st === 'play' ? st.v * KMH : 0;
+      const ts = st.sp + v * age, tx = clamp(st.px + v * Math.sin(st.hd) * age, -X_LIMIT, X_LIMIT);
+      if (r.s === null || Math.abs(ts - r.s) > 25) { r.s = ts; r.x = tx; r.h = st.hd; }
+      else {
+        r.s += v * dt + (ts - r.s) * Math.min(1, dt * 5);
+        r.x += (tx - r.x) * Math.min(1, dt * 8); r.h += (st.hd - r.h) * Math.min(1, dt * 8);
+      }
+      const z = sp - r.s;
+      if (Math.abs(z) > 450) { r.g.visible = false; continue; }
+      r.g.visible = true; placeObj(r.g, z, r.x, 0, r.h);
+    }
+    for (const id of [...rCars.keys()]) if (!net.peers[id]) dropCar(id);
+  }
+
+  // ── the starting grid, like a Formula 1 start: two staggered columns, 8 m apart, white grid boxes and a chequered line ──
+  const gridX = k => k % 2 ? 2.4 : -2.4, gridS = k => -k * 8;
+  if (MP) {
+    const white = new THREE.MeshBasicMaterial({ color: 0xf2f4f8 }), _p = new THREE.Vector3();
+    const flat = (w, d) => new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), white);
+    const atTrack = (g, s, x) => { ensureTrack(s + 10); trackAt(s); g.position.set(TF.x + Math.cos(TF.h) * x, TF.y + 0.03, TF.z + Math.sin(TF.h) * x); g.rotation.y = -TF.h; scene.add(g); };
+    for (let k = 0; k < MAX_P; k++) {                          // a bracket in front of each slot, open towards the car
+      const g = new THREE.Group(), front = -2.6, w = 2.6;
+      const bar = flat(w, 0.22); bar.position.set(0, 0, front); g.add(bar);
+      for (const sx of [-1, 1]) { const tick = flat(0.18, 1.3); tick.position.set(sx * (w / 2 - 0.09), 0, front + 0.65); g.add(tick); }
+      atTrack(g, gridS(k), gridX(k));
+    }
+    const chk = tex(256, 32, (c, w, h) => { for (let x = 0; x < 32; x++) for (let y = 0; y < 4; y++) { c.fillStyle = (x + y) % 2 ? '#111' : '#f2f2f2'; c.fillRect(x * 8, y * 8, 8, 8); } });
+    const line = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_W - 1.2, 1.4).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: chk }));
+    const lg = new THREE.Group(); lg.add(line); atTrack(lg, 6, 0);
+  }
+
+  // ── every frame ──
+  function mpFrame(dt) {
+    if (!MP) return;
+    // the host's race number: a new one starts everyone (but not a race already running when you came in)
+    const he = hostEntry(), hr = he ? he.st.H : null;
+    if (he && hr !== undefined) {
+      if (seenHostRace === null) seenHostRace = hr;
+      else if (hr && hr !== seenHostRace) { seenHostRace = hr; if (hr !== myRace) startFromHost(hr); }
+    }
+    if (state === 'count' && myRace && raceT0 === 0) { px = gridX(slot); sp = gridS(slot); }   // lined up on the grid
+    if (state === 'play' && myRace && !raceT0) raceT0 = performance.now();
+    if (state === 'play' && myRace && !myFin && dist >= RACE_M) {           // across the line
+      myFin = Math.max(1, Math.round(performance.now() - raceT0)); crashMsg = '🏁 완주!'; sfx.ding();
+      gameOver(); sendInfo(); sendPos(); uiT = 0;
+    }
+    const racing = state === 'play' || state === 'count' || state === 'pause' || state === 'crash';
+    posT -= dt; if (posT <= 0) { posT = !racing ? 1 : net.mode === 'fb' ? 0.1 : POS_GAP; sendPos(); }   // in the garage once a second; the database ten a second
+    infoT -= dt; const ik = JSON.stringify(myInfo()); if (ik !== infoKey || infoT <= 0) { infoKey = ik; infoT = INFO_GAP; sendInfo(); }
+    updateRemote(dt);
+    uiT -= dt; if (uiT <= 0) { uiT = 0.4; renderMp(); }
+  }
 
   // ── Presentation ──
   let pYaw = 0, rideNow = 0;                                 // direction of travel in the world; body height now (eases to the suspension setting)
@@ -6713,7 +7236,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     scoreEl.textContent = Math.round(score).toLocaleString(); multEl.textContent = '×' + mult; multEl.classList.toggle('hot', mult > 1);
     bestEl.textContent = (Math.max(bestDist, dist) / 1000).toFixed(2) + ' km';   // your best distance (this run counts as it goes)
     rankNowEl.textContent = rk ? `${rk}위 · ${shared.ready ? '전체' : '내 기록'}` : '-';
-    cellEls.forEach((el, i) => { el.style.width = clamp(nitro - i, 0, 1) * 100 + '%'; });
+    cellEls.forEach((el, i) => { el.style.width = clamp(nitro - i, 0, 1) * 100 + '%'; if (i >= NITRO_MAX) el.parentElement.hidden = true; });
     nitroEl.classList.toggle('on', boostT > 0 && !perfect); nitroEl.classList.toggle('perfect', boostT > 0 && perfect); nitroEl.classList.toggle('window', nWin);
     missionsEl.innerHTML = missions.map(missionHtml).join('');
   }
@@ -6790,7 +7313,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     updateRamps(dt); updateGantry(dt); updateExtras(dt); updateZone(dt); updateChecks();
     updateScenery(sp);
     updateRoof(dt); updateFeel(dt);
-    updatePlayerVisual(dt, real); updateFx(dt); updateTunnel(real); updateCamera(real); updateSky(camera.position); updateHud(real); syncTouch(); garageFrame(real);
+    updatePlayerVisual(dt, real); updateFx(dt); updateTunnel(real); updateCamera(real); updateSky(camera.position); updateHud(real); syncTouch(); garageFrame(real); mpFrame(real);
     const live = state === 'play' || state === 'ready' || state === 'count';
     const thr = state === 'play' ? (keys.down ? 0 : keys.up || touchMode || boostT > 0 ? 1 : 0) : keys.up || revT > 0 ? 1 : 0.15;
     sfx.engine(rpmEng, thr, boost, live, limiter && live, live ? turboP : 0);
@@ -6813,7 +7336,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     jolt = joltV = pitchS = pitchV = rollS = rollV = shiftShake = engageIn = 0; rpmEng = 0.2; liftA = liftV = lastThr = 0;
     sp = 0; px = 1.75; hd = 0; slip = 0; loopSpin = 0; steerIn = 0; vs = 0; speed = 0; vx = 0;
     gear = 1; neutral = true; lever = 'P'; rpm = 0.2; nRpm = 0.2; kick = 0; surgeT = 0; bogT = 0; launchT = 0; spinT = 0; squash = 0; apexDone = true;
-    dist = 0; resetZone(); resetRunExtras(); nitro = 3; boostT = 0; boost = 0; perfect = false; shiftCut = 0; limiter = false; turboP = 0; holdT = 0;
+    dist = 0; resetZone(); resetRunExtras(); nitro = NITRO_MAX; boostT = 0; boost = 0; perfect = false; shiftCut = 0; limiter = false; turboP = 0; holdT = 0;
     drifting = false; driftAmt = 0; driftDir = 0; driftTime = 0; airborne = false; py = 0; vy = 0; rollAngle = 0; rollDir = 0; spinAngle = 0; spinDir = 0; thrT = THR_MAX; attPitch = 0; dodgeT = 0; repairT = 0; thrPrev = false; clearStreak = 0;
     score = 0; mult = 1; combo = 0; comboT = 0; maxMult = 1; crashT = 0; crashMsg = '';
     crashV.set(0, 0, 0); crashW.set(0, 0, 0); crashA.set(0, 0, 0);
