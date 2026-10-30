@@ -5598,6 +5598,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   async function saveNick(v) {
     nick = cleanNick(v); try { localStorage.setItem('nh3d-nick', nick); } catch (e) {}
     const mine = myShared();
+    // records belong to the account (uid), never to the name: a new nickname only relabels the same rows
+    if (typeof fb !== 'undefined' && fb.user && fb.D) {
+      const { D, db } = fb, uid = fb.user.uid, jobs = [];
+      if (mine) jobs.push(D.update(D.ref(db, `ranking/${uid}`), { nick }));
+      const t = todayMine(); if (t && t.score) jobs.push(D.update(D.ref(db, `daily/${t.day}/${uid}`), { nick }));
+      try { await Promise.all(jobs); } catch (e) {}
+      return;
+    }
     if (mine && mine.nick !== nick && shared.canWrite) {
       try { await shared.db.collection('ranking').doc(shared.me).set({ score: mine.score, dist: mine.dist, car: mine.car, nick, at: mine.at }); }
       catch (e) { if (e && e.code === 'invalid_argument') shared.canWrite = false; }
