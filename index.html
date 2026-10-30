@@ -6538,11 +6538,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const ttRing = new THREE.Mesh(new THREE.TorusGeometry(3.12, 0.04, 6, 64), gB(0x2ad1ff)); ttRing.rotation.x = Math.PI / 2; ttRing.position.y = 0.06; tt.add(ttRing);
   // ── state: the door, and the room staying put while the car drives out of it ──
   let doorY = 0, roomS = null;
-  const garageSpin = 0, garageLiftY = 0, spinOn = false;
+  let garageSpin = 0; const garageLiftY = 0, spinOn = false;   // the car turns slowly on the turntable; the camera stays put
   const garageCamR = () => room.visible ? 6.4 : 7.4;
   // no extra point lights (they cost every surface in the game): the room is lit by lifting the scene's soft lights
   let litF = 0;
   function garageFrame(dt) {
+    garageSpin = state === 'ready' ? (garageSpin + dt * 0.4) % (Math.PI * 2) : 0; tt.rotation.y = garageSpin;
     if (state === 'ready') roomS = sp;                                   // the room sits on the road at the start line
     const show = roomS !== null && (state === 'ready' || (!MP && (state === 'count' || (state === 'play' && sp < roomS + 45))));   // multi: a starting grid on the open road
     const was = room.visible; room.visible = show;
