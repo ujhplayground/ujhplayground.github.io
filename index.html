@@ -205,12 +205,36 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .mpbox li .st { color: var(--muted); font-family: var(--mono); font-size: .78rem; }
 .mpbox .mp-nick { display: flex; gap: 6px; align-items: center; margin-top: 8px; color: var(--muted); }
 .mpbox .mp-nick input, .mp-join input { padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
-.mp-make { margin: 12px 0 8px; }
 .mp-join { display: flex; gap: 8px; } .mp-join input { flex: 1; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; }
 .mp-note { display: block; margin-top: 8px; color: var(--lamp); min-height: 1em; }
 .rankbtn.mpbtn { border-color: #2f5f86; }
 @media (max-width: 900px) { .mpbox { width: min(560px, 94vw); } }
 @media (pointer: coarse) and (max-height: 520px) { .mpbox { margin: 0 auto 4px; padding: 5px 8px; font-size: .72rem; } .mpbox .mp-top b.code { font-size: .95rem; } .mpbox .mp-msg { margin-top: 2px; } .mpbox ol { margin-top: 4px; max-height: 52px; overflow: auto; } .mpbox li { padding: 2px 6px; } .mpbox .mp-nick { display: none; } }
+.rankbtn.gone { display: none !important; }
+.touch button.atk { background: rgba(255, 86, 60, .32); border-color: #ff6a4a; color: #ffe2dc; }
+.rankbtn.homebtn { border-color: var(--lamp); }
+.who-badge { position: absolute; left: 14px; bottom: 12px; z-index: 5; padding: 6px 12px; border-radius: 999px; font-size: .84rem; font-weight: 600; color: #e8f2ff; background: rgba(10, 14, 24, .78); border: 1px solid var(--edge); pointer-events: none; }
+.stage:not(.menu) .who-badge { display: none; }
+@media (pointer: coarse) and (max-height: 520px) { .who-badge { left: 8px; bottom: 6px; padding: 3px 9px; font-size: .72rem; } }
+.gate { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at 50% 30%, rgba(30, 40, 70, .9), rgba(5, 7, 12, .97)); }
+.gate[hidden] { display: none; }
+.gate-card { max-width: 420px; width: 100%; box-sizing: border-box; padding: 26px 22px; text-align: center; border-radius: 18px; background: var(--glass); border: 1px solid var(--edge); }
+.gate-card h2 { margin: 0 0 10px; color: var(--lamp); font-size: 1.7rem; }
+.gate-card p { margin: 0 0 18px; color: var(--muted); font-size: .9rem; line-height: 1.55; }
+.gate-card .go { width: 100%; }
+.gate-card small { display: block; min-height: 1.2em; margin-top: 10px; color: var(--brake); font-size: .82rem; }
+.gate-card .rankbtn { margin-top: 8px; }
+.mp-h { margin: 14px 0 6px; font-size: .84rem; color: var(--muted); }
+.mp-rooms { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; max-height: 190px; overflow: auto; }
+.mp-rooms li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 9px; background: rgba(255, 255, 255, .05); font-size: .84rem; }
+.mp-rooms li.empty { display: block; color: var(--muted); }
+.mp-rooms .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-rooms .meta { color: var(--muted); font-family: var(--mono); font-size: .78rem; }
+.mp-rooms button { padding: 3px 12px; font: inherit; font-size: .8rem; color: var(--night); font-weight: 600; background: var(--lamp); border: 0; border-radius: 999px; cursor: pointer; }
+.mp-rooms button:disabled { opacity: .4; cursor: default; }
+.mp-make { display: flex; gap: 8px; } .mp-make input { flex: 1; min-width: 0; padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
+.mp-join #mpJoinPw { flex: .8; min-width: 0; font-family: inherit; letter-spacing: 0; text-transform: none; }
+.mpbox .mp-pw { display: flex; gap: 6px; margin-top: 6px; } .mpbox .mp-pw input { flex: 1; padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
 .rank-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rank-tabs button { padding: 6px 12px; font: inherit; font-size: .82rem; color: var(--muted); background: transparent; border: 1px solid var(--edge); border-radius: 999px; cursor: pointer; }
 .rank-tabs button[aria-pressed="true"] { color: var(--night); font-weight: 600; background: var(--lamp); border-color: var(--lamp); }
@@ -580,7 +604,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn" id="duelBtn">👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn" id="ghostBtn">👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -604,12 +628,20 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="rank-foot"><label>닉네임 <input id="nick" maxlength="12" placeholder="이름 없음" autocomplete="off"></label><small id="rankNote"></small></div>
     </div>
   </div>
+  <div class="who-badge" id="whoBadge" hidden></div>
+  <div class="gate" id="gate" hidden>
+    <div class="gate-card"><h2>야간 고속도로</h2><p>구글 계정으로 로그인하고 시작하세요.<br>최고 거리, 해금한 차, 코인이 계정에 저장돼서 어느 기기에서든 이어서 할 수 있어요.</p>
+      <button class="go" id="gateBtn" disabled>로그인 준비 중…</button><small id="gateMsg"></small><button class="rankbtn" id="gateSkip" hidden>로그인 없이 하기</button></div>
+  </div>
   <div class="rank" id="mpM" hidden>
     <div class="rank-card" role="dialog" aria-modal="true" aria-labelledby="mpTitle">
       <div class="rank-head"><h3 id="mpTitle">🌐 멀티 플레이</h3><button class="rank-x" id="mpClose" aria-label="닫기">✕</button></div>
-      <p class="dex-note">코드로 방을 만들고 친구들과 같은 도로를 달려요. 도로는 6차선으로 넓고, 차·경찰·장애물은 없어요. 방장이 출발하면 모두 같이 출발해서 5km 먼저 가는 사람이 이겨요.</p>
-      <div class="mp-make"><button class="go" id="mpMake">방 만들기</button></div>
-      <div class="mp-join"><input id="mpCode" maxlength="8" placeholder="방 코드 (예: K7Q2M)" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="rankbtn" id="mpJoin">참가</button></div>
+      <p class="dex-note">코드로 방을 만들고 친구들과 같은 도로를 달려요. 도로는 6차선으로 넓고, 차·경찰·장애물은 없어요. 방장이 출발하면 모두 같이 출발해서 10km 먼저 가는 사람이 이겨요. 상대 차를 들이받거나 T(폰은 💥 버튼)로 충격파를 쏴서 공격할 수 있어요.</p>
+      <h4 class="mp-h">지금 열린 방</h4><ol class="mp-rooms" id="mpRooms"><li class="empty">불러오는 중…</li></ol>
+      <h4 class="mp-h">방 만들기</h4>
+      <div class="mp-make"><input id="mpPw" maxlength="12" placeholder="비밀번호 (없으면 비워 두기)" autocomplete="off"><button class="go" id="mpMake">방 만들기</button></div>
+      <h4 class="mp-h">코드로 들어가기</h4>
+      <div class="mp-join"><input id="mpCode" maxlength="8" placeholder="방 코드 (예: K7Q2M)" autocomplete="off" autocapitalize="characters" spellcheck="false"><input id="mpJoinPw" maxlength="12" placeholder="비밀번호" autocomplete="off"><button class="rankbtn" id="mpJoin">참가</button></div>
       <small class="mp-note" id="mpNote"></small>
     </div>
   </div>
@@ -692,7 +724,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   <div class="touch">
     <div class="tc-left"><button id="tl" class="steer" aria-label="왼쪽">◀</button><button id="tr" class="steer" aria-label="오른쪽">▶</button></div>
     <div class="tc-right">
-      <div class="tc-row"><button id="tint" class="ctx int" hidden>흡기 V</button><button id="tthr" class="ctx thr" hidden>추력 F</button><button id="trep" class="ctx rep" hidden>🔧 정비</button><button id="tsport" class="wide" hidden>스포츠</button><button id="troof" class="wide" hidden>지붕</button><button id="tdn" class="small" aria-label="기어 내림">▼</button><button id="tu" class="small" aria-label="기어 올림">▲</button></div>
+      <div class="tc-row"><button id="tatk" class="ctx atk" hidden>💥 공격</button><button id="tint" class="ctx int" hidden>흡기 V</button><button id="tthr" class="ctx thr" hidden>추력 F</button><button id="trep" class="ctx rep" hidden>🔧 정비</button><button id="tsport" class="wide" hidden>스포츠</button><button id="troof" class="wide" hidden>지붕</button><button id="tdn" class="small" aria-label="기어 내림">▼</button><button id="tu" class="small" aria-label="기어 올림">▲</button></div>
       <div class="tc-row"><button id="td" class="wide">드리프트</button><button id="tn" class="n2o">니트로</button><button id="tbrk" class="brk" aria-label="브레이크">브레이크</button></div>
     </div>
   </div>
@@ -730,8 +762,11 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // has a six-lane road and no traffic, police or obstacles; the room itself lives in the multi chunk.
   const MP = (() => {
     try {
-      const m = String(location.hash || '').match(/room=([A-Za-z0-9]{4,8})/); if (m) return { code: m[1].toUpperCase() };
-      const v = localStorage.getItem('nh3d-mp-next'); if (v) { localStorage.removeItem('nh3d-mp-next'); const o = JSON.parse(v); if (o && /^[A-Z0-9]{4,8}$/.test(o.code)) return { code: o.code }; }
+      const m = String(location.hash || '').match(/room=([A-Za-z0-9]{4,8})/), hc = m ? m[1].toUpperCase() : '';
+      const v = localStorage.getItem('nh3d-mp-next'); if (v) localStorage.removeItem('nh3d-mp-next');
+      const o = v ? JSON.parse(v) : null;
+      if (o && /^[A-Z0-9]{4,8}$/.test(o.code) && (!hc || hc === o.code)) return { code: o.code, pw: String(o.pw || '').slice(0, 12), make: !!o.make };
+      if (hc) return { code: hc, pw: '', make: false };
     } catch (e) {}
     return null;
   })();
@@ -2523,21 +2558,22 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       shaker: [1.05, 0.16, 0.5], wing: { u: -2.2, v: 1.08, strut: 0.06 }, livery: { v: 0.76, h: 0.06 }, grille: { v: 0.55, w: 1.1, h: 0.18 },
       doors: { cuts: [0.9, -0.66], handles: [-0.54], v: 0.8 } },
   ];
-  // Progression: a car unlocks when your best single run reaches its distance (the last one at 65 km), and each later car
+  // Progression: a car unlocks when your best single run reaches its distance (gaps widen on the way to the 80 km finish;
+  // the last one at 76 km), and each later car
   // is quicker than the ones before it — top speed, pull and grip climb with the distance while every car keeps its
   // character. drive: 'rwd' = 후륜 (stamp on it and the nose lifts), 'awd' = 4륜 (puts the power down cleanly).
   //   name: [unlock m, top km/h, accel, grip, drive, roof-down top speed]
   const TUNE = {
-    '리겔 GT': [0, 300, 0.92, 0.92, 'rwd', 275], '레굴루스 S': [0, 295, 0.9, 0.92, 'rwd', 270], '베텔게우스 427': [1500, 290, 0.95, 0.8, 'rwd'],
-    '데네브 66': [3000, 300, 0.96, 0.84, 'rwd'], '오리온 SR': [4500, 302, 0.98, 1.0, 'rwd'], '알타이르 R': [6000, 305, 1.0, 0.98, 'awd'],
-    '페가수스 GT': [8000, 334, 1.0, 1.0, 'awd'], '카노푸스 SS': [10000, 315, 1.03, 0.86, 'rwd', 290], '안드로메다 RT': [12500, 318, 1.04, 1.1, 'rwd'],
-    '알골 SS': [15500, 320, 1.02, 0.9, 'rwd'], '로켓 머슬 MK': [18500, 318, 1.04, 0.9, 'rwd'], '벨라트릭스 RS': [22000, 322, 1.06, 1.15, 'rwd'],
-    '헬릭스 GTS': [26000, 332, 1.09, 1.02, 'rwd', 300], '스피카 SC': [30000, 330, 1.1, 0.98, 'rwd'], '리가 TR': [34500, 340, 1.12, 1.18, 'awd'],
-    '알데바란 GTS': [39500, 335, 1.08, 1.0, 'rwd', 305], '폴룩스 GT': [45000, 345, 1.1, 1.04, 'awd'], '프로키온 TR': [50000, 352, 1.16, 1.2, 'awd'],
-    '카스토르 LM': [54000, 362, 1.18, 1.25, 'awd'], '안타레스 V12': [57000, 378, 1.15, 1.08, 'awd'], '시리우스 XR': [60000, 395, 1.24, 1.3, 'awd'],
-    '미라지 V6': [7000, 316, 1.02, 1.02, 'rwd'], '버팔로 머슬': [14000, 322, 1.04, 0.9, 'rwd'], '오로라 V12': [42000, 342, 1.09, 1.02, 'awd'],
-    '엘나트 SS': [17000, 321, 1.03, 0.92, 'rwd', 296],
-    '플럭스 로드스터': [65000, 370, 1.05, 1.2, 'awd'],
+    '리겔 GT': [0, 300, 0.92, 0.92, 'rwd', 275], '레굴루스 S': [0, 295, 0.9, 0.92, 'rwd', 270], '베텔게우스 427': [1000, 290, 0.95, 0.8, 'rwd'],
+    '데네브 66': [2000, 300, 0.96, 0.84, 'rwd'], '오리온 SR': [3500, 302, 0.98, 1.0, 'rwd'], '알타이르 R': [5500, 305, 1.0, 0.98, 'awd'],
+    '페가수스 GT': [10000, 334, 1.0, 1.0, 'awd'], '카노푸스 SS': [12500, 315, 1.03, 0.86, 'rwd', 290], '안드로메다 RT': [15500, 318, 1.04, 1.1, 'rwd'],
+    '알골 SS': [21500, 320, 1.02, 0.9, 'rwd'], '로켓 머슬 MK': [28000, 318, 1.04, 0.9, 'rwd'], '벨라트릭스 RS': [31000, 322, 1.06, 1.15, 'rwd'],
+    '헬릭스 GTS': [35000, 332, 1.09, 1.02, 'rwd', 300], '스피카 SC': [38500, 330, 1.1, 0.98, 'rwd'], '리가 TR': [42000, 340, 1.12, 1.18, 'awd'],
+    '알데바란 GTS': [46000, 335, 1.08, 1.0, 'rwd', 305], '폴룩스 GT': [54000, 345, 1.1, 1.04, 'awd'], '프로키온 TR': [58500, 352, 1.16, 1.2, 'awd'],
+    '카스토르 LM': [62500, 362, 1.18, 1.25, 'awd'], '안타레스 V12': [67000, 378, 1.15, 1.08, 'awd'], '시리우스 XR': [71500, 395, 1.24, 1.3, 'awd'],
+    '미라지 V6': [8000, 316, 1.02, 1.02, 'rwd'], '버팔로 머슬': [18500, 322, 1.04, 0.9, 'rwd'], '오로라 V12': [50000, 342, 1.09, 1.02, 'awd'],
+    '엘나트 SS': [24500, 321, 1.03, 0.92, 'rwd', 296],
+    '플럭스 로드스터': [76000, 370, 1.05, 1.2, 'awd'],
   };
   for (const c of CARS) {
     const t = TUNE[c.name]; if (!t) { c.unlock = c.unlock || 0; c.drive = c.drive || 'rwd'; continue; }
@@ -5819,6 +5855,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const NITRO_C = [
     { n: '기본 오렌지', hex: 0xff7a1a, m: 0 }, { n: '레드', hex: 0xff2a2a, m: 1500 }, { n: '라임', hex: 0x7dff3a, m: 5000 },
     { n: '아이스', hex: 0x7fe2ff, m: 10000 }, { n: '핫 핑크', hex: 0xff3ea5, m: 20000 }, { n: '골드', hex: 0xffd23a, m: 35000 },
+    { n: '퍼플', hex: 0xa45bff, m: 55000 }, { n: '플래티넘', hex: 0xeef3ff, m: 80000 },
   ];
   const nitroOpen = i => bestDist >= NITRO_C[i].m;
   let nitroIdx = 0; try { nitroIdx = clamp(parseInt(localStorage.getItem('nh3d-nitro'), 10) || 0, 0, NITRO_C.length - 1); } catch (e) {}
@@ -5911,7 +5948,6 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     return { s: G.a[i] / 10, x: G.a[i + 1] / 100 };
   }
   let ghostPick = 'off', friendGhost = null, lastDuel = null;     // the ghost is shown only when you pick one
-  try { const p = localStorage.getItem('nh3d-gpick'); if (p === 'mine' || p === 'friend' || p === 'off') ghostPick = p; } catch (e) {}
   try { const o = JSON.parse(localStorage.getItem('nh3d-friend') || 'null'); if (o && Array.isArray(o.a) && o.a.length > 3) friendGhost = o; } catch (e) {}
   const activeGhost = () => ghostPick === 'friend' && friendGhost ? friendGhost : ghostPick === 'mine' && ghostBest.a.length > 3 ? ghostBest : null;
   // your personal ID: six characters, made once and kept on this device
@@ -6191,6 +6227,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     ach: {}, title: null, login: { day: -1, streak: 0 }, deco: { own: {}, on: {} }, seen: {} };
   try { const o = JSON.parse(localStorage.getItem('nh3d-meta') || 'null'); if (o && typeof o === 'object') { Object.assign(meta, o); meta.tot = Object.assign({ dist: 0, runs: 0, take: 0, cops: 0, near: 0, rolls: 0, perfect: 0, escapes: 0, boom: 0, deer: 0 }, o.tot || {}); meta.deco = Object.assign({ own: {}, on: {} }, o.deco || {}); } } catch (e) {}
   const saveMeta = () => { try { localStorage.setItem('nh3d-meta', JSON.stringify(meta)); } catch (e) {} };
+  const FINISH_M = 80000;                                       // the ending: one run of 80 km
   let runDeer = 0, runBoom = 0, run100 = false;
 
   // ── car levels: every 5 km driven in a car is a level (max 10); each level adds 0.6 % top speed, pull and grip ──
@@ -6204,7 +6241,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     ['d5', '동네 한 바퀴', '한 판에 5km', (t, r) => r.dist >= 5000],
     ['d20', '고속도로 주행자', '한 판에 20km', (t, r) => r.dist >= 20000],
     ['d50', '장거리 운전자', '한 판에 50km', (t, r) => r.dist >= 50000],
-    ['d100', '전설의 100km', '한 판에 100km 완주', (t, r) => r.dist >= 100000],
+    ['d100', '전설의 80km', '한 판에 80km 완주', (t, r) => r.dist >= FINISH_M],
     ['t100', '누적 100km', '모든 판 합쳐서 100km', t => t.dist >= 100000],
     ['take50', '파괴왕', '테이크다운 누적 50번', t => t.take >= 50],
     ['cop20', '경찰 사냥꾼', '경찰차 테이크다운 누적 20번', t => t.cops >= 20],
@@ -6310,8 +6347,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const endMsg = $('endMsg');
   function finale() {
     run100 = true; fwShow = 9; fwNext = 0;
-    addCombo(50000, '🏁 100km 완주!', 'var(--ok)'); meta.coins += 1000; meta.earned += 1000; saveMeta();
-    endMsg.querySelector('b').textContent = '🏁 100km 완주!';
+    addCombo(50000, '🏁 80km 완주!', 'var(--ok)'); meta.coins += 1000; meta.earned += 1000; saveMeta();
+    endMsg.querySelector('b').textContent = '🏁 80km 완주!';
     endMsg.querySelector('small').textContent = '엔딩이에요. 그래도 계속 달릴 수 있어요 · 🪙 +1000';
     endMsg.hidden = false; endMsg.style.animation = 'none'; void endMsg.offsetWidth; endMsg.style.animation = '';
     setTimeout(() => { endMsg.hidden = true; }, 6500);
@@ -6359,7 +6396,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function metaStart() { if (duel) popup(`👥 P${duel.turn} 차례!`, 'var(--lamp)'); }
   function metaFrame(dt) {
     showDeco(); updateFireworks(dt);
-    if (state === 'play' && !run100 && dist >= 100000) finale();
+    if (state === 'play' && !run100 && dist >= FINISH_M && !MP) finale();
   }
 
   // ── the 🏅 panel: achievements and titles · garage shop · login streak ──
@@ -6517,7 +6554,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }));
   }
   function syncLoginBtn() {
-    loginBtn.hidden = !fbHere;
+    loginBtn.hidden = !fbHere; syncGate(); syncWho();
     const u = fb.user;
     loginBtn.textContent = u ? `👤 ${(u.displayName || '내 계정').split(' ')[0].slice(0, 8)} · 로그아웃` : fb.ready ? '🔑 구글 로그인' : '🔑 로그인 준비 중…';
   }
@@ -6528,16 +6565,36 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (Date.now() - logoutArm > 3000) { logoutArm = Date.now(); loginBtn.textContent = '한 번 더 누르면 로그아웃'; return; }
       await fbSaveNow(); await fb.U.signOut(fb.auth); try { localStorage.removeItem('nh3d-sync-at'); } catch (e) {} location.reload(); return;
     }
-    const prov = new fb.U.GoogleAuthProvider();
+    doLogin();
+  });
+  async function doLogin() {
+    if (!fb.ready || fb.user) return;
+    const prov = new fb.U.GoogleAuthProvider(), say = m => { gateMsg.textContent = m; popup(m, 'var(--brake)'); };
     try { await fb.U.signInWithPopup(fb.auth, prov); }
     catch (e) {
       const c = (e && e.code) || '';
       if (/popup-blocked|operation-not-supported|cancelled-popup-request/.test(c)) fb.U.signInWithRedirect(fb.auth, prov);
-      else if (/unauthorized-domain/.test(c)) popup('이 주소는 아직 로그인 허용 목록에 없어요', 'var(--brake)');
-      else if (!/popup-closed-by-user/.test(c)) popup('로그인 실패: ' + c, 'var(--brake)');
+      else if (/unauthorized-domain/.test(c)) say('이 주소는 아직 로그인 허용 목록에 없어요 (Firebase 승인된 도메인)');
+      else if (!/popup-closed-by-user/.test(c)) say('로그인 실패: ' + c);
     }
-  });
-  if (fbHere) { syncLoginBtn(); fbLoad().catch(() => { loginBtn.hidden = true; }); }
+  }
+  // ── the login screen in front of everything on the web address; the game waits behind it ──
+  const gate = $('gate'), gateBtn = $('gateBtn'), gateMsg = $('gateMsg'), gateSkip = $('gateSkip');
+  let gateFail = false, gateSkipped = false;
+  function syncGate() {
+    const show = fbHere && !gateSkipped && !fb.user;
+    gate.hidden = !show; if (!show) return;
+    gateBtn.disabled = !fb.ready; gateBtn.textContent = fb.ready ? 'G  구글로 로그인' : gateFail ? '로그인할 수 없어요' : '로그인 준비 중…';
+    gateSkip.hidden = !gateFail;
+  }
+  gateBtn.addEventListener('click', doLogin);
+  gateSkip.addEventListener('click', () => { gateSkipped = true; syncGate(); });
+  window.addEventListener('keydown', e => { if (!gate.hidden) e.stopPropagation(); }, true);   // no driving off behind the login screen
+  // ── signed in: your nickname bottom-left on the garage and results screens ──
+  const whoEl = $('whoBadge');
+  function syncWho() { const on = !!fb.user; whoEl.hidden = !on; if (on) whoEl.textContent = '👤 ' + (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버'); }
+  setInterval(() => { if (fb.user) syncWho(); }, 1500);           // follows nickname changes
+  if (fbHere) { syncLoginBtn(); fbLoad().catch(() => { loginBtn.hidden = true; gateFail = true; gateMsg.textContent = '로그인 서비스에 연결하지 못했어요. 인터넷을 확인하고 새로고침해 주세요.'; syncGate(); }); }
 
   // ── cloud save: every nh3d-* setting and record (not the ghost replay) under users/<uid>/save ──
   const SAVE_SKIP = /^nh3d-(mp-next|ghost|friend|sync-at)$/;
@@ -6583,11 +6640,11 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   //    lane, so the road always matches. Transport: PeerJS (WebRTC, the room code is the host's id) wherever the page can
   //    reach it — the GitHub page or the file — and the claude.ai room capability as a fallback. No server state is kept. ──
   const mpBtn = $('mpBtn'), mpM = $('mpM'), mpBox = $('mpBox'), chMp = $('chMp'), mpNote = $('mpNote'), mpCodeEl = $('mpCode');
-  const RACE_M = 5000, MAX_P = 8;
+  const RACE_M = 10000, MAX_P = 8;
   const newCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 5; i++) s += A[Math.floor(Math.random() * A.length)]; return s; };
   const cleanCode = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
-  function goRoom(code) {                                     // the road is built for the mode, so a room needs a fresh page
-    try { localStorage.setItem('nh3d-mp-next', JSON.stringify({ code })); } catch (e) {}
+  function goRoom(code, pw = '', make = false) {             // the road is built for the mode, so a room needs a fresh page
+    try { localStorage.setItem('nh3d-mp-next', JSON.stringify({ code, pw: String(pw || '').slice(0, 12), make })); } catch (e) {}
     try { history.replaceState(null, '', location.pathname + location.search + (code ? '#room=' + code : '')); } catch (e) { try { location.hash = code ? 'room=' + code : ''; } catch (x) {} }
     location.reload();
   }
@@ -6597,13 +6654,41 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   mpBtn.addEventListener('click', () => {
     if (MP) { leaveRoom(); return; }
     if (state !== 'ready' && state !== 'over') return;
-    mpNote.textContent = ''; mpCodeEl.value = ''; mpM.hidden = false;
+    mpNote.textContent = ''; mpCodeEl.value = ''; $('mpJoinPw').value = ''; $('mpPw').value = ''; mpM.hidden = false; lobbyOpen();
   });
-  $('mpClose').addEventListener('click', () => { mpM.hidden = true; });
-  mpM.addEventListener('click', e => { if (e.target === mpM) mpM.hidden = true; });
-  $('mpMake').addEventListener('click', () => goRoom(newCode()));
-  $('mpJoin').addEventListener('click', () => { const c = cleanCode(mpCodeEl.value); if (c.length < 4) { mpNote.textContent = '방 코드를 4~8자로 넣어 주세요'; return; } goRoom(c); });
-  mpCodeEl.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') $('mpJoin').click(); });
+  const mpHide = () => { mpM.hidden = true; lobbyClose(); };
+  $('mpClose').addEventListener('click', mpHide);
+  mpM.addEventListener('click', e => { if (e.target === mpM) mpHide(); });
+  $('mpMake').addEventListener('click', () => goRoom(newCode(), $('mpPw').value.trim(), true));
+  $('mpJoin').addEventListener('click', () => { const c = cleanCode(mpCodeEl.value); if (c.length < 4) { mpNote.textContent = '방 코드를 4~8자로 넣어 주세요'; return; } goRoom(c, $('mpJoinPw').value.trim()); });
+  for (const id of ['mpCode', 'mpJoinPw', 'mpPw']) $(id).addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') (id === 'mpPw' ? $('mpMake') : $('mpJoin')).click(); });
+
+  // ── the open-room list (lobby/<code> in the database, kept fresh by each room's host) ──
+  const mpRooms = $('mpRooms');
+  let lobbyOff = null, srvOff = 0;
+  const srvNow = () => Date.now() + srvOff;
+  function lobbyOpen() {
+    if (!fbHere || !fb.user) { mpRooms.innerHTML = `<li class="empty">${fbHere ? '구글 로그인하면 지금 열린 방이 보여요' : '열린 방 목록은 게임의 GitHub 주소에서 볼 수 있어요. 코드로는 들어갈 수 있어요'}</li>`; return; }
+    const { D, db } = fb;
+    D.onValue(D.ref(db, '.info/serverTimeOffset'), s => { srvOff = +s.val() || 0; });
+    const r = D.ref(db, 'lobby');
+    const cb = s => {
+      const all = s.exists() ? Object.entries(s.val()) : [], now = srvNow();
+      const rows = all.filter(([c, o]) => o && /^[A-Z0-9]{4,8}$/.test(c) && +o.at > now - 20000).sort((a, b) => (b[1].n || 0) - (a[1].n || 0));
+      const html = rows.length ? rows.map(([c, o]) => {
+        const n = Math.max(1, Math.min(MAX_P, +o.n || 1)), full = n >= MAX_P;
+        return `<li><span class="nm">${o.lock ? '🔒 ' : ''}${esc(String(o.name || c).slice(0, 24))}</span><span class="meta">${n}/${MAX_P}${o.racing ? ' · 레이스 중' : ''}</span><button data-c="${c}" data-l="${o.lock ? 1 : 0}"${full ? ' disabled' : ''}>${full ? '꽉 참' : '참가'}</button></li>`;
+      }).join('') : '<li class="empty">지금 열린 방이 없어요. 방을 만들어 보세요!</li>';
+      if (html !== mpRooms.dataset.h) { mpRooms.dataset.h = html; mpRooms.innerHTML = html; }   // untouched unless something changed
+    };
+    lobbyOff = D.onValue(r, cb);
+  }
+  function lobbyClose() { if (lobbyOff) { try { lobbyOff(); } catch (e) {} lobbyOff = null; } }
+  mpRooms.addEventListener('click', e => {
+    const b = e.target.closest('button[data-c]'); if (!b || b.disabled) return;
+    if (b.dataset.l === '1') { mpCodeEl.value = b.dataset.c; $('mpJoinPw').focus(); mpNote.textContent = '🔒 비밀번호가 있는 방이에요. 비밀번호를 넣고 참가를 눌러 주세요'; return; }
+    goRoom(b.dataset.c);
+  });
 
   // ── the network ──
   // Two kinds of message. Position: [sp, px, hd, speed, dist, state, sentAt] about 15 times a second, on an unreliable
@@ -6661,6 +6746,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       c.on('data', d => {
         if (!d || typeof d !== 'object') return;
         if (d.q) { applyQ(c.peer, d.q); relay({ id: c.peer, q: d.q }, c.peer); }
+        if (d.h && typeof d.h === 'object') { const h = { ...d.h, f: c.peer }; if (h.to === net.me) takeHit(h); else sendTo(conns.get(h.to), { h }); }
         if (d.i) { applyI(c.peer, d.i); relay({ id: c.peer, i: d.i }, c.peer); uiT = Math.min(uiT, 0.05); }
       });
       const gone = () => { if (!conns.has(c.peer)) return; conns.delete(c.peer); delete net.peers[c.peer]; relay({ id: c.peer, gone: 1 }); dropCar(c.peer); uiT = 0; };
@@ -6685,6 +6771,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         if (d.gone) { delete net.peers[d.id]; dropCar(d.id); uiT = 0; return; }
         if (d.i) { applyI(d.id, d.i); uiT = Math.min(uiT, 0.05); }
         if (d.q) applyQ(d.id, d.q);
+        if (d.h && d.h.to === net.me) takeHit(d.h);
       });
       c.on('close', () => { if (peer === p) hostLost(); });
       c.on('error', () => { if (peer === p && !c.open) hostLost(); });
@@ -6724,9 +6811,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   //    Database. Every player talks to Google's servers, so it works on any network; leaving removes your entries. ──
   let fbRefs = null;
   const clean = o => JSON.parse(JSON.stringify(o));           // the database refuses undefined
+  let needPw = false;
   async function fbRoom() {
     const { D, db, user } = fb, uid = user.uid, base = `rooms/${MP.code}`;
     const infoAll = D.ref(db, `${base}/info`), posAll = D.ref(db, `${base}/pos`);
+    // membership: the database lets you into a locked room only when members/<you> holds its password
+    if (MP.make && MP.pw) { try { await D.set(D.ref(db, `roompw/${MP.code}`), MP.pw); } catch (e) {} }
+    try { await D.set(D.ref(db, `${base}/members/${uid}`), MP.pw || ''); needPw = false; }
+    catch (e) { net.mode = 'fb'; needPw = true; setMsg(MP.pw ? '🔒 비밀번호가 틀렸어요' : '🔒 비밀번호가 있는 방이에요'); return true; }
     try {
       const snap = await D.get(infoAll), others = snap.exists() ? Object.keys(snap.val()).filter(k => k !== uid).length : 0;
       if (others >= MAX_P) { net.mode = 'fb'; setMsg('방이 꽉 찼어요 (최대 8명)'); return true; }
@@ -6739,6 +6831,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     D.onChildAdded(infoAll, onI); D.onChildChanged(infoAll, onI);
     D.onChildRemoved(infoAll, s => { delete net.peers[s.key]; dropCar(s.key); uiT = 0; });
     D.onChildAdded(posAll, onQ); D.onChildChanged(posAll, onQ);
+    const myHits = D.ref(db, `${base}/hits/${uid}`);
+    D.onChildAdded(myHits, s => { const h = s.val(); D.remove(D.ref(db, `${base}/hits/${uid}/${s.key}`)).catch(() => {}); if (h && Date.now() - (+h.at || 0) < 6000) takeHit(h); });
     D.onValue(D.ref(db, '.info/connected'), s => { const on = !!s.val(); net.ok = on; setMsg(on ? '' : '연결이 끊겼어요. 다시 연결하는 중…'); if (on) { D.onDisconnect(infoRef).remove(); D.onDisconnect(posRef).remove(); infoKey = ''; } });
     window.addEventListener('pagehide', () => { try { D.remove(infoRef); D.remove(posRef); } catch (e) {} });
     return true;
@@ -6798,7 +6892,55 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (state !== 'ready' && state !== 'over' && state !== 'offer' && state !== 'play' && state !== 'crash') return;
     custEl && !custEl.hidden && closeCustom();
     for (const m of document.querySelectorAll('.rank')) m.hidden = true;
-    joinRace(id); mpForce = true; start(); popup('🏁 레이스 시작! 5km 먼저 가면 승리', 'var(--lamp)');
+    joinRace(id); mpForce = true; start(); popup('🏁 레이스 시작! 10km 먼저 가면 승리 · T 충격파', 'var(--lamp)');
+  }
+
+  // ── attacks: ram another car, or press T for a shockwave that throws nearby cars aside ──
+  const WAVE_CD = 8, WAVE_S = 14, WAVE_X = 5.5;
+  let waveCd = 0, hitFx = 0;
+  const ramCd = {};
+  function sendHit(to, k, d, p) {
+    const h = { to, k, d: d < 0 ? -1 : 1, p: Math.round(clamp(p, 0, 200)), at: Date.now() };
+    if (net.mode === 'pj' && net.ok) { if (net.host) sendTo(conns.get(to), { h: { ...h, f: net.me } }); else sendTo(hostConn, { h }); }
+    else if (net.mode === 'fb' && net.ok && fb.D) fb.D.push(fb.D.ref(fb.db, `rooms/${MP.code}/hits/${to}`), { ...h, f: net.me }).catch(() => {});
+  }
+  function takeHit(h) {                                        // someone hit me
+    if (state !== 'play' || !h || typeof h !== 'object') return;
+    const p = clamp(+h.p || 40, 10, 160), d = +h.d < 0 ? -1 : 1, from = net.peers[h.f], who = from && from.st.n ? from.st.n : '누군가';
+    speed *= clamp(1 - p / 220, 0.45, 0.88); hd = clamp(hd + d * (0.18 + p / 400), -1.1, 1.1); px = clamp(px + d * 0.6, -X_LIMIT, X_LIMIT);
+    hurt(clamp(p / 7, 3, 16)); shake = Math.max(shake, 0.25 + p / 300); sfx.crash(0.3 + p / 300); sparksAt(px - d * 0.9, 0, 18, false);
+    hitFx = 0.5; popup(h.k === 'wave' ? `💥 ${who}의 충격파!` : `💥 ${who}에게 들이받혔어요!`, 'var(--brake)');
+  }
+  function shockwave() {
+    if (!MP || state !== 'play' || waveCd > 0 || !net.ok) return;
+    waveCd = WAVE_CD; let n = 0;
+    for (const [id, r] of rCars) {
+      if (!r.g.visible || r.s === null) continue;
+      const ds = r.s - sp, dx = r.x - px;
+      if (Math.abs(ds) < WAVE_S && Math.abs(dx) < WAVE_X) { sendHit(id, 'wave', dx || 1, 70); n++; }
+    }
+    sfx.whoosh(); sfx.thud(0.8); shake = Math.max(shake, 0.2); sparksAt(px - 2, 0, 16, true); sparksAt(px + 2, 0, 16, true);
+    popup(n ? `💥 충격파! ${n}대 명중` : '💥 충격파! (빗나감)', n ? 'var(--ok)' : 'var(--muted)');
+  }
+  function ramCheck(dt) {                                       // bumping another car: whoever drives into the other does the damage
+    for (const k in ramCd) ramCd[k] -= dt;
+    if (state !== 'play' || airborne) return;
+    for (const [id, r] of rCars) {
+      if (!r.g.visible || r.s === null || (ramCd[id] || 0) > 0) continue;
+      const ds = r.s - sp, dx = r.x - px, e = net.peers[id]; if (!e) continue;
+      if (Math.abs(ds) > 4.6 || Math.abs(dx) > 2.1) continue;
+      const rear = ds > 0 && speed > e.st.v + 6, side = Math.abs(ds) < 3 && Math.sign(dx) * vx > 1.5;
+      if (!rear && !side) continue;
+      const p = rear ? speed - e.st.v : Math.abs(vx) * 12;
+      ramCd[id] = 1.2; sendHit(id, 'ram', dx || 1, p);
+      speed *= rear ? 0.9 : 0.96; px = clamp(px - Math.sign(dx || 1) * 0.35, -X_LIMIT, X_LIMIT);
+      sfx.crash(0.35); shake = Math.max(shake, 0.18); sparksAt(px + Math.sign(dx || 1) * 0.9, 0, 14, false);
+      popup(`💥 ${e.st.n || '상대'} 들이받기!`, 'var(--ok)');
+    }
+  }
+  if (MP) {
+    window.addEventListener('keydown', e => { if (e.code === 'KeyT' && !e.repeat && state === 'play') { e.preventDefault(); shockwave(); } });
+    const tb = $('tatk'); if (tb) { tb.hidden = false; tb.addEventListener('pointerdown', e => { e.preventDefault(); shockwave(); }); }
   }
 
   // ── standings ──
@@ -6813,7 +6955,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const rank = e => e.st.f ? [0, e.st.f] : (e.st.st === 'play' || e.st.st === 'count' || e.st.st === 'pause') ? [1, -e.st.d] : [2, -e.st.d];
     return rs.sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
   }
-  const statusOf = st => st.f ? `🏁 ${fmtT(st.f)}` : st.st === 'play' || st.st === 'pause' ? `${(st.d / 1000).toFixed(2)}km` : st.st === 'count' ? '출발 준비' : st.st === 'crash' || st.st === 'over' || st.st === 'offer' ? (st.r ? `탈락 ${(st.d / 1000).toFixed(2)}km` : '대기') : '차고';
+  const statusOf = st => st.f ? `🏁 ${fmtT(st.f)}` : st.st === 'play' || st.st === 'pause' ? `${(st.d / 1000).toFixed(2)}km` : st.st === 'count' ? '출발 준비' : st.st === 'crash' || st.st === 'over' || st.st === 'offer' ? (st.r ? `뷰응신 ${(st.d / 1000).toFixed(2)}km` : '대기') : '차고';
 
   // ── the room box in the garage / results, the chip while driving ──
   let boxKey = '', lastGo = '';
@@ -6832,11 +6974,16 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         boxKey = key;
         mpBox.innerHTML = `<div class="mp-top">🌐 방 코드 <b class="code">${MP.code}</b> · ${n}/${MAX_P}명 <button id="mpCopy">코드 복사</button>${share}<button id="mpLeave">나가기</button></div>`
           + (net.msg ? `<span class="mp-msg">${esc(net.msg)}</span>` : `<span class="mp-msg">${host ? '👑 방장이에요. 출발을 누르면 모두 같이 출발해요.' : '방장이 출발하면 같이 출발해요.'}</span>`)
+          + (needPw ? `<div class="mp-pw"><input id="mpPwIn" maxlength="12" placeholder="방 비밀번호" autocomplete="off"><button id="mpPwGo">입장</button></div>` : '')
           + `<ol>${rows}</ol><label class="mp-nick">닉네임 <input id="mpNick" maxlength="12" value="${esc(nick)}" placeholder="드라이버"></label>`;
         const cp = async (t, ok) => { try { await navigator.clipboard.writeText(t); setMsg(ok); } catch (e) { setMsg(t); } };
         $('mpCopy').onclick = () => cp(MP.code, '코드를 복사했어요! 친구에게 보내 주세요');
         if ($('mpLink')) $('mpLink').onclick = () => cp(location.origin + location.pathname + '#room=' + MP.code, '링크를 복사했어요! 친구가 누르면 바로 이 방으로 들어와요');
         $('mpLeave').onclick = leaveRoom;
+        if (needPw) {
+          const pi = $('mpPwIn'), go = () => { MP.pw = pi.value.trim(); setMsg('확인하는 중…'); fbRoom(); };
+          $('mpPwGo').onclick = go; pi.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') go(); });
+        }
         const ni = $('mpNick'); ni.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') ni.blur(); });
         ni.addEventListener('change', () => { saveNick(ni.value); try { nickEl.value = nick; } catch (e) {} boxKey = ''; });
       }
@@ -6845,7 +6992,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (go && go !== lastGo) { lastGo = go; goBtn.textContent = go; }
       goBtn.disabled = !!go && !host;
       if (raceNow && state === 'over') {                        // results: my place
-        const pl = list.findIndex(e => e.me) + 1, t = myFin ? `🏁 ${pl}위로 완주! (${fmtT(myFin)})` : `탈락 · ${pl}위`;
+        const pl = list.findIndex(e => e.me) + 1, t = myFin ? (pl === 1 ? `🏆 우승! (${fmtT(myFin)})` : `🏁 ${pl}위 완주 (${fmtT(myFin)})`) : '뷰응신';
         if (ovTitle.textContent !== t) ovTitle.textContent = t;
       }
     } else { lastGo = ''; goBtn.disabled = false; }
@@ -6854,7 +7001,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     chMp.hidden = !driving;
     if (driving) {
       let t = `🌐 ${n}명`;
-      if (myRace) { const sd = standings(myRace), pl = sd.findIndex(e => e.me) + 1; t = `🏁 ${pl}위/${sd.length} · 남은 ${Math.max(0, (RACE_M - dist) / 1000).toFixed(2)}km`; }
+      if (myRace) { const sd = standings(myRace), pl = sd.findIndex(e => e.me) + 1; t = `🏁 ${pl}위/${sd.length} · 남은 ${Math.max(0, (RACE_M - dist) / 1000).toFixed(2)}km · ${waveCd > 0 ? '💥 ' + Math.ceil(waveCd) + 's' : '💥 T 준비'}`; }
       if (chMp.textContent !== t) chMp.textContent = t;
     }
   }
@@ -6920,6 +7067,20 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const lg = new THREE.Group(); lg.add(line); atTrack(lg, 6, 0);
   }
 
+  // the host keeps this room on the open-room list; the entry disappears when the host leaves
+  let lobbyDis = false;
+  if (MP) setInterval(lobbyTick, 4000);                         // wall-clock, whatever the frame rate
+  function lobbyTick() {
+    if (net.mode !== 'fb' || !net.ok || !fb.user) return;
+    const { D, db } = fb, ref = D.ref(db, `lobby/${MP.code}`);
+    if (iAmHost()) {
+      const n = 1 + Object.keys(net.peers).length, racing = !!(myRace && (state === 'play' || state === 'count' || state === 'pause'));
+      D.set(ref, { name: `${myName()}의 방`.slice(0, 24), n, lock: !!MP.pw, racing, at: D.serverTimestamp(), by: fb.user.uid })
+        .then(() => { if (!lobbyDis) { lobbyDis = true; D.onDisconnect(ref).remove(); } }).catch(() => {});
+    } else if (lobbyDis) { lobbyDis = false; try { D.onDisconnect(ref).cancel(); } catch (e) {} }
+  }
+  window.addEventListener('pagehide', () => { if (lobbyDis && fb.D) try { fb.D.remove(fb.D.ref(fb.db, `lobby/${MP.code}`)); } catch (e) {} });
+
   // ── every frame ──
   function mpFrame(dt) {
     if (!MP) return;
@@ -6938,7 +7099,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const racing = state === 'play' || state === 'count' || state === 'pause' || state === 'crash';
     posT -= dt; if (posT <= 0) { posT = !racing ? 1 : net.mode === 'fb' ? 0.1 : POS_GAP; sendPos(); }   // in the garage once a second; the database ten a second
     infoT -= dt; const ik = JSON.stringify(myInfo()); if (ik !== infoKey || infoT <= 0) { infoKey = ik; infoT = INFO_GAP; sendInfo(); }
-    updateRemote(dt);
+    updateRemote(dt); ramCheck(dt); if (waveCd > 0) waveCd = Math.max(0, waveCd - dt);
     uiT -= dt; if (uiT <= 0) { uiT = 0.4; renderMp(); }
   }
 
@@ -7352,7 +7513,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const carsM = $('carsM'), carsA = $('carsA'), garageEl = $('garage');
   let thumbs = [];
   const pickBtn = $('pickBtn');
-  function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = !(show && (state === 'over' || state === 'offer')); }   // after a wreck: pick another car
+  function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); $('homeBtn').hidden = !(show && state === 'pause'); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = !(show && (state === 'over' || state === 'offer')); }   // after a wreck: pick another car
   const statRow = (label, v) => `<span>${label}</span><u style="--v:${Math.round(clamp(v, 0.06, 1) * 100)}%"></u>`;
   const cardHtml = (c, i) => { const open = isUnlocked(i), tr = !open && trialCar(i); return `<button class="car${open ? '' : tr ? ' trial' : ' locked'}" data-i="${i}" aria-pressed="${i === carIdx}"${open ? '' : ` aria-label="${c.name} 잠김, ${needShort(c)} 달성 시 해금"`}>
       ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>
@@ -7475,6 +7636,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
   }
   goBtn.addEventListener('click', () => { if (state === 'pause') pause(); else if (state === 'offer') gameOver(); else start(); });
+  const homeBtn = $('homeBtn');
+  homeBtn.addEventListener('click', () => {                    // paused: drop this run and go back to the garage
+    if (state !== 'pause') return;
+    stage.classList.remove('paused'); gp(false);
+    resetRun(); missions = []; state = 'ready'; toGarage(); renderCars();
+    goBtn.textContent = '출발'; ovTitle.textContent = '야간 고속도로'; ovText.textContent = '홈으로 돌아왔어요. 차를 고르고 출발하세요.'; showMenu(true); goBtn.focus();
+  });
   shiftSvg.addEventListener('pointerdown', e => { const t = e.target.closest('.hit'); if (!t) return; e.preventDefault(); selectGear(t.dataset.g); });
 
   // Keys: WASD drive, Shift/Space drift, arrow keys ↑↓ change gear (automatics too: paddle shifts), Q sport mode, E nitro
