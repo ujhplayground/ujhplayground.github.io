@@ -6898,7 +6898,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     hostRace = Date.now(); joinRace(hostRace); return true;
   }
   function joinRace(id) {
-    myRace = id; myFin = 0; raceT0 = 0;
+    myRace = id; myFin = 0; raceT0 = 0; winSeenAt = 0;
     const he = hostEntry(), hid = net.mode === 'pj' ? hostId() : iAmHost() ? net.me : ((Object.entries(net.peers).find(([, e]) => e === he) || [''])[0]);
     const ids = [net.me, ...Object.keys(net.peers)].sort((a, b) => (b === hid) - (a === hid) || (a < b ? -1 : 1)); slot = Math.max(0, ids.indexOf(net.me));   // the host takes pole
   }
@@ -7026,6 +7026,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (driving) {
       let t = `🌐 ${n}명`;
       if (myRace) { const sd = standings(myRace), pl = sd.findIndex(e => e.me) + 1; t = `🏁 ${pl}위/${sd.length} · 남은 ${Math.max(0, (RACE_M - dist) / 1000).toFixed(2)}km · ${waveCd > 0 ? '💥 ' + Math.ceil(waveCd) + 's' : '💥 T 준비'}`; }
+      if (winSeenAt && !myFin) t = `⏱ 리타이어까지 ${Math.max(0, Math.ceil((CUTOFF_MS - (performance.now() - winSeenAt)) / 1000))}초 · ` + t;
       if (chMp.textContent !== t) chMp.textContent = t;
     }
   }
@@ -7106,7 +7107,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   window.addEventListener('pagehide', () => { if (lobbyDis && fb.D) try { fb.D.remove(fb.D.ref(fb.db, `lobby/${MP.code}`)); } catch (e) {} });
 
   // ── the winner's moment: fireworks, confetti, flames and a pulsing 🏆 ──
-  let overAt = 0, overMax = 0, pauseT = 0, carFixed = false, stopV = 0, stopHold = 0;
+  let overAt = 0, overMax = 0, pauseT = 0, carFixed = false, stopV = 0, stopHold = 0, winSeenAt = 0;
+  const CUTOFF_MS = 10000;                                      // after the winner, ten seconds to finish
   const STOP_DECEL = 45;                                        // km/h shed per second after the finish line
   function confetti(n = 140) {
     const box = document.createElement('div'); box.className = 'confetti';
@@ -7199,6 +7201,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
     if (myFin && state === 'play' && stopV <= 0) stopHold -= dt;   // stopped: a moment to take it in
     if (overAt && performance.now() > overAt && ((stopV <= 0 && stopHold <= 0) || performance.now() > overMax)) { overAt = 0; if (state === 'play' || state === 'pause') { stage.classList.remove('paused'); crashMsg = '🏁 완주!'; gameOver(); uiT = 0; } }
+    // the winner is in: everyone else has ten seconds to cross the line, then they are out
+    if ((state === 'play' || state === 'pause' || state === 'count') && myRace && !myFin) {
+      if (!winSeenAt && Object.values(net.peers).some(e => e.st.r === myRace && e.st.f)) { winSeenAt = performance.now(); popup('🏁 우승자 도착! 10초 안에 들어오세요', 'var(--brake)'); sfx.beep(true); }
+      if (winSeenAt && performance.now() - winSeenAt > CUTOFF_MS) {
+        winSeenAt = 0; stage.classList.remove('paused'); if (state === 'pause') state = 'play';
+        crashMsg = '리타이어'; gameOver(); uiT = 0;
+      }
+    }
     // multi: a pause is not a hiding place — three seconds and the car blows up
     if (state === 'pause' && !myFin) {
       pauseT += dt; const left = Math.max(0, 3 - pauseT);
