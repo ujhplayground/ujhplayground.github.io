@@ -3877,7 +3877,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let sp = 0, vs = 0, hd = 0, slip = 0, steerIn = 0;                     // position along the track, along-track speed, heading vs. road, drift angle
   let gear = 1, rpm = 0.2, limiter = false, shiftCut = 0, neutral = true, lever = 'P', nRpm = 0.2, turboP = 0;
   let kick = 0, surgeT = 0, bogT = 0, launchT = 0, spinT = 0, countT = 0, squash = 0, apexDone = true;
-  let drifting = false, driftDir = 0, driftAmt = 0, driftTime = 0, driftTick = 0;
+  let drifting = false, driftDir = 0, driftAmt = 0, driftTime = 0, driftTick = 0, driftRec = 0;   // driftRec: the snap back straight after a drift
   let airborne = false, py = 0, vy = 0, airT = 0, rollAngle = 0, rollDir = 0, spinAngle = 0, spinDir = 0;
   let thrT = 3, thrPrev = false, attPitch = 0, dodgeT = 0, dodgeDir = 0, repairT = 0, clearStreak = 0;   // Roadster thrusters (3 s gauge), nose tilt in the air, dodge burst, emergency repair hold
   let score = 0, mult = 1, combo = 0, comboT = 0, maxMult = 1, crashT = 0, crashMsg = '';
@@ -3979,7 +3979,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // Drifting through a corner (and above all through a 360° spiral) pays far more than drifting on a straight
   function endDrift() {
     if (!drifting) return;
-    drifting = false;
+    drifting = false; driftRec = 0.9;
     if (driftTime > 0.8) addCombo(Math.round(driftTime * 100 * car.drift), `드리프트 ${driftTime.toFixed(1)}초`, 'var(--lamp)');
     driftTime = 0;
   }
@@ -4261,6 +4261,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (drifting) yaw += driftDir * 0.1 * car.drift * clamp(v / 20, 0, 1);
       hd += (yaw - k * v) * dt;
       if (!steerKey && !drifting) hd -= hd * Math.min(1, dt * 1.8);                 // light lane-keeping when the wheel is centred
+      if (driftRec > 0 && !drifting) { driftRec -= dt; hd -= hd * Math.min(1, dt * 3.5); }   // out of a drift: the car pulls itself straight, hard
       hd = clamp(hd, -1.15, 1.15);
     } else hd -= k * v * dt;
     if (drifting) {
@@ -4273,10 +4274,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
     for (const z of zones) if (!z.scored && z.kind !== 'sweeper' && sp > z.s1) zoneScore(z);
     const slipT = drifting ? driftDir * (0.16 + 0.08 * Math.max(0, steerIn * driftDir) + 0.14 * clamp(driftTime / 2.4, 0, 1)) : 0;   // held longer, the nose swings further
-    slip += (slipT - slip) * Math.min(1, dt * (drifting ? 4 : 5));
+    slip += (slipT - slip) * Math.min(1, dt * (drifting ? 4 : driftRec > 0 ? 12 : 5));
     const spinRate = drifting && speed > 35 ? 0.6 * clamp((driftTime - 1.2) / 2.5, 0, 1) : 0;   // rad/s: ramps up after the first second
     loopSpin += driftDir * spinRate * dt;
-    if (!drifting) loopSpin -= (loopSpin - Math.round(loopSpin / (2 * Math.PI)) * 2 * Math.PI) * Math.min(1, dt * 3);   // settle back to a whole turn
+    if (!drifting) loopSpin -= (loopSpin - Math.round(loopSpin / (2 * Math.PI)) * 2 * Math.PI) * Math.min(1, dt * (driftRec > 0 ? 8 : 3));   // settle back to a whole turn
     driftAmt += ((drifting ? 1 : 0) - driftAmt) * Math.min(1, dt * (drifting ? 5 : 4));
 
     const sideV = v * Math.sin(hd), fwdV = v * Math.cos(hd), along = fwdV / clamp(1 - k * px, 0.6, 1.4);
@@ -7201,7 +7202,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const dpr = Math.min(2, window.devicePixelRatio || 1), W = mapCv.clientWidth, H = mapCv.clientHeight;
     if (mapCv.width !== Math.round(W * dpr)) { mapCv.width = Math.round(W * dpr); mapCv.height = Math.round(H * dpr); }
     const g = mapCx; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-    const barH = Math.round(H * 0.13), mh = H - barH - 6, cx = W / 2, cy = mh * 0.72, k = mh / 420;   // 420 m tall: more road ahead than behind
+    const barH = Math.round(H * 0.2), mh = H - barH - 4, cx = W / 2, cy = mh * 0.72, k = mh / 420;   // 420 m tall: more road ahead than behind
     trackAt(sp); const ox = TF.x, oz = TF.z, rx = Math.cos(TF.h), rz = Math.sin(TF.h), fx = rz, fz = -rx;
     const to = (x, z) => { const dx = x - ox, dz = dz0(z); return [cx + (dx * rx + dz * rz) * k, cy - (dx * fx + dz * fz) * k]; }, dz0 = z => z - oz;
     g.save(); g.beginPath(); g.rect(4, 4, W - 8, mh); g.clip();
@@ -7217,10 +7218,11 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       g.fillStyle = col; g.strokeStyle = me ? '#fff' : 'rgba(0,0,0,.6)'; g.lineWidth = me ? 2 : 1.2;
       g.beginPath(); if (me) { g.moveTo(X, Y - 7); g.lineTo(X + 5, Y + 5); g.lineTo(X - 5, Y + 5); g.closePath(); } else g.arc(X, Y, off ? 3.5 : 4.5, 0, 6.283);
       g.fill(); g.stroke();
-      if (label && !off) { g.fillStyle = '#e8f2ff'; g.font = '600 9px system-ui, sans-serif'; g.textAlign = 'left'; g.fillText(label.slice(0, 6), X + 6, Y + 3); }
+      if (label) { g.fillStyle = '#e8f2ff'; g.font = '600 9px system-ui, sans-serif'; g.textAlign = X > W - 60 ? 'right' : 'left'; g.fillText(label, X > W - 60 ? X - 7 : X + 7, Y + 3); }
     };
     const hex = n => '#' + ((+n || 0xffffff) >>> 0).toString(16).padStart(6, '0').slice(-6);
-    for (const [id, r] of rCars) { const e = net.peers[id]; if (!e || r.s === null) continue; dot(r.s, r.x, hex(e.st.p), false, e.st.n || ''); }
+    const gap = m => (m >= 0 ? '+' : '−') + (Math.abs(m) >= 1000 ? (Math.abs(m) / 1000).toFixed(1) + 'km' : Math.round(Math.abs(m)) + 'm');   // + ahead of me, − behind
+    for (const [id, r] of rCars) { const e = net.peers[id]; if (!e || r.s === null) continue; dot(r.s, r.x, hex(e.st.p), false, `${(e.st.n || '').slice(0, 5)} ${gap(r.s - sp)}`); }
     dot(sp, px, '#ffd23f', true, '');
     g.restore();
     // the race bar: start → 10 km, everyone on it
@@ -7230,6 +7232,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const bx = d => x0 + clamp(d / RACE_M, 0, 1) * (x1 - x0);
     for (const e of Object.values(net.peers)) if (!myRace || e.st.r === myRace) { g.fillStyle = hex(e.st.p); g.beginPath(); g.arc(bx(e.st.d), by, 3.5, 0, 6.283); g.fill(); }
     g.fillStyle = '#ffd23f'; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.arc(bx(dist), by, 4.5, 0, 6.283); g.fill(); g.stroke();
+    g.fillStyle = '#ffd23f'; g.font = '700 10px system-ui, sans-serif'; g.textAlign = 'left';                        // my distance over the bar
+    g.fillText(`${(Math.min(dist, RACE_M) / 1000).toFixed(2)} / ${RACE_M / 1000}km`, x0, by - 8);
   }
 
   // ── every frame ──
