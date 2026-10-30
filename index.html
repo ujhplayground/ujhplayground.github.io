@@ -259,6 +259,24 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .mp-make { display: flex; gap: 8px; } .mp-make input { flex: 1; min-width: 0; padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
 .mp-join #mpJoinPw { flex: .8; min-width: 0; font-family: inherit; letter-spacing: 0; text-transform: none; }
 .mpbox .mp-pw { display: flex; gap: 6px; margin-top: 6px; } .mpbox .mp-pw input { flex: 1; padding: 5px 9px; font: inherit; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 8px; }
+.chatbtn { position: relative; }
+.chat-badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #ff4d4d; color: #fff; font-size: .7rem; font-weight: 700; line-height: 18px; text-align: center; }
+.chat-badge[hidden] { display: none; }
+.chat { position: absolute; right: 14px; bottom: 14px; z-index: 40; width: min(340px, calc(100vw - 28px)); height: min(420px, calc(100% - 28px)); display: flex; flex-direction: column; border-radius: 14px; background: rgba(9, 13, 23, .94); border: 1px solid var(--edge); box-shadow: 0 10px 40px rgba(0, 0, 0, .5); }
+.chat[hidden] { display: none; }
+.chat-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--edge); }
+.chat-head b { font-size: .92rem; } .chat-head span { flex: 1; color: #5dff8c; font-size: .76rem; } .chat-head .rank-x { margin-left: auto; }
+.chat-list { flex: 1; margin: 0; padding: 8px 10px; list-style: none; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; font-size: .84rem; line-height: 1.35; }
+.chat-list li { word-break: break-word; } .chat-list li .n { font-weight: 700; color: #7ad7ff; margin-right: 6px; } .chat-list li.me .n { color: var(--lamp); }
+.chat-list li .tm { color: var(--muted); font-size: .7rem; margin-left: 6px; } .chat-list li.sys { color: var(--muted); font-size: .78rem; text-align: center; }
+.chat-in { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--edge); }
+.chat-in input { flex: 1; min-width: 0; padding: 7px 10px; font: inherit; font-size: .86rem; color: var(--ink, #eee); background: rgba(255, 255, 255, .06); border: 1px solid var(--edge); border-radius: 9px; }
+.chat-in button { padding: 0 14px; font: inherit; font-size: .84rem; font-weight: 700; color: var(--night); background: var(--lamp); border: 0; border-radius: 9px; cursor: pointer; }
+.chat-feed { position: absolute; left: 14px; top: 42%; z-index: 7; display: grid; gap: 4px; max-width: min(360px, 60vw); pointer-events: none; }
+.chat-feed div { padding: 4px 10px; border-radius: 10px; font-size: .82rem; color: #fff; background: rgba(8, 12, 22, .72); animation: chatFade 7s ease forwards; word-break: break-word; }
+.chat-feed div b { color: #7ad7ff; margin-right: 6px; }
+@keyframes chatFade { 0% { opacity: 0; transform: translateX(-10px); } 6% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (pointer: coarse) and (max-height: 520px) { .chat { height: calc(100% - 20px); bottom: 10px; right: 10px; width: min(300px, 60vw); } .chat-feed { top: 30%; font-size: .74rem; } }
 .rank-tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rank-tabs button { padding: 6px 12px; font: inherit; font-size: .82rem; color: var(--muted); background: transparent; border: 1px solid var(--edge); border-radius: 999px; cursor: pointer; }
 .rank-tabs button[aria-pressed="true"] { color: var(--night); font-weight: 600; background: var(--lamp); border-color: var(--lamp); }
@@ -629,7 +647,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -654,6 +672,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     </div>
   </div>
   <div class="who-badge" id="whoBadge" hidden></div>
+  <div class="chat-feed" id="chatFeed"></div>
+  <div class="chat" id="chatBox" hidden>
+    <div class="chat-head"><b>💬 실시간 채팅</b><span id="chatOn"></span><button class="rank-x" id="chatClose" aria-label="닫기">✕</button></div>
+    <ol class="chat-list" id="chatList"><li class="sys">불러오는 중…</li></ol>
+    <div class="chat-in"><input id="chatInput" maxlength="120" placeholder="메시지 입력 후 Enter" autocomplete="off"><button id="chatSend">보내기</button></div>
+  </div>
   <div class="cutdown" id="cutDown" hidden><small>🏁 우승자 도착! 들어오지 못하면 리타이어</small><b id="cutNum">10</b></div>
   <canvas class="minimap" id="miniMap" hidden></canvas>
   <div class="gate" id="gate" hidden>
@@ -6676,8 +6700,52 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   const escH = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   liveBox && liveBox.addEventListener('click', () => { try { openRank(); } catch (e) {} });
+  // ── 💬 server chat (signed in, the web address): chat/<push id> = { uid, n, t, at }; the last 60 are kept on screen ──
+  const chatBtn = $('chatBtn'), chatBox = $('chatBox'), chatList = $('chatList'), chatInput = $('chatInput'), chatBadge = $('chatBadge'), chatFeed = $('chatFeed');
+  let chatOn = false, chatUnread = 0, chatLast = 0, chatReady = false;
+  const tmOf = at => { const d = new Date(+at || Date.now()); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  function chatStart(u) {
+    if (chatOn) return; chatOn = true; chatBtn.hidden = false;
+    const { D, db } = fb, q = D.query(D.ref(db, 'chat'), D.limitToLast(60));
+    chatList.innerHTML = '';
+    setTimeout(() => { chatReady = true; if (!chatList.children.length) chatList.innerHTML = '<li class="sys">아직 메시지가 없어요. 첫 인사를 남겨 보세요!</li>'; }, 1500);
+    D.onChildAdded(q, s => {
+      const m = s.val(); if (!m || typeof m.t !== 'string') return;
+      const sys = chatList.querySelector('.sys'); if (sys) sys.remove();
+      const me = m.uid === u.uid, li = document.createElement('li'); li.className = me ? 'me' : '';
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = String(m.n || '드라이버').slice(0, 14);
+      const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = tmOf(m.at);
+      li.append(n, document.createTextNode(m.t.slice(0, 120)), tm); chatList.append(li);
+      while (chatList.children.length > 80) chatList.firstChild.remove();
+      if (!chatBox.hidden) chatList.scrollTop = chatList.scrollHeight;
+      else if (chatReady && !me) {                              // closed: a badge, and the line drifts across the screen for a moment
+        chatUnread++; chatBadge.textContent = chatUnread > 9 ? '9+' : chatUnread; chatBadge.hidden = false;
+        const f = document.createElement('div'), b = document.createElement('b'); b.textContent = n.textContent; f.append(b, document.createTextNode(m.t.slice(0, 60)));
+        chatFeed.append(f); setTimeout(() => f.remove(), 7200); while (chatFeed.children.length > 3) chatFeed.firstChild.remove();
+      }
+    });
+  }
+  function chatOpen(open) {
+    chatBox.hidden = !open;
+    if (open) { chatUnread = 0; chatBadge.hidden = true; $('chatOn').textContent = shared.ready ? `🟢 ${Math.max(1, shared.online)}명 접속` : ''; chatList.scrollTop = chatList.scrollHeight; setTimeout(() => chatInput.focus(), 30); }
+  }
+  chatBtn.addEventListener('click', () => chatOpen(chatBox.hidden));
+  $('chatClose').addEventListener('click', () => chatOpen(false));
+  async function chatSend() {
+    const t = chatInput.value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 120);
+    if (!t || !fb.user) return;
+    if (Date.now() - chatLast < 1200) { chatInput.placeholder = '조금 천천히 보내 주세요'; return; }
+    chatLast = Date.now(); chatInput.value = ''; chatInput.placeholder = '메시지 입력 후 Enter';
+    const n = (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버').slice(0, 14);
+    try { await fb.D.push(fb.D.ref(fb.db, 'chat'), { uid: fb.user.uid, n, t, at: fb.D.serverTimestamp() }); }
+    catch (e) { const li = document.createElement('li'); li.className = 'sys'; li.textContent = '보내지 못했어요 (채팅 규칙이 아직 없으면 Firebase 규칙을 업데이트해야 해요)'; chatList.append(li); chatList.scrollTop = chatList.scrollHeight; }
+  }
+  $('chatSend').addEventListener('click', chatSend);
+  chatInput.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); chatSend(); } else if (e.key === 'Escape') chatOpen(false); });
+  chatInput.addEventListener('keyup', e => e.stopPropagation());
   async function onLogin(u, fresh) {
     if (!shared.db) { try { fbBoards(u); } catch (e) {} }
+    try { chatStart(u); } catch (e) {}
     if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
     let cloud = null;
     try { const s = await fb.D.get(fb.D.ref(fb.db, `users/${u.uid}/save`)); cloud = s.exists() ? s.val() : null; } catch (e) { return; }
