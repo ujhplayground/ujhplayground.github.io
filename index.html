@@ -211,6 +211,15 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 @media (max-width: 900px) { .mpbox { width: min(560px, 94vw); } }
 @media (pointer: coarse) and (max-height: 520px) { .mpbox { margin: 0 auto 4px; padding: 5px 8px; font-size: .72rem; } .mpbox .mp-top b.code { font-size: .95rem; } .mpbox .mp-msg { margin-top: 2px; } .mpbox ol { margin-top: 4px; max-height: 52px; overflow: auto; } .mpbox li { padding: 2px 6px; } .mpbox .mp-nick { display: none; } }
 .rankbtn.gone { display: none !important; }
+.stage.mp-mode .cu-perf, .stage.mp-mode .chassis { display: none !important; }
+.confetti { position: absolute; inset: 0; z-index: 30; overflow: hidden; pointer-events: none; }
+.confetti i { position: absolute; top: -24px; width: 9px; height: 15px; border-radius: 2px; animation: confFall var(--t) cubic-bezier(.25, .6, .45, 1) var(--w) forwards; }
+@keyframes confFall { to { transform: translate3d(var(--dx), 112vh, 0) rotate(var(--r)); } }
+.endmsg.win b { color: #ffd23f; text-shadow: 0 0 30px rgba(255, 200, 60, .85), 0 3px 0 rgba(0, 0, 0, .5); animation: winPulse .9s ease-in-out infinite alternate; }
+@keyframes winPulse { from { transform: scale(1); } to { transform: scale(1.12); } }
+.minimap { position: absolute; top: 12px; right: 12px; z-index: 4; width: 172px; height: 196px; border-radius: 14px; background: rgba(8, 12, 22, .72); border: 1px solid var(--edge); pointer-events: none; }
+.stage.menu .minimap { display: none; }
+@media (pointer: coarse) { .minimap { top: auto; bottom: 96px; right: calc(10px + env(safe-area-inset-right)); width: 118px; height: 136px; } }
 .touch button.atk { background: rgba(255, 86, 60, .32); border-color: #ff6a4a; color: #ffe2dc; }
 .rankbtn.homebtn { border-color: var(--lamp); }
 .who-badge { position: absolute; left: 14px; bottom: 12px; z-index: 5; padding: 6px 12px; border-radius: 999px; font-size: .84rem; font-weight: 600; color: #e8f2ff; background: rgba(10, 14, 24, .78); border: 1px solid var(--edge); pointer-events: none; }
@@ -629,6 +638,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     </div>
   </div>
   <div class="who-badge" id="whoBadge" hidden></div>
+  <canvas class="minimap" id="miniMap" hidden></canvas>
   <div class="gate" id="gate" hidden>
     <div class="gate-card"><h2>야간 고속도로</h2><p>구글 계정으로 로그인하고 시작하세요.<br>최고 거리, 해금한 차, 코인이 계정에 저장돼서 어느 기기에서든 이어서 할 수 있어요.</p>
       <button class="go" id="gateBtn" disabled>로그인 준비 중…</button><small id="gateMsg"></small><button class="rankbtn" id="gateSkip" hidden>로그인 없이 하기</button></div>
@@ -706,13 +716,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
           <small class="cu-note" id="cuFinNote"></small></section>
         <section class="cu-sec"><div class="cu-h"><h4>휠 색상</h4><b id="cuRimName"></b></div>
           <div class="sw rims" id="cuRim" role="group" aria-label="휠 색상"></div></section>
-        <section class="cu-sec"><div class="cu-h"><h4>배기 업그레이드</h4><button class="cu-listen" id="cuListen">▶ 들어보기</button></div>
+        <section class="cu-sec cu-perf"><div class="cu-h"><h4>배기 업그레이드</h4><button class="cu-listen" id="cuListen">▶ 들어보기</button></div>
           <div class="opts" id="cuEx" role="group" aria-label="배기 업그레이드"></div></section>
-        <section class="cu-sec"><div class="cu-h"><h4>터보 킷</h4><span class="cu-tip">가속은 풀 부스트 기준</span></div>
+        <section class="cu-sec cu-perf"><div class="cu-h"><h4>터보 킷</h4><span class="cu-tip">가속은 풀 부스트 기준</span></div>
           <div class="opts" id="cuKit" role="group" aria-label="터보 킷"></div></section>
-        <section class="cu-sec"><div class="cu-h"><h4>엔진 튠</h4><span class="cu-tip">거리를 달리면 부품이 열려요</span></div>
+        <section class="cu-sec cu-perf"><div class="cu-h"><h4>엔진 튠</h4><span class="cu-tip">거리를 달리면 부품이 열려요</span></div>
           <div class="opts" id="cuEng" role="group" aria-label="엔진 튠"></div></section>
-        <section class="cu-sec"><div class="cu-h"><h4>타이어</h4><span class="cu-tip">차마다 따로: 그 차로 달린 거리로 열려요</span></div>
+        <section class="cu-sec cu-perf"><div class="cu-h"><h4>타이어</h4><span class="cu-tip">차마다 따로: 그 차로 달린 거리로 열려요</span></div>
           <div class="opts" id="cuTire" role="group" aria-label="타이어"></div></section>
         <section class="cu-sec"><div class="cu-h"><h4>불꽃 색 (배기·니트로)</h4><b id="cuNitroName"></b></div>
           <div class="sw" id="cuNitro" role="group" aria-label="배기 불꽃 색"></div>
@@ -2591,6 +2601,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let achHave = 0;                                                      // how many achievements you hold (kept by the meta chunk)
   const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `최고 거리 ${km(c.unlock)}`;
   const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
+  const MP_CARS = ['리겔 GT', '레굴루스 S'].map(n => CARS.findIndex(c => c.name === n)).filter(i => i >= 0);   // multi: everyone on the two stock cars
   for (const c of CARS) c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: c.conv ? c.conv.topOpen : 0 };   // the stock numbers the chassis tuning works from
   const driveTxt = c => c.drive === 'awd' ? '4륜' : '후륜';
 
@@ -4183,7 +4194,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const over = on ? (perfect ? 1.08 : 1.04) : 1, lim = gearTop(gear) * over, r = speed / gearTop(gear);
       if (!airborne) {
         const tq = gear <= 2 && r < 0.42 ? Math.max(torque(r), 0.8) : torque(r);     // clutch slip off the line
-        const tune = 1 + 0.02 * (car.ex || 0) + 0.04 * (car.eng || 0) + 0.006 * (lvlOf(carIdx) - 1) - (car.thr && eco ? 0.2 : 0) + 0.07 * (car.kit || 0) * turboP;     // custom garage: a freer exhaust, an engine tune, and the kit's boost (with its lag)
+        const tune = 1 + 0.02 * (car.ex || 0) + 0.04 * (car.eng || 0) + (MP ? 0 : 0.006 * (lvlOf(carIdx) - 1)) - (car.thr && eco ? 0.2 : 0) + 0.07 * (car.kit || 0) * turboP;     // custom garage: a freer exhaust, an engine tune, and the kit's boost (with its lag)
         if (shiftCut <= 0) a += ACC * car.accel * gearMul(gear) * tq * throttle * tune * durK() * (bogT > 0 ? 0.55 : 1) * (spinT > 0 ? (car.drive === 'awd' ? 0.75 : 0.45) : 1);
         if (surgeT > 0) a += 10 * car.accel;
         if (launchT > 0) a += 14 * car.accel;
@@ -5672,6 +5683,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const opened = m => bestDist >= (m || 0);
   lookGate = (L, ci) => {
     const pi = L.paint == null ? -1 : PAINTS.findIndex(p => p[1] === L.paint);
+    if (MP) L = { ...L, ex: 0, kit: 0, eng: 0, tire: 0 };       // multi: colours only, every car stock underneath
     return { paint: L.paint == null || (pi >= 0 ? opened(PAINT_M[pi]) : opened(PICK_M)) ? L.paint : null,
       finish: L.finish == null || opened(FIN_M[L.finish]) ? L.finish : null, rim: L.rim == null || opened(RIM_M[L.rim]) ? L.rim : null,
       ex: !(CARS[ci] && CARS[ci].thr) && opened(EX_M[L.ex]) ? L.ex : 0, kit: !(CARS[ci] && CARS[ci].thr) && opened(KIT_M[L.kit]) ? L.kit : 0,   // electric: no exhaust, no turbo
@@ -6028,7 +6040,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const trialUsed = () => { chalRoll(); return chal.trial === chal.day; };
   const trialOK = () => dailyGoals().every(g => g.done) && !trialUsed();
   const trialCar = i => !isUnlocked(i) && tierOf(CARS[i]) === 'A' && trialOK();
-  const canDrive = i => isUnlocked(i) || trialCar(i);
+  const canDrive = i => (!MP || MP_CARS.includes(i)) && (isUnlocked(i) || trialCar(i));
   function useTrial() { chal.trial = chal.day; try { localStorage.setItem('nh3d-chal', JSON.stringify(chal)); } catch (e) {} }
   function renderChal() {
     const box = document.getElementById('chalBox'); if (!box) return;
@@ -6048,7 +6060,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   try { chassis = JSON.parse(localStorage.getItem('nh3d-chassis') || '{}') || {}; } catch (e) { chassis = {}; }
   const chassisOf = c => { const v = chassis[c.name]; return Array.isArray(v) && v.length === 2 && v.every(n => n >= 0 && n <= 2) ? v : [1, 1]; };
   function applyChassis(c) {
-    const b = c.base; if (!b) return; const [s, g] = chassisOf(c);
+    const b = c.base; if (!b) return; const [s, g] = MP ? [1, 1] : chassisOf(c);   // multi: stock chassis for everyone
     c.grip = b.grip * SUS[s].g; c.accel = b.accel * SUS[s].a * GEAR[g].a; c.top = Math.round(b.top * GEAR[g].t);
     if (c.conv && b.topOpen) c.conv.topOpen = Math.round(b.topOpen * GEAR[g].t);
   }
@@ -6232,7 +6244,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   // ── car levels: every 5 km driven in a car is a level (max 10); each level adds 0.6 % top speed, pull and grip ──
   const lvlOf = i => Math.min(10, 1 + Math.floor((carDist[i] || 0) / 5000));
-  const lvlK = () => 1 + 0.006 * (lvlOf(carIdx) - 1);
+  const lvlK = () => MP ? 1 : 1 + 0.006 * (lvlOf(carIdx) - 1);
   const lvlNext = i => lvlOf(i) >= 10 ? 0 : lvlOf(i) * 5000 - (carDist[i] || 0);
 
   // ── achievements: each one is also a title you can wear ──
@@ -6650,7 +6662,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   function leaveRoom() { try { localStorage.removeItem('nh3d-mp-next'); } catch (e) {} goRoom(''); }
   mpBtn.textContent = MP ? '🌐 멀티 나가기' : '🌐 멀티';
-  if (MP) $('duelBtn').hidden = true;                          // the hot-seat duel is for one screen
+  if (MP) $('duelBtn').hidden = true;
+  if (MP) stage.classList.add('mp-mode');                       // multi: colours only in the garage, no tuning panels                          // the hot-seat duel is for one screen
   mpBtn.addEventListener('click', () => {
     if (MP) { leaveRoom(); return; }
     if (state !== 'ready' && state !== 'over') return;
@@ -6881,6 +6894,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (mpForce) { mpForce = false; return true; }
     if (!net.ok) { setMsg('아직 방에 연결되지 않았어요'); return false; }
     if (!iAmHost()) { setMsg('방장이 출발하면 같이 출발해요'); return false; }
+    if (raceRunning()) { setMsg('레이스가 진행 중입니다. 모두 들어오면 다시 시작할 수 있어요'); return false; }
     hostRace = Date.now(); joinRace(hostRace); return true;
   }
   function joinRace(id) {
@@ -6943,6 +6957,15 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const tb = $('tatk'); if (tb) { tb.hidden = false; tb.addEventListener('pointerdown', e => { e.preventDefault(); shockwave(); }); }
   }
 
+  // is anyone still out on the latest race?
+  function lastRaceId() { let r = myRace; for (const e of Object.values(net.peers)) if ((+e.st.r || 0) > r) r = +e.st.r; return r; }
+  function raceRunning() {
+    const r = lastRaceId(); if (!r) return false;
+    const live = st => !st.f && (st.st === 'play' || st.st === 'count' || st.st === 'pause' || st.st === 'crash');
+    if (myRace === r && live(myState())) return true;
+    return Object.values(net.peers).some(e => e.st.r === r && live(e.st) && performance.now() - e.seen < 6000);
+  }
+
   // ── standings ──
   const fmtT = ms => { const s = ms / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
   function everyone() {
@@ -6988,9 +7011,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         ni.addEventListener('change', () => { saveNick(ni.value); try { nickEl.value = nick; } catch (e) {} boxKey = ''; });
       }
       // the 출발 button says who starts
-      const go = state === 'offer' ? null : host ? (state === 'over' ? '🏁 다시 레이스' : '🏁 레이스 시작') : '방장 기다리는 중';
+      const busy = raceRunning();
+      const go = state === 'offer' ? null : busy ? '🏁 레이스가 진행 중입니다' : host ? (lastRaceId() ? '🏁 다시 플레이' : '🏁 레이스 시작') : '방장 기다리는 중';
       if (go && go !== lastGo) { lastGo = go; goBtn.textContent = go; }
-      goBtn.disabled = !!go && !host;
+      goBtn.disabled = !!go && (busy || !host);
       if (raceNow && state === 'over') {                        // results: my place
         const pl = list.findIndex(e => e.me) + 1, t = myFin ? (pl === 1 ? `🏆 우승! (${fmtT(myFin)})` : `🏁 ${pl}위 완주 (${fmtT(myFin)})`) : '뷰응신';
         if (ovTitle.textContent !== t) ovTitle.textContent = t;
@@ -7081,6 +7105,76 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   window.addEventListener('pagehide', () => { if (lobbyDis && fb.D) try { fb.D.remove(fb.D.ref(fb.db, `lobby/${MP.code}`)); } catch (e) {} });
 
+  // ── the winner's moment: fireworks, confetti, flames and a pulsing 🏆 ──
+  let overAt = 0, pauseT = 0, carFixed = false;
+  function confetti(n = 140) {
+    const box = document.createElement('div'); box.className = 'confetti';
+    const cols = ['#ffd23f', '#ff4d6d', '#4dd2ff', '#7dff9a', '#c77dff', '#ffffff', '#ff9f1c'];
+    for (let i = 0; i < n; i++) {
+      const p = document.createElement('i');
+      p.style.left = (Math.random() * 100) + '%'; p.style.background = cols[i % cols.length];
+      p.style.setProperty('--dx', `${(Math.random() - 0.5) * 260}px`); p.style.setProperty('--r', `${(Math.random() - 0.5) * 1440}deg`);
+      p.style.setProperty('--t', `${2.6 + Math.random() * 2.2}s`); p.style.setProperty('--w', `${Math.random() * 1.2}s`);
+      box.appendChild(p);
+    }
+    stage.appendChild(box); setTimeout(() => box.remove(), 6000);
+  }
+  function bigMsg(title, sub, win, ms) {
+    endMsg.classList.toggle('win', !!win);
+    endMsg.querySelector('b').textContent = title; endMsg.querySelector('small').textContent = sub;
+    endMsg.hidden = false; endMsg.style.animation = 'none'; void endMsg.offsetWidth; endMsg.style.animation = '';
+    setTimeout(() => { endMsg.hidden = true; endMsg.classList.remove('win'); }, ms);
+  }
+  function celebrate() {
+    bigMsg('🏆 우승!', `${fmtT(myFin)} · 1등으로 들어왔어요! 축하해요!`, true, 7500);
+    fwShow = 7; fwNext = 0; confetti(); setTimeout(() => confetti(90), 1600);
+    queuePops([[0.05, 1], [0.3, 0.9], [0.6, 1], [0.95, 0.9], [1.3, 1]]); boostT = Math.max(boostT, 1.2);
+    sfx.ding(); setTimeout(() => sfx.ding(), 350); setTimeout(() => sfx.ding(), 700);
+    score += 20000;                                            // a winner's bonus, quietly
+  }
+  function finishMsg(place) { bigMsg(`🏁 ${place}위 완주`, fmtT(myFin), false, 3500); sfx.ding(); }
+
+  // ── the minimap (top right): the road ahead from above with every car on it, and a race bar along the bottom ──
+  const mapCv = $('miniMap'), mapCx = mapCv.getContext('2d'), _mw = new THREE.Vector3();
+  let mapT = 0;
+  function drawMap(dt) {
+    const on = MP && (state === 'play' || state === 'count' || state === 'pause' || state === 'crash');
+    mapCv.hidden = !on; if (!on) return;
+    mapT -= dt; if (mapT > 0) return; mapT = 1 / 20;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), W = mapCv.clientWidth, H = mapCv.clientHeight;
+    if (mapCv.width !== Math.round(W * dpr)) { mapCv.width = Math.round(W * dpr); mapCv.height = Math.round(H * dpr); }
+    const g = mapCx; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    const barH = Math.round(H * 0.13), mh = H - barH - 6, cx = W / 2, cy = mh * 0.72, k = mh / 420;   // 420 m tall: more road ahead than behind
+    trackAt(sp); const ox = TF.x, oz = TF.z, rx = Math.cos(TF.h), rz = Math.sin(TF.h), fx = rz, fz = -rx;
+    const to = (x, z) => { const dx = x - ox, dz = dz0(z); return [cx + (dx * rx + dz * rz) * k, cy - (dx * fx + dz * fz) * k]; }, dz0 = z => z - oz;
+    g.save(); g.beginPath(); g.rect(4, 4, W - 8, mh); g.clip();
+    g.lineCap = g.lineJoin = 'round';
+    for (const [w, c] of [[ROAD_W * k + 4, 'rgba(255,255,255,.12)'], [ROAD_W * k, '#3a4256']]) {
+      g.strokeStyle = c; g.lineWidth = Math.max(3, w); g.beginPath();
+      for (let s = sp - 120, i = 0; s <= sp + 320; s += 8, i++) { trackAt(s); const [x, y] = to(TF.x, TF.z); i ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.stroke();
+    }
+    const dot = (s, x, col, me, label) => {
+      worldPoint(s, x, 0, _mw); let [X, Y] = to(_mw.x, _mw.z); const off = Y < 8 || Y > mh;
+      X = clamp(X, 10, W - 10); Y = clamp(Y, 10, mh - 2);
+      g.fillStyle = col; g.strokeStyle = me ? '#fff' : 'rgba(0,0,0,.6)'; g.lineWidth = me ? 2 : 1.2;
+      g.beginPath(); if (me) { g.moveTo(X, Y - 7); g.lineTo(X + 5, Y + 5); g.lineTo(X - 5, Y + 5); g.closePath(); } else g.arc(X, Y, off ? 3.5 : 4.5, 0, 6.283);
+      g.fill(); g.stroke();
+      if (label && !off) { g.fillStyle = '#e8f2ff'; g.font = '600 9px system-ui, sans-serif'; g.textAlign = 'left'; g.fillText(label.slice(0, 6), X + 6, Y + 3); }
+    };
+    const hex = n => '#' + ((+n || 0xffffff) >>> 0).toString(16).padStart(6, '0').slice(-6);
+    for (const [id, r] of rCars) { const e = net.peers[id]; if (!e || r.s === null) continue; dot(r.s, r.x, hex(e.st.p), false, e.st.n || ''); }
+    dot(sp, px, '#ffd23f', true, '');
+    g.restore();
+    // the race bar: start → 10 km, everyone on it
+    const by = H - barH / 2 - 3, x0 = 12, x1 = W - 18;
+    g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 4; g.beginPath(); g.moveTo(x0, by); g.lineTo(x1, by); g.stroke();
+    g.font = '10px system-ui'; g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText('🏁', x1 + 7, by + 4);
+    const bx = d => x0 + clamp(d / RACE_M, 0, 1) * (x1 - x0);
+    for (const e of Object.values(net.peers)) if (!myRace || e.st.r === myRace) { g.fillStyle = hex(e.st.p); g.beginPath(); g.arc(bx(e.st.d), by, 3.5, 0, 6.283); g.fill(); }
+    g.fillStyle = '#ffd23f'; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.arc(bx(dist), by, 4.5, 0, 6.283); g.fill(); g.stroke();
+  }
+
   // ── every frame ──
   function mpFrame(dt) {
     if (!MP) return;
@@ -7093,9 +7187,19 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (state === 'count' && myRace && raceT0 === 0) { px = gridX(slot); sp = gridS(slot); }   // lined up on the grid
     if (state === 'play' && myRace && !raceT0) raceT0 = performance.now();
     if (state === 'play' && myRace && !myFin && dist >= RACE_M) {           // across the line
-      myFin = Math.max(1, Math.round(performance.now() - raceT0)); crashMsg = '🏁 완주!'; sfx.ding();
-      gameOver(); sendInfo(); sendPos(); uiT = 0;
+      myFin = Math.max(1, Math.round(performance.now() - raceT0)); sendInfo(); sendPos();
+      const ahead = Object.values(net.peers).filter(e => e.st.r === myRace && e.st.f && e.st.f <= myFin).length;
+      if (ahead === 0) { celebrate(); overAt = performance.now() + 5000; } else { finishMsg(ahead + 1); overAt = performance.now() + 1600; }
     }
+    if (overAt && performance.now() > overAt) { overAt = 0; if (state === 'play' || state === 'pause') { stage.classList.remove('paused'); crashMsg = '🏁 완주!'; gameOver(); uiT = 0; } }
+    // multi: a pause is not a hiding place — three seconds and the car blows up
+    if (state === 'pause' && !myFin) {
+      pauseT += dt; const left = Math.max(0, 3 - pauseT);
+      ovText.textContent = `⚠️ 멀티에서는 3초 넘게 멈추면 차가 폭발해요! ${left.toFixed(1)}초`;
+      if (pauseT >= 3) { pauseT = 0; stage.classList.remove('paused'); state = 'play'; showMenu(false); explodeCar(); }
+    } else pauseT = 0;
+    if (!carFixed) { carFixed = true; if (!MP_CARS.includes(carIdx)) selectCar(MP_CARS[0]); }   // multi: the two stock cars
+    drawMap(dt);
     const racing = state === 'play' || state === 'count' || state === 'pause' || state === 'crash';
     posT -= dt; if (posT <= 0) { posT = !racing ? 1 : net.mode === 'fb' ? 0.1 : POS_GAP; sendPos(); }   // in the garage once a second; the database ten a second
     infoT -= dt; const ik = JSON.stringify(myInfo()); if (ik !== infoKey || infoT <= 0) { infoKey = ik; infoT = INFO_GAP; sendInfo(); }
@@ -7556,7 +7660,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     renderCars();
   });
   function renderCars() {
-    const pass = (c, i) => (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
+    const pass = (c, i) => (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
     carsM.innerHTML = CARS.map((c, i) => c.trans === 'manual' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsA.innerHTML = CARS.map((c, i) => c.trans === 'auto' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsM.parentElement.style.display = carsM.innerHTML ? '' : 'none';
@@ -7748,6 +7852,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     let dt = real;
     if (slowT > 0) { slowT -= real; dt = real * 0.32; if (slowT <= 0) focus = null; }
     if (state !== 'pause') step(dt, real);
+    else if (MP) mpFrame(real);                                // multi: the room keeps talking, and a long pause blows up
     else { sfx.engine(rpm, 0, 0, false, false); sfx.siren(0); sfx.screech(0); updateShifter(real); }
     renderer.render(scene, camera);
   }
