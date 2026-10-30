@@ -637,7 +637,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>기어 올림 · 내림</dd></div>
       <div><dt><kbd>E</kbd><kbd>R</kbd></dt><dd>니트로 · 지붕(오픈카)</dd></div>
       <div><dt><kbd>Q</kbd></dt><dd>스포츠 모드 (자동)</dd></div>
-      <div><dt><kbd>P</kbd><kbd>M</kbd><kbd>B</kbd></dt><dd>일시정지 · 소리 · 음악</dd></div>
+      <div><dt><kbd>Esc</kbd><kbd>P</kbd><kbd>M</kbd><kbd>B</kbd></dt><dd>일시정지 · 소리 · 음악</dd></div>
     </dl>
     <p class="tip">시프트 라이트가 파랗게 깜빡일 때 ↑ 를 누르면 퍼펙트 시프트! 오픈카는 50km/h 이하에서 R로 지붕을 열고 닫아요.</p>
   </div>
@@ -674,8 +674,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   </div>
   <div class="rank" id="metaM" hidden>
     <div class="rank-card" role="dialog" aria-modal="true" aria-labelledby="metaTitle">
-      <div class="rank-head"><h3 id="metaTitle">업적 · 차고 꾸미기 · 출석</h3><button class="rank-x" id="metaClose" aria-label="닫기">✕</button></div>
-      <div class="seg2 meta-tabs" id="metaTabs"><button data-t="ach">🏅 업적·칭호</button><button data-t="shop">🛠 차고 꾸미기</button><button data-t="login">📅 출석</button></div>
+      <div class="rank-head"><h3 id="metaTitle">업적 · 출석</h3><button class="rank-x" id="metaClose" aria-label="닫기">✕</button></div>
+      <div class="seg2 meta-tabs" id="metaTabs"><button data-t="ach">🏅 업적·칭호</button><button data-t="login">📅 출석</button></div>
       <div class="meta-body" id="metaBody"></div>
     </div>
   </div>
@@ -702,7 +702,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         <div><dt><kbd>H</kbd></dt><dd>비상 정비: 천천히 달릴 때 3초 누르면 차체 40%까지 회복</dd></div>
         <div><dt><kbd>V</kbd></dt><dd>로드스터 흡기: 누르고 있으면 공기를 빨아들여 추력기 충전 (차가 조금 느려져요)</dd></div>
         <div><dt><kbd>Q</kbd></dt><dd>로드스터 ECO 모드: 최고속도·가속은 조금 낮지만 추력 효율↑, 감속하면 회생 충전</dd></div>
-        <div><dt><kbd>P</kbd><kbd>M</kbd><kbd>B</kbd></dt><dd>일시정지 · 소리 · 음악</dd></div>
+        <div><dt><kbd>Esc</kbd><kbd>P</kbd><kbd>M</kbd><kbd>B</kbd></dt><dd>일시정지 · 소리 · 음악</dd></div>
         <div><dt><kbd>G</kbd></dt><dd>커스텀 차고</dd></div>
         <div><dt><kbd>L</kbd></dt><dd>랭킹</dd></div>
       </dl>
@@ -6349,7 +6349,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     mk('trophy', g => { const gold = new THREE.MeshStandardMaterial({ color: 0xffc83a, metalness: 0.9, roughness: 0.25 }); const ped = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.7), L(0x22252c)); ped.position.set(3.1, 0.45, 0.6); g.add(ped);
       const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.12, 0.45, 14), gold); cup.position.set(3.1, 1.15, 0.6); g.add(cup); const base = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.12, 14), gold); base.position.set(3.1, 0.96, 0.6); g.add(base); });
   }
-  function showDeco() { const on = state === 'ready'; for (const [k] of DECO) decoG[k].visible = on && !!meta.deco.own[k] && meta.deco.on[k] !== false; }
+  function showDeco() { for (const [k] of DECO) decoG[k].visible = false; }   // decorations retired: nothing is placed around the car
 
   // ── the finale at 100 km: fireworks over the road, a big bonus ──
   const FW_N = 700, fwBuf = new Float32Array(FW_N * 3), fwCol = new Float32Array(FW_N * 3), fwV = new Float32Array(FW_N * 3), fwLife = new Float32Array(FW_N), fwC0 = new Float32Array(FW_N * 3);
@@ -7270,12 +7270,6 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         if (n !== cutLast) { cutLast = n; cutNum.textContent = n; cutNum.classList.remove('tick'); void cutNum.offsetWidth; cutNum.classList.add('tick'); cutEl.classList.toggle('hot', n <= 3); if (n > 0) sfx.beep(n <= 3); }
       } else cutLast = -1;
     }
-    // multi: a pause is not a hiding place — three seconds and the car blows up
-    if (state === 'pause' && !myFin) {
-      pauseT += dt; const left = Math.max(0, 3 - pauseT);
-      ovText.textContent = `⚠️ 멀티에서는 3초 넘게 멈추면 차가 폭발해요! ${left.toFixed(1)}초`;
-      if (pauseT >= 3) { pauseT = 0; stage.classList.remove('paused'); state = 'play'; showMenu(false); explodeCar(); }
-    } else pauseT = 0;
     if (!carFixed) { carFixed = true; if (!MP_CARS.includes(carIdx)) selectCar(MP_CARS[0]); }   // multi: the two stock cars
     drawMap(dt);
     const racing = state === 'play' || state === 'count' || state === 'pause' || state === 'crash';
@@ -7871,7 +7865,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (c === 'KeyE') { e.preventDefault(); if (!e.repeat) fireNitro(); return; }
     if (c === 'KeyQ') { e.preventDefault(); if (!e.repeat) toggleSport(); return; }
     if (c === 'KeyR') { e.preventDefault(); if (!e.repeat) toggleRoof(); return; }
-    if (c === 'KeyP') { pause(); return; }
+    if (c === 'KeyP' || (c === 'Escape' && (state === 'play' || state === 'pause'))) { e.preventDefault(); pause(); return; }   // P or Esc
     if (c === 'KeyM') { sfx.setMuted(!sfx.muted); popup(sfx.muted ? '소리 끔' : '소리 켬', 'var(--muted)'); return; }
     if (c === 'KeyB') { sfx.setMusic(!sfx.musicOn); popup(sfx.musicOn ? '음악 켬' : '음악 끔', 'var(--muted)'); }
   });
