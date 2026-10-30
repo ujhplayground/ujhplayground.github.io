@@ -294,6 +294,9 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .rank-list li.empty { display: block; padding: 22px 10px; text-align: center; color: var(--muted); }
 .rank-foot { display: grid; gap: 6px; font-size: .8rem; color: var(--muted); }
 .rank-foot label { display: flex; align-items: center; gap: 8px; }
+.odot { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #2ee66b; box-shadow: 0 0 6px #2ee66b; vertical-align: middle; flex: none; }
+.rank-foot label.ontog { cursor: pointer; user-select: none; }
+.rank-foot label.ontog input { flex: none; width: 16px; height: 16px; accent-color: #2ee66b; }
 .rank-foot input { flex: 1; max-width: 220px; padding: 6px 10px; font: inherit; color: var(--paint); background: #0a0c12; border: 1px solid var(--edge); border-radius: 8px; }
 @media (max-width: 560px) { .rank-list li { grid-template-columns: 28px minmax(0, 1fr) auto auto; } .rank-list li span:nth-child(5) { display: none; } }
 .car .badge { position: absolute; top: 5px; left: 5px; padding: 1px 7px; border-radius: 999px; font-size: .6rem; font-weight: 600; color: var(--night); background: var(--ok); }
@@ -668,7 +671,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       </div>
       <ol class="rank-list" id="rankList"></ol>
       <div class="day-codes" id="dayCodes" hidden><div><b>내 오늘 기록 코드</b><textarea id="dayMine" rows="2" readonly></textarea><button class="rankbtn" id="dayCopy">코드 복사</button></div><div><b>친구 코드 붙여넣기</b><textarea id="dayFriend" rows="2" placeholder="친구가 보낸 오늘 기록 코드"></textarea><button class="rankbtn" id="dayAdd">랭킹에 추가</button></div><small id="dayNote"></small></div>
-      <div class="rank-foot"><label>닉네임 <input id="nick" maxlength="12" placeholder="이름 없음" autocomplete="off"></label><small id="rankNote"></small></div>
+      <div class="rank-foot"><label>닉네임 <input id="nick" maxlength="12" placeholder="이름 없음" autocomplete="off"></label><label class="ontog"><input type="checkbox" id="showOn"> <span class="odot"></span>내가 접속 중인 걸 다른 사람에게 보여주기</label><small id="rankNote"></small></div>
     </div>
   </div>
   <div class="who-badge" id="whoBadge" hidden></div>
@@ -5518,6 +5521,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   // ── Shared board (claude.ai only): ranking/<player id> holds that player's best ──
   const shared = { db: null, user: null, me: null, rows: [], ready: false, canWrite: true, online: 0 };
+  let showOnline = true;                                       // the green dot next to your name; you can hide it (you still count in "N명 접속")
+  try { showOnline = localStorage.getItem('nh3d-show-on') !== '0'; } catch (e) {}
+  const isOn = id => { const r = shared.rows.find(x => x.id === id) || shared.allRows && shared.allRows.find(x => x.id === id); return !!(r && r.on); };
+  const dotEl = () => { const d = document.createElement('span'); d.className = 'odot'; d.title = '지금 접속 중'; return d; };
   (async () => {
     const C = window.claude; if (!C || typeof C.use !== 'function') return;
     try {
@@ -5535,7 +5542,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     shared.db.collection('ranking').limit(500).onSnapshot(snap => {
       shared.online = snap.docs.filter(d => d.exists && (d.data() || {}).on).length;
       shared.rows = snap.docs.filter(d => d.exists).map(d => { const o = d.data() || {};
-        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0 }; });
+        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0, on: !!o.on && !o.hide }; });
+      shared.allRows = shared.rows;
       shared.rows = shared.rows.filter(r => r.score > 0 || r.dist > 0);   // signed-in but never finished a run: online only
       shared.ready = true; lastRank = 0; onRankData(); renderLive();
     }, () => { shared.ready = false; onRankData(); });
@@ -5666,7 +5674,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const li = document.createElement('li'); li.className = medal(i) + (all && r.id === shared.me ? ' me' : '');
       const cells = [String(i + 1), all ? (r.nick || (names[r.id] && names[r.id].name) || '익명 드라이버') + (r.id === shared.me ? ' (나)' : '') : dateText(r.at),
         r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-'];
-      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) s.className = 'who'; li.append(s); });
+      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); } li.append(s); });
       rankList.append(li);
     });
     rankNote.textContent = all
@@ -5684,7 +5692,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (r.me ? ' me' : '');
       [String(i + 1), (r.nick || '익명 드라이버') + (r.me ? ' (나)' : ''), r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-']
-        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) s.className = 'who'; li.append(s); });
+        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); } li.append(s); });
       rankList.append(li);
     });
     const online = daily.ready && daily.day === dayKey();
@@ -5716,6 +5724,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   rankEl.addEventListener('pointerdown', e => { if (e.target === rankEl) closeRank(); });
   nickEl.addEventListener('change', () => { saveNick(nickEl.value); nickEl.value = nick; renderRank(); });
   nickEl.addEventListener('keydown', e => { if (e.key === 'Enter') nickEl.blur(); e.stopPropagation(); });
+  const showOnEl = $('showOn');
+  showOnEl.checked = showOnline;
+  showOnEl.addEventListener('change', () => {
+    showOnline = showOnEl.checked; try { localStorage.setItem('nh3d-show-on', showOnline ? '1' : '0'); } catch (e) {}
+    if (typeof fb !== 'undefined' && fb.user && fb.D) fb.D.update(fb.D.ref(fb.db, `ranking/${fb.user.uid}`), { hide: showOnline ? null : true }).catch(() => {});
+  });
   $('rankBtn').addEventListener('click', openRank);
 
   // ── Custom garage (G): paint, finish and wheel colour of the selected car, an exhaust tune and a turbo kit ──
@@ -6688,12 +6702,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const docsOf = (s, map) => ({ docs: s.exists() ? Object.entries(s.val()).filter(([, o]) => o && typeof o === 'object').map(([id, o]) => ({ id, exists: true, data: () => map ? map(id, o) : o })) : [] });
     shared.me = uid; shared.canWrite = true;
     shared.db = { collection: name => ({
-      doc: id => ({ set: o => name === 'daily' ? D.set(D.ref(db, `daily/${String(id).split('_')[0]}/${uid}`), clean(o)) : D.set(D.ref(db, `ranking/${uid}`), clean({ ...o, on: true })) }),
+      doc: id => ({ set: o => name === 'daily' ? D.set(D.ref(db, `daily/${String(id).split('_')[0]}/${uid}`), clean(o)) : D.set(D.ref(db, `ranking/${uid}`), clean({ ...o, on: true, ...(showOnline ? {} : { hide: true }) })) }),
       where: (f, op, day) => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, `daily/${day}`), s => cb(docsOf(s, (id, o) => ({ ...o, pid: id }))), err) }),
       limit: () => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, 'ranking'), s => cb(docsOf(s)), err) }),
     }) };
     const meRef = D.ref(db, `ranking/${uid}`), onRef = D.ref(db, `ranking/${uid}/on`);
-    D.onValue(D.ref(db, '.info/connected'), s => { if (!s.val()) return; D.onDisconnect(onRef).remove(); D.update(meRef, { on: true, nick: nick || (u.displayName || '').split(' ')[0].slice(0, 12) }).catch(() => {}); });
+    D.onValue(D.ref(db, '.info/connected'), s => { if (!s.val()) return; D.onDisconnect(onRef).remove(); D.update(meRef, { on: true, hide: showOnline ? null : true, nick: nick || (u.displayName || '').split(' ')[0].slice(0, 12) }).catch(() => {}); });
     subRanking(); subDaily();
   }
   // signed in: who is online now and the live top 5, in the garage's left column; the 🏆 panel has the full board
@@ -6702,7 +6716,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (!liveBox || !fb.user || !shared.ready) return;
     liveBox.hidden = false;
     const rows = shared.rows.slice().sort((a, b) => b.dist - a.dist || b.score - a.score), mine = rows.findIndex(r => r.id === shared.me);
-    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${escH(r.nick || '드라이버')}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
+    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${r.on ? '<span class="odot" title="지금 접속 중"></span>' : ''}${escH(r.nick || '드라이버')}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
     liveBox.innerHTML = `<h4>🏆 실시간 랭킹 <span class="on">🟢 지금 ${Math.max(1, shared.online)}명 접속</span></h4><ol>${rows.slice(0, 5).map(li).join('') || '<li><b>·</b><span class="n">아직 기록이 없어요</span><span></span></li>'}${mine >= 5 ? li(rows[mine], mine) : ''}</ol>`;
     syncWho();
   }
