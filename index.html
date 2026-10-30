@@ -7394,13 +7394,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const rootW = new THREE.Vector3(), fpRes = new THREE.Vector3(), fpQ = new THREE.Quaternion(), fpT = new THREE.Quaternion(), fpE = new THREE.Euler(0, 0, 0, 'YXZ');
   let fpInit = false;
   let baseFov = 62, camBack = 0, camYaw = 0, orbit = 0.6;
+  const GARAGE_VIEW = 0.75;                                     // a three-quarter view of the car from the rear left
   const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
   function setFov(f, k) { camera.fov += (f - camera.fov) * k; camera.updateProjectionMatrix(); }
   function updateCamera(real) {
     camP.setFromMatrixPosition(playerRoot.matrixWorld);
     const sf = speed / 330, k = Math.min(1, real * 4);
     if (state === 'ready') {                                   // garage: slow orbit around the car
-      if (!spinOn) orbit += real * 0.28;                        // with the turntable on, the camera holds still and the car turns
+      orbit = GARAGE_VIEW;                                      // the garage camera holds still (no orbit: smoother on slow devices)
       const R = garageCamR();
       camera.position.set(camP.x + Math.sin(orbit) * R, camP.y + 2.1 + garageLiftY * 0.4, camP.z + Math.cos(orbit) * R);
       camera.lookAt(camP.x, camP.y + 0.7 + garageLiftY * 0.8, camP.z); camYaw = pYaw; setFov(50, k); return;
@@ -7923,6 +7924,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
 
   let last = performance.now();
+  let gFrame = false;
+  const custOpen = () => typeof custEl !== 'undefined' && custEl && !custEl.hidden;
   function frame(t) {
     requestAnimationFrame(frame);
     const el = (t - last) / 1000, real = clamp(el, 0, 0.05); last = t;
@@ -7932,6 +7935,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (state !== 'pause') step(dt, real);
     else if (MP) mpFrame(real);                                // multi: the room keeps talking, and a long pause blows up
     else { sfx.engine(rpm, 0, 0, false, false); sfx.siren(0); sfx.screech(0); updateShifter(real); }
+    if (state === 'ready' && !custOpen() && (gFrame = !gFrame)) return;   // the still garage only needs half the frames
     renderer.render(scene, camera);
   }
 
