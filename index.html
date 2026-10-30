@@ -6949,8 +6949,9 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   function joinRace(id) {
     myRace = id; myFin = 0; raceT0 = 0; winSeenAt = 0; timedOut = 0;
-    const he = hostEntry(), hid = net.mode === 'pj' ? hostId() : iAmHost() ? net.me : ((Object.entries(net.peers).find(([, e]) => e === he) || [''])[0]);
-    const ids = [net.me, ...Object.keys(net.peers)].sort((a, b) => (b === hid) - (a === hid) || (a < b ? -1 : 1)); slot = Math.max(0, ids.indexOf(net.me));   // the host takes pole
+    // a random grid every race: each player's slot comes from a hash of (race, player), so every screen agrees on it
+    const h = k => { let x = 2166136261; for (const ch of `${id}:${k}`) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } return x >>> 0; };
+    const ids = [net.me, ...Object.keys(net.peers)].sort((a, b) => h(a) - h(b) || (a < b ? -1 : 1)); slot = Math.max(0, ids.indexOf(net.me));
   }
   function startFromHost(id) {                                  // the host pressed 출발
     if (state !== 'ready' && state !== 'over' && state !== 'offer' && state !== 'play' && state !== 'crash') return;
