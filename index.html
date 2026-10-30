@@ -7106,7 +7106,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   window.addEventListener('pagehide', () => { if (lobbyDis && fb.D) try { fb.D.remove(fb.D.ref(fb.db, `lobby/${MP.code}`)); } catch (e) {} });
 
   // ── the winner's moment: fireworks, confetti, flames and a pulsing 🏆 ──
-  let overAt = 0, pauseT = 0, carFixed = false;
+  let overAt = 0, overMax = 0, pauseT = 0, carFixed = false, stopV = 0, stopHold = 0;
+  const STOP_DECEL = 45;                                        // km/h shed per second after the finish line
   function confetti(n = 140) {
     const box = document.createElement('div'); box.className = 'confetti';
     const cols = ['#ffd23f', '#ff4d6d', '#4dd2ff', '#7dff9a', '#c77dff', '#ffffff', '#ff9f1c'];
@@ -7128,7 +7129,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function celebrate() {
     bigMsg('🏆 우승!', `${fmtT(myFin)} · 1등으로 들어왔어요! 축하해요!`, true, 7500);
     fwShow = 7; fwNext = 0; confetti(); setTimeout(() => confetti(90), 1600);
-    queuePops([[0.05, 1], [0.3, 0.9], [0.6, 1], [0.95, 0.9], [1.3, 1]]); boostT = Math.max(boostT, 1.2);
+    queuePops([[0.05, 1], [0.3, 0.9], [0.6, 1], [0.95, 0.9], [1.3, 1]]);
     sfx.ding(); setTimeout(() => sfx.ding(), 350); setTimeout(() => sfx.ding(), 700);
     score += 20000;                                            // a winner's bonus, quietly
   }
@@ -7189,9 +7190,15 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (state === 'play' && myRace && !myFin && dist >= RACE_M) {           // across the line
       myFin = Math.max(1, Math.round(performance.now() - raceT0)); sendInfo(); sendPos();
       const ahead = Object.values(net.peers).filter(e => e.st.r === myRace && e.st.f && e.st.f <= myFin).length;
-      if (ahead === 0) { celebrate(); overAt = performance.now() + 5000; } else { finishMsg(ahead + 1); overAt = performance.now() + 1600; }
+      stopV = speed; stopHold = ahead === 0 ? 1.5 : 0.6;     // across the line the car coasts to a stop by itself
+      if (ahead === 0) { celebrate(); overAt = performance.now() + 5000; } else { finishMsg(ahead + 1); overAt = performance.now() + 800; }
+      overMax = performance.now() + 20000;
     }
-    if (overAt && performance.now() > overAt) { overAt = 0; if (state === 'play' || state === 'pause') { stage.classList.remove('paused'); crashMsg = '🏁 완주!'; gameOver(); uiT = 0; } }
+    if (myFin && state === 'play') {                         // finished: no throttle, a gentle brake, wheel straight
+      stopV = Math.max(0, stopV - STOP_DECEL * dt); speed = Math.min(speed, stopV); boostT = 0; hd *= Math.max(0, 1 - dt * 2);
+    }
+    if (myFin && state === 'play' && stopV <= 0) stopHold -= dt;   // stopped: a moment to take it in
+    if (overAt && performance.now() > overAt && ((stopV <= 0 && stopHold <= 0) || performance.now() > overMax)) { overAt = 0; if (state === 'play' || state === 'pause') { stage.classList.remove('paused'); crashMsg = '🏁 완주!'; gameOver(); uiT = 0; } }
     // multi: a pause is not a hiding place — three seconds and the car blows up
     if (state === 'pause' && !myFin) {
       pauseT += dt; const left = Math.max(0, 3 - pauseT);
