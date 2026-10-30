@@ -211,6 +211,21 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 @media (max-width: 900px) { .mpbox { width: min(560px, 94vw); } }
 @media (pointer: coarse) and (max-height: 520px) { .mpbox { margin: 0 auto 4px; padding: 5px 8px; font-size: .72rem; } .mpbox .mp-top b.code { font-size: .95rem; } .mpbox .mp-msg { margin-top: 2px; } .mpbox ol { margin-top: 4px; max-height: 52px; overflow: auto; } .mpbox li { padding: 2px 6px; } .mpbox .mp-nick { display: none; } }
 .rankbtn.gone { display: none !important; }
+.cutdown { position: absolute; left: 0; right: 0; top: 14%; z-index: 6; display: grid; justify-items: center; gap: 2px; pointer-events: none; text-align: center; }
+.cutdown[hidden] { display: none; }
+.cutdown small { padding: 5px 14px; border-radius: 999px; font-weight: 700; font-size: clamp(.8rem, 2.2vw, 1.05rem); color: #fff; background: rgba(214, 40, 40, .82); }
+.cutdown b { font-family: var(--display); font-weight: 800; font-size: clamp(4rem, 16vw, 9rem); line-height: 1; color: #fff; text-shadow: 0 0 34px rgba(255, 60, 60, .9), 0 4px 0 rgba(0, 0, 0, .55); }
+.cutdown b.tick { animation: cutTick .9s ease-out; }
+.cutdown.hot b { color: #ff5a5a; }
+@keyframes cutTick { from { transform: scale(1.45); opacity: .4; } 40% { opacity: 1; } to { transform: scale(1); } }
+.live h4 { margin: 0; font-size: .84rem; display: flex; justify-content: space-between; align-items: center; }
+.live .on { color: #5dff8c; font-weight: 700; font-size: .8rem; }
+.live ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.live li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; font-size: .8rem; padding: 3px 6px; border-radius: 6px; background: rgba(255, 255, 255, .04); }
+.live li.me { outline: 1px solid rgba(255, 181, 71, .6); }
+.live li .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .live li .d { font-family: var(--mono); color: var(--muted); }
+.live li b { color: var(--muted); } .live li:nth-child(1) b { color: #ffd23f; } .live li:nth-child(2) b { color: #d6dbe4; } .live li:nth-child(3) b { color: #e09a5b; }
+.live { cursor: pointer; }
 .stage.mp-mode .cu-perf, .stage.mp-mode .chassis { display: none !important; }
 .confetti { position: absolute; inset: 0; z-index: 30; overflow: hidden; pointer-events: none; }
 .confetti i { position: absolute; top: -24px; width: 9px; height: 15px; border-radius: 2px; animation: confFall var(--t) cubic-bezier(.25, .6, .45, 1) var(--w) forwards; }
@@ -606,6 +621,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     <div class="side">
       <aside class="stats" id="statPanel" aria-live="polite"></aside>
       <aside class="chal" id="chalBox" aria-live="polite"></aside>
+      <aside class="chal live" id="liveBox" hidden></aside>
     </div>
     <div class="garage" id="garage">
       <div class="filt" id="filt" role="group" aria-label="차 거르기"><button data-f="open" aria-pressed="false">사용 가능</button><button data-f="auto" aria-pressed="false">자동</button><button data-f="manual" aria-pressed="false">수동</button></div>
@@ -638,6 +654,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     </div>
   </div>
   <div class="who-badge" id="whoBadge" hidden></div>
+  <div class="cutdown" id="cutDown" hidden><small>🏁 우승자 도착! 들어오지 못하면 리타이어</small><b id="cutNum">10</b></div>
   <canvas class="minimap" id="miniMap" hidden></canvas>
   <div class="gate" id="gate" hidden>
     <div class="gate-card"><h2>야간 고속도로</h2><p>구글 계정으로 로그인하고 시작하세요.<br>최고 거리, 해금한 차, 코인이 계정에 저장돼서 어느 기기에서든 이어서 할 수 있어요.</p>
@@ -5062,6 +5079,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (car.thr) dur += ' · 추력기 ' + Math.round(thrT / THR_MAX * 100) + '%' + (keys.intake ? ' · 흡기 중' : '') + (eco ? ' · ECO' : '');
       if (punctT >= 0) dur += speed < 1 ? ` · 펑크! H 꾹 (${Math.max(0, Math.ceil(5 - stuckT))}초)` : ' · 펑크!';
       if (repairT > 0) dur += ' · 비상 정비 ' + Math.round(repairT / 3 * 100) + '%';
+      if (hp >= 60 && !car.thr && punctT < 0 && !(repairT > 0)) dur = '';   // all well: no green chip; it comes back when there is damage to mind
       const t = cargo ? checks.find(c => !c.done && c.kind === 'drop') : nearest('pick');
       if (t && t.s - sp < 1500) cg = (cargo ? '화물 배송지 ' : '화물 집하장 ') + fmtM(t.s - sp) + ' 앞';
     }
@@ -5474,7 +5492,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
 
   // ── Shared board (claude.ai only): ranking/<player id> holds that player's best ──
-  const shared = { db: null, user: null, me: null, rows: [], ready: false, canWrite: true };
+  const shared = { db: null, user: null, me: null, rows: [], ready: false, canWrite: true, online: 0 };
   (async () => {
     const C = window.claude; if (!C || typeof C.use !== 'function') return;
     try {
@@ -5485,13 +5503,18 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (!shared.me) shared.canWrite = false;
       else if (user && (await user.can('data.write')) === false) shared.canWrite = false;
       subDaily();
-      db.collection('ranking').limit(500).onSnapshot(snap => {
-        shared.rows = snap.docs.filter(d => d.exists).map(d => { const o = d.data() || {};
-          return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0 }; });
-        shared.ready = true; lastRank = 0; onRankData();
-      }, () => { shared.ready = false; onRankData(); });
+      subRanking();
     } catch (e) { shared.db = null; }
   })();
+  function subRanking() {
+    shared.db.collection('ranking').limit(500).onSnapshot(snap => {
+      shared.online = snap.docs.filter(d => d.exists && (d.data() || {}).on).length;
+      shared.rows = snap.docs.filter(d => d.exists).map(d => { const o = d.data() || {};
+        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0 }; });
+      shared.rows = shared.rows.filter(r => r.score > 0 || r.dist > 0);   // signed-in but never finished a run: online only
+      shared.ready = true; lastRank = 0; onRankData(); renderLive();
+    }, () => { shared.ready = false; onRankData(); });
+  }
   // ── 오늘의 랭킹: today's bests only. On claude.ai it is shared (daily/<day>_<player>); in a downloaded file there is no
   //    server, so players swap a short "today code" and the board is built from the codes you have pasted ──
   const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -6604,7 +6627,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   window.addEventListener('keydown', e => { if (!gate.hidden) e.stopPropagation(); }, true);   // no driving off behind the login screen
   // ── signed in: your nickname bottom-left on the garage and results screens ──
   const whoEl = $('whoBadge');
-  function syncWho() { const on = !!fb.user; whoEl.hidden = !on; if (on) whoEl.textContent = '👤 ' + (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버'); }
+  function syncWho() { const on = !!fb.user; whoEl.hidden = !on; if (on) whoEl.textContent = '👤 ' + (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버') + (shared.ready ? ` · 🟢 ${Math.max(1, shared.online)}명 접속` : ''); }
   setInterval(() => { if (fb.user) syncWho(); }, 1500);           // follows nickname changes
   if (fbHere) { syncLoginBtn(); fbLoad().catch(() => { loginBtn.hidden = true; gateFail = true; gateMsg.textContent = '로그인 서비스에 연결하지 못했어요. 인터넷을 확인하고 새로고침해 주세요.'; syncGate(); }); }
 
@@ -6625,7 +6648,34 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let saveTimer = 0;
   const fbSaveSoon = () => { if (!fb.user) return; clearTimeout(saveTimer); saveTimer = setTimeout(fbSaveNow, 2500); };
   document.addEventListener('visibilitychange', () => { if (document.hidden && fb.user) fbSaveNow(); });
+  // ── the shared boards on Firebase: ranking/<uid> (best run, and on: true while you are here) and daily/<day>/<uid> ──
+  function fbBoards(u) {
+    const { D, db } = fb, uid = u.uid, clean = o => JSON.parse(JSON.stringify(o));
+    const docsOf = (s, map) => ({ docs: s.exists() ? Object.entries(s.val()).filter(([, o]) => o && typeof o === 'object').map(([id, o]) => ({ id, exists: true, data: () => map ? map(id, o) : o })) : [] });
+    shared.me = uid; shared.canWrite = true;
+    shared.db = { collection: name => ({
+      doc: id => ({ set: o => name === 'daily' ? D.set(D.ref(db, `daily/${String(id).split('_')[0]}/${uid}`), clean(o)) : D.set(D.ref(db, `ranking/${uid}`), clean({ ...o, on: true })) }),
+      where: (f, op, day) => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, `daily/${day}`), s => cb(docsOf(s, (id, o) => ({ ...o, pid: id }))), err) }),
+      limit: () => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, 'ranking'), s => cb(docsOf(s)), err) }),
+    }) };
+    const meRef = D.ref(db, `ranking/${uid}`), onRef = D.ref(db, `ranking/${uid}/on`);
+    D.onValue(D.ref(db, '.info/connected'), s => { if (!s.val()) return; D.onDisconnect(onRef).remove(); D.update(meRef, { on: true, nick: nick || (u.displayName || '').split(' ')[0].slice(0, 12) }).catch(() => {}); });
+    subRanking(); subDaily();
+  }
+  // signed in: who is online now and the live top 5, in the garage's left column; the 🏆 panel has the full board
+  const liveBox = $('liveBox');
+  function renderLive() {
+    if (!liveBox || !fb.user || !shared.ready) return;
+    liveBox.hidden = false;
+    const rows = shared.rows.slice().sort((a, b) => b.dist - a.dist || b.score - a.score), mine = rows.findIndex(r => r.id === shared.me);
+    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${escH(r.nick || '드라이버')}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
+    liveBox.innerHTML = `<h4>🏆 실시간 랭킹 <span class="on">🟢 지금 ${Math.max(1, shared.online)}명 접속</span></h4><ol>${rows.slice(0, 5).map(li).join('') || '<li><b>·</b><span class="n">아직 기록이 없어요</span><span></span></li>'}${mine >= 5 ? li(rows[mine], mine) : ''}</ol>`;
+    syncWho();
+  }
+  const escH = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  liveBox && liveBox.addEventListener('click', () => { try { openRank(); } catch (e) {} });
   async function onLogin(u, fresh) {
+    if (!shared.db) { try { fbBoards(u); } catch (e) {} }
     if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
     let cloud = null;
     try { const s = await fb.D.get(fb.D.ref(fb.db, `users/${u.uid}/save`)); cloud = s.exists() ? s.val() : null; } catch (e) { return; }
@@ -6726,7 +6776,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function applyI(id, i) {
     if (!i || typeof i !== 'object' || id === net.me) return;
     const e = entry(id), st = e.st; e.seen = performance.now();
-    st.n = String(i.n || '').slice(0, 14); st.c = Number.isInteger(i.c) ? i.c : 0; st.p = +i.p || 0xffffff; st.r = +i.r || 0; st.f = +i.f || 0; st.j = +i.j || 0;
+    st.n = String(i.n || '').slice(0, 14); st.c = Number.isInteger(i.c) ? i.c : 0; st.p = +i.p || 0xffffff; st.r = +i.r || 0; st.f = +i.f || 0; st.x = +i.x || 0; st.j = +i.j || 0;
     if (i.H !== undefined) st.H = +i.H || 0; else delete st.H;
   }
   const PJ_URL = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';
@@ -6868,7 +6918,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let myRace = 0, raceT0 = 0, myFin = 0, hostRace = 0, seenHostRace = null, mpForce = false, slot = 0;
   const tag = newCode().slice(0, 2), myName = () => nick || '드라이버 ' + tag;   // unnamed players still tell apart
   const myPos = () => [Math.round(sp * 10) / 10, Math.round(px * 100) / 100, Math.round(hd * 1000) / 1000, Math.round(speed), Math.round(dist), Math.max(0, ST.indexOf(state)), Date.now()];
-  const myInfo = () => ({ n: myName(), c: carIdx, p: paintMat.color.getHex(), r: myRace, f: myFin, j: joinedAt, H: iAmHost() ? hostRace : undefined });
+  const myInfo = () => ({ n: myName(), c: carIdx, p: paintMat.color.getHex(), r: myRace, f: myFin, x: timedOut, j: joinedAt, H: iAmHost() ? hostRace : undefined });
   function myState() { return { ...myInfo(), st: state, sp, px, hd, v: Math.round(speed), d: Math.round(dist) }; }
   function sendPos() {
     const q = myPos();
@@ -6898,7 +6948,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     hostRace = Date.now(); joinRace(hostRace); return true;
   }
   function joinRace(id) {
-    myRace = id; myFin = 0; raceT0 = 0; winSeenAt = 0;
+    myRace = id; myFin = 0; raceT0 = 0; winSeenAt = 0; timedOut = 0;
     const he = hostEntry(), hid = net.mode === 'pj' ? hostId() : iAmHost() ? net.me : ((Object.entries(net.peers).find(([, e]) => e === he) || [''])[0]);
     const ids = [net.me, ...Object.keys(net.peers)].sort((a, b) => (b === hid) - (a === hid) || (a < b ? -1 : 1)); slot = Math.max(0, ids.indexOf(net.me));   // the host takes pole
   }
@@ -6978,7 +7028,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const rank = e => e.st.f ? [0, e.st.f] : (e.st.st === 'play' || e.st.st === 'count' || e.st.st === 'pause') ? [1, -e.st.d] : [2, -e.st.d];
     return rs.sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
   }
-  const statusOf = st => st.f ? `🏁 ${fmtT(st.f)}` : st.st === 'play' || st.st === 'pause' ? `${(st.d / 1000).toFixed(2)}km` : st.st === 'count' ? '출발 준비' : st.st === 'crash' || st.st === 'over' || st.st === 'offer' ? (st.r ? `뷰응신 ${(st.d / 1000).toFixed(2)}km` : '대기') : '차고';
+  const statusOf = st => st.f ? `🏁 ${fmtT(st.f)}` : st.st === 'play' || st.st === 'pause' ? `${(st.d / 1000).toFixed(2)}km` : st.st === 'count' ? '출발 준비' : st.st === 'crash' || st.st === 'over' || st.st === 'offer' ? (st.r ? `${st.x ? '리타이어' : '뷰응신'} ${(st.d / 1000).toFixed(2)}km` : '대기') : '차고';
 
   // ── the room box in the garage / results, the chip while driving ──
   let boxKey = '', lastGo = '';
@@ -7016,7 +7066,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (go && go !== lastGo) { lastGo = go; goBtn.textContent = go; }
       goBtn.disabled = !!go && (busy || !host);
       if (raceNow && state === 'over') {                        // results: my place
-        const pl = list.findIndex(e => e.me) + 1, t = myFin ? (pl === 1 ? `🏆 우승! (${fmtT(myFin)})` : `🏁 ${pl}위 완주 (${fmtT(myFin)})`) : '뷰응신';
+        const pl = list.findIndex(e => e.me) + 1, t = myFin ? (pl === 1 ? `🏆 우승! (${fmtT(myFin)})` : `🏁 ${pl}위 완주 (${fmtT(myFin)})`) : timedOut ? '리타이어' : '뷰응신';
         if (ovTitle.textContent !== t) ovTitle.textContent = t;
       }
     } else { lastGo = ''; goBtn.disabled = false; }
@@ -7108,7 +7158,9 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   // ── the winner's moment: fireworks, confetti, flames and a pulsing 🏆 ──
   let overAt = 0, overMax = 0, pauseT = 0, carFixed = false, stopV = 0, stopHold = 0, winSeenAt = 0;
-  const CUTOFF_MS = 10000;                                      // after the winner, ten seconds to finish
+  let timedOut = 0;                                            // 1 when the ten seconds ran out (리타이어), not a wreck (뷰응신)
+  const CUTOFF_MS = 10000, cutEl = $('cutDown'), cutNum = $('cutNum');
+  let cutLast = -1;                                      // after the winner, ten seconds to finish
   const STOP_DECEL = 45;                                        // km/h shed per second after the finish line
   function confetti(n = 140) {
     const box = document.createElement('div'); box.className = 'confetti';
@@ -7206,8 +7258,16 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (!winSeenAt && Object.values(net.peers).some(e => e.st.r === myRace && e.st.f)) { winSeenAt = performance.now(); popup('🏁 우승자 도착! 10초 안에 들어오세요', 'var(--brake)'); sfx.beep(true); }
       if (winSeenAt && performance.now() - winSeenAt > CUTOFF_MS) {
         winSeenAt = 0; stage.classList.remove('paused'); if (state === 'pause') state = 'play';
-        crashMsg = '리타이어'; gameOver(); uiT = 0;
+        timedOut = 1; crashMsg = '리타이어'; gameOver(); sendInfo(); uiT = 0;
       }
+    }
+    // the big countdown for everyone still out there
+    { const live = winSeenAt && !myFin && (state === 'play' || state === 'pause' || state === 'count');
+      cutEl.hidden = !live;
+      if (live) {
+        const n = Math.max(0, Math.ceil((CUTOFF_MS - (performance.now() - winSeenAt)) / 1000));
+        if (n !== cutLast) { cutLast = n; cutNum.textContent = n; cutNum.classList.remove('tick'); void cutNum.offsetWidth; cutNum.classList.add('tick'); cutEl.classList.toggle('hot', n <= 3); if (n > 0) sfx.beep(n <= 3); }
+      } else cutLast = -1;
     }
     // multi: a pause is not a hiding place — three seconds and the car blows up
     if (state === 'pause' && !myFin) {
