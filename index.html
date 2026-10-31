@@ -5839,10 +5839,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       rankList.append(li);
     });
     const online = daily.ready && daily.day === dayKey();
-    dayCodes.hidden = false;
+    dayCodes.hidden = true;                                   // the swap-a-code box is gone: the server ranking covers everyone
     $('dayMine').value = dayCode() || '';
-    rankNote.textContent = online ? `오늘(${dayKey()}) 이 게임을 연 모든 사람의 최고 기록이에요. 자정에 새로 시작해요. 파일로 하는 친구는 코드를 주고받으면 같이 보여요.`
-      : `오늘(${dayKey()}) 기록만 모아요. 파일 버전은 서버가 없어서, 친구와 '오늘 기록 코드'를 주고받으면 여기 같이 올라가요. 자정에 새로 시작해요.`;
+    rankNote.textContent = online ? `오늘(${dayKey()}) 이 게임을 연 모든 사람의 최고 기록이에요. 자정에 새로 시작해요.`
+      : `오늘(${dayKey()}) 기록만 모아요. 로그인하면 모든 사람의 오늘 기록이 보여요. 자정에 새로 시작해요.`;
   }
   tabDay.addEventListener('click', () => { rankTab = 'day'; renderRank(); });
   $('dayCopy').addEventListener('click', async () => {
