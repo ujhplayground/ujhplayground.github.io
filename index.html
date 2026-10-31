@@ -4878,7 +4878,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   //    and spike strips lie across the road. A spike that you run over blows a tyre: the car wobbles and grips worse for a bit. ──
   const ZONE_A = 50000, ZONE_B = 60000;                       // metres (dist)
   let punctT = -1, stuckT = 0;                                   // a police spike's puncture: seconds since (−1: none), seconds stuck at a standstill
-  let zoneOn = false, wetK = 1, rainAmt = 0, flatT = 0, convoyIn = 4, blockIn = 8, spikeIn = 3;
+  let showerOn = false, zoneOn = false, wetK = 1, rainAmt = 0, flatT = 0, convoyIn = 4, blockIn = 8, spikeIn = 3;
   const roadGrip = () => Math.min(1, wetK + 0.06 * (car.tire || 0)) * (flatT > 0 ? 0.6 : 1);   // wet tarmac and a flat tyre cut grip; sport tyres bite better in the wet
   const spikeMat = new THREE.MeshStandardMaterial({ color: 0xd2d6de, metalness: 0.9, roughness: 0.3 });
   const spikeBase = new THREE.MeshStandardMaterial({ color: 0x1b1d22, metalness: 0.5, roughness: 0.6 });
@@ -4950,7 +4950,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     return true;
   }
   function resetZone() {
-    punctT = -1; stuckT = 0; zoneOn = false; wetK = 1; rainAmt = 0; flatT = 0; convoyIn = 4; blockIn = 8; spikeIn = 3;
+    punctT = -1; stuckT = 0; showerOn = false; zoneOn = false; wetK = 1; rainAmt = 0; flatT = 0; convoyIn = 4; blockIn = 8; spikeIn = 3;
     for (const s of spikePool) { s.active = false; s.g.visible = false; }
   }
   // Toll plazas: about 330 m before one, the road closes three lanes with stopped cars and leaves one lane open
@@ -4971,7 +4971,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const inside = state === 'play' && dist >= ZONE_A && dist < ZONE_B;
     if (inside && !zoneOn) { zoneOn = true; popup('비! 노면이 미끄러워요', 'var(--lamp)'); }
     if (zoneOn && !inside && dist >= ZONE_B) zoneOn = false;
-    const wet = inside || (EV.rain && state === 'play') || biomeRain();   // the zone's rain, a rainy night, or the storm map
+    // a rainy night brings passing showers, not rain all run: ~1.4 km of rain, then ~2.8 km dry (it starts dry)
+    const shower = !!EV.rain && state === 'play' && dist % 4200 > 2800;
+    if (shower && !showerOn) popup('소나기! 노면이 미끄러워요', 'var(--lamp)');
+    if (!shower && showerOn && state === 'play') popup('비가 그쳤어요', 'var(--ok)');
+    showerOn = shower;
+    const wet = inside || shower || biomeRain();   // the zone's rain, a passing shower, or the storm map
     const slick = biomeSlick();                                       // snow (or a storm) cuts grip too
     wetK += ((wet ? Math.min(0.78, slick || 1) : slick || 1) - wetK) * Math.min(1, dt * 2);
     const underRoof = inTunnel(sp);                                   // no rain falls inside a tunnel; the road stays wet
@@ -5010,7 +5015,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // Tonight's event: the same night all day, the next day brings the next one
   const EVENTS = [
     { name: '맑은 밤', tag: '니트로가 빨리 차요', nitro: 1.25 },
-    { name: '비 오는 밤', tag: '전 구간 비, 노면이 미끄러워요', rain: true },
+    { name: '소나기 내리는 밤', tag: '가끔 소나기가 지나가요, 젖은 노면 주의', rain: true },
     { name: '안개 낀 밤', tag: '시야가 짧아요 · 점수 ×1.2', fog: true, score: 1.2 },
     { name: '보너스 데이', tag: '점수 ×1.5', score: 1.5 }
   ];
