@@ -3062,7 +3062,24 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // Custom garage looks per car index, saved as 'nh3d-custom': { paint, finish, rim, ex, kit } (null / 0 = factory).
   // Paint, exhaust tune and turbo kit go onto the car spec itself (color, ex, kit), so everything that reads the car sees
   // them: crash debris, turboOf(), the drive. c.oem keeps the factory colour.
-  const FINISH = [[0.2, 0.18, 1, 0.03], [0.55, 0.3, 1, 0.06], [0.1, 0.72, 0, 0]];   // 유광 · 메탈릭 · 무광: metalness, roughness, clearcoat, its roughness
+  // 유광 · 메탈릭 · 무광 · 캔디 · 펄: [metalness, roughness, clearcoat, its roughness, reflections, metal flake, pearl sheen]
+  const FINISH = [[0.18, 0.24, 1, 0.015, 0.85, 0, 0], [0.55, 0.32, 1, 0.025, 1.0, 0.2, 0], [0.22, 0.6, 0.1, 0.6, 0.55, 0, 0],
+    [0.62, 0.18, 1, 0.01, 1.05, 0.08, 0], [0.3, 0.3, 1, 0.02, 0.95, 0.12, 0x34446a]];
+  let flakeTex = null;                                    // tiny random normals: the metal flake that glitters under the clear coat
+  function flakeMap() {
+    if (flakeTex) return flakeTex;
+    const n = 256, cv = document.createElement('canvas'); cv.width = cv.height = n; const g = cv.getContext('2d'), im = g.createImageData(n, n);
+    for (let i = 0; i < n * n; i++) { const a = Math.random() * Math.PI * 2, r = Math.random() * 0.9; im.data[i * 4] = 128 + Math.cos(a) * r * 127; im.data[i * 4 + 1] = 128 + Math.sin(a) * r * 127; im.data[i * 4 + 2] = 255; im.data[i * 4 + 3] = 255; }
+    g.putImageData(im, 0, 0); flakeTex = new THREE.CanvasTexture(cv); flakeTex.wrapS = flakeTex.wrapT = THREE.RepeatWrapping; flakeTex.repeat.set(18, 18);
+    return flakeTex;
+  }
+  function applyFinish(m, F) {
+    [m.metalness, m.roughness, m.clearcoat, m.clearcoatRoughness, m.envMapIntensity] = F;
+    const fl = F[5] ? flakeMap() : null;
+    if (m.normalMap !== fl) { m.normalMap = fl; m.needsUpdate = true; }
+    if (fl) m.normalScale.set(F[5], F[5]);
+    if ('sheen' in m) { const want = F[6] ? new THREE.Color(F[6]) : null; if (!!m.sheen !== !!want) m.needsUpdate = true; m.sheen = want; }
+  }
   const RIMS = [['실버', 0xc3c9d3, 0.9, 0.22], ['건메탈', 0x3b4049, 0.85, 0.3], ['블랙', 0x121317, 0.55, 0.42],
     ['골드', 0xd4af37, 0.9, 0.24], ['브론즈', 0x9a6332, 0.85, 0.3], ['화이트', 0xeef0f3, 0.15, 0.35]];   // painted white is not chrome
   let looks = {};
@@ -3071,7 +3088,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let lookGate = null;                                    // set by the custom garage: options not unlocked yet fall back to stock
   function lookOf(i) {                                    // car i's saved look, checked
     const L = looks[i] || {};
-    const o = { paint: okIdx(L.paint, 0x1000000) ? L.paint : null, finish: okIdx(L.finish, 3) ? L.finish : null,
+    const o = { paint: okIdx(L.paint, 0x1000000) ? L.paint : null, finish: okIdx(L.finish, FINISH.length) ? L.finish : null,
       rim: okIdx(L.rim, RIMS.length) ? L.rim : null, ex: okIdx(L.ex, 3) ? L.ex : 0, kit: okIdx(L.kit, 3) ? L.kit : 0,
       eng: okIdx(L.eng, 3) ? L.eng : 0, tire: okIdx(L.tire, 3) ? L.tire : 0 };
     const out = lookGate ? lookGate(o, i) : o;
@@ -3083,7 +3100,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     fitLook(i);
     const c = CARS[i], L = lookOf(i), r = RIMS[L.rim];
     paintFor(c); playerMats.tireLook = TIRE_LOOK[c.tire || 0];
-    [paintMat.metalness, paintMat.roughness, paintMat.clearcoat, paintMat.clearcoatRoughness] = FINISH[L.finish] || [c.metal ?? 0.55, 0.3, 1, 0.06];
+    applyFinish(paintMat, FINISH[L.finish ?? ((c.metal ?? 0.55) < 0.45 ? 0 : 1)]);
     rimMat.metalness = r ? r[2] : 0.9; rimMat.roughness = r ? r[3] : 0.25; if (r) rimMat.color.setHex(r[1]);
   }
 
@@ -5813,12 +5830,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const PAINTS = [['미드나잇 블랙', 0x0b0d12], ['펄 화이트', 0xeef0f2], ['문라이트 실버', 0xa9b2bf], ['건메탈', 0x454b55], ['레이싱 레드', 0xc8102e],
     ['선셋 오렌지', 0xff6a13], ['네온 옐로', 0xffc80e], ['라임 그린', 0x8fd629], ['레이싱 그린', 0x1b4d36], ['아쿠아 민트', 0x2ad1c0],
     ['일렉트릭 블루', 0x1e63ff], ['네온 퍼플', 0x7a3cff], ['핫 핑크', 0xff3d8b]];
-  const FIN_TXT = [['유광', '깊고 매끈한 솔리드 광택'], ['메탈릭', '빛을 받으면 반짝이는 메탈 펄'], ['무광', '빛을 머금는 새틴 질감, 반사가 부드러워요']];
+  const FIN_TXT = [['유광', '젖은 듯 깊은 하이글로스, 주변이 거울처럼 비쳐요'], ['메탈릭', '클리어 아래 메탈 플레이크가 반짝여요'], ['무광', '은은한 새틴 광, 실루엣이 또렷해요'],
+    ['캔디', '금속 바탕 위에 색을 겹친 진한 캔디 광택'], ['펄', '보는 각도에 따라 푸른빛이 도는 펄 코팅']];
   const EX_TXT = [['순정', '조용하고 부드럽게', ''], ['스포츠 배기', '더 크게, 발 떼면 팝콘', '가속 +2%'], ['레이스 직관', '가장 크고 거칠게, 불꽃도 크게', '가속 +4%']];
   const KIT_TXT = [['없음', '', ''], ['스테이지 1', '부스트 조금, 반응 빠름', '가속 +7%'], ['스테이지 2', '부스트 크게, 터보 랙 있음', '가속 +14%']];
   // Every option unlocks with your best single-run distance, like the cars (metres)
   const PAINT_M = [0, 0, 500, 1000, 1500, 2250, 3000, 4000, 5000, 6500, 8500, 11000, 14000], PICK_M = 17500;
-  const FIN_M = [0, 3000, 7000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
+  const FIN_M = [0, 3000, 7000, 10000, 13000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
   // Performance parts, earned by distance too and fitted per car: an engine tune (top speed and pull) and tyres (grip, wet grip)
   const ENG_TXT = [['순정', '공장 세팅 그대로', ''], ['엔진 튠 1', '흡·배기 손질, 조금 더 빨라요', '최고·가속 +4%'], ['엔진 튠 2', 'ECU를 다시 맞춰 상단이 시원해요', '최고·가속 +8%']];
   const TIRE_TXT = [['순정', '공장 타이어', ''], ['스포츠 타이어', '접지가 좋아지고 젖은 길에 강해요', '접지 +4%'], ['레이싱 타이어', '접지 최고, 비 오는 길에서 특히 좋아요', '접지 +8%']];
