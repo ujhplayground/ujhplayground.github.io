@@ -5673,15 +5673,23 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       subRanking();
     } catch (e) { shared.db = null; }
   })();
+  // online = the game is open and visible right now: on, plus a heartbeat (seen) from the last 2.5 minutes. A tab that
+  // crashed or a phone that slept without saying goodbye drops off by itself; old rows without a heartbeat count as away.
+  const freshOn = o => !!o.on && (+o.seen || 0) > Date.now() + (shared.srvOff || 0) - 150000;
+  let rankSnap = null;
+  setInterval(() => { if (rankSnap) onRankSnap(rankSnap); }, 30000);     // let stale dots fade without waiting for a change
   function subRanking() {
-    shared.db.collection('ranking').limit(500).onSnapshot(snap => {
-      shared.online = snap.docs.filter(d => d.exists && (d.data() || {}).on).length;
+    shared.db.collection('ranking').limit(500).onSnapshot(snap => onRankSnap(snap), () => { shared.ready = false; onRankData(); });
+  }
+  function onRankSnap(snap) {
+    rankSnap = snap; {
+      shared.online = snap.docs.filter(d => d.exists && freshOn(d.data() || {})).length;
       shared.rows = snap.docs.filter(d => d.exists).map(d => { const o = d.data() || {};
-        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0, on: !!o.on && !o.hide }; });
+        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0, on: freshOn(o) && !o.hide }; });
       shared.allRows = shared.rows;
       shared.rows = shared.rows.filter(r => r.score > 0 || r.dist > 0);   // signed-in but never finished a run: online only
       shared.ready = true; lastRank = 0; onRankData(); renderLive();
-    }, () => { shared.ready = false; onRankData(); });
+    }
   }
   // ── 오늘의 랭킹: today's bests only. On claude.ai it is shared (daily/<day>_<player>); in a downloaded file there is no
   //    server, so players swap a short "today code" and the board is built from the codes you have pasted ──
@@ -6790,7 +6798,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (!fb.ready) return;
     if (fb.user) {                                              // a second press within 3 s signs out
       if (Date.now() - logoutArm > 3000) { logoutArm = Date.now(); loginBtn.textContent = '한 번 더 누르면 로그아웃'; return; }
-      await fbSaveNow(); await fb.U.signOut(fb.auth); try { localStorage.removeItem('nh3d-sync-at'); } catch (e) {} location.reload(); return;
+      await fbSaveNow(); try { if (shared.leave) await shared.leave(); } catch (e) {} await fb.U.signOut(fb.auth); try { localStorage.removeItem('nh3d-sync-at'); } catch (e) {} location.reload(); return;
     }
     doLogin();
   });
@@ -6847,12 +6855,17 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const docsOf = (s, map) => ({ docs: s.exists() ? Object.entries(s.val()).filter(([, o]) => o && typeof o === 'object').map(([id, o]) => ({ id, exists: true, data: () => map ? map(id, o) : o })) : [] });
     shared.me = uid; shared.canWrite = true;
     shared.db = { collection: name => ({
-      doc: id => ({ set: o => name === 'daily' ? D.set(D.ref(db, `daily/${String(id).split('_')[0]}/${uid}`), clean(o)) : D.set(D.ref(db, `ranking/${uid}`), clean({ ...o, on: true, ...(showOnline ? {} : { hide: true }) })) }),
+      doc: id => ({ set: o => name === 'daily' ? D.set(D.ref(db, `daily/${String(id).split('_')[0]}/${uid}`), clean(o)) : D.set(D.ref(db, `ranking/${uid}`), { ...clean({ ...o, ...(showOnline ? {} : { hide: true }) }), ...(document.hidden ? {} : { on: true, seen: D.serverTimestamp() }) }) }),
       where: (f, op, day) => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, `daily/${day}`), s => cb(docsOf(s, (id, o) => ({ ...o, pid: id }))), err) }),
       limit: () => ({ onSnapshot: (cb, err) => D.onValue(D.ref(db, 'ranking'), s => cb(docsOf(s)), err) }),
     }) };
     const meRef = D.ref(db, `ranking/${uid}`), onRef = D.ref(db, `ranking/${uid}/on`);
-    D.onValue(D.ref(db, '.info/connected'), s => { if (!s.val()) return; D.onDisconnect(onRef).remove(); D.update(meRef, { on: true, hide: showOnline ? null : true, nick: nick || (u.displayName || '').split(' ')[0].slice(0, 12) }).catch(() => {}); });
+    D.onValue(D.ref(db, '.info/serverTimeOffset'), s => { shared.srvOff = +s.val() || 0; });
+    const beat = () => { if (!fb.user || document.hidden) return; D.update(meRef, { on: true, seen: D.serverTimestamp(), hide: showOnline ? null : true }).catch(() => {}); };
+    D.onValue(D.ref(db, '.info/connected'), s => { if (!s.val()) return; D.onDisconnect(onRef).remove(); D.update(meRef, { nick: nick || (u.displayName || '').split(' ')[0].slice(0, 12) }).catch(() => {}); beat(); });
+    setInterval(beat, 60000);                                    // the heartbeat while the game is open and in view
+    document.addEventListener('visibilitychange', () => { if (!fb.user) return; if (document.hidden) D.update(meRef, { on: null }).catch(() => {}); else beat(); });
+    shared.leave = () => D.update(meRef, { on: null }).catch(() => {});
     subRanking(); subDaily();
   }
   // signed in: who is online now and the live top 5, in the garage's left column; the 🏆 panel has the full board
