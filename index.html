@@ -2644,7 +2644,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   let achHave = 0;                                                      // how many achievements you hold (kept by the meta chunk)
   const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `최고 거리 ${km(c.unlock)}`;
-  const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
+  const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : c.top >= 330 ? `최고 거리 ${km(c.unlock)} 달성 또는 🪙 ${(5000).toLocaleString()}코인으로 구매` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
   const MP_CARS = ['리겔 GT', '레굴루스 S'].map(n => CARS.findIndex(c => c.name === n)).filter(i => i >= 0);   // multi: everyone on the two stock cars
   for (const c of CARS) c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: c.conv ? c.conv.topOpen : 0 };   // the stock numbers the chassis tuning works from
   const driveTxt = c => c.drive === 'awd' ? '4륜' : '후륜';
@@ -5510,7 +5510,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   try { localRuns = JSON.parse(localStorage.getItem('nh3d-runs') || '[]').filter(r => r && isFinite(r.score) && isFinite(r.dist)).slice(0, 10); } catch (e) { localRuns = []; }
   try { nick = cleanNick(localStorage.getItem('nh3d-nick') || ''); } catch (e) {}
   function cleanNick(s) { return String(s).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 12); }
-  const isUnlocked = i => !!CARS[i] && (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist);
+  // A and S class cars can also be bought outright with coins (achievement cars cannot); bought cars are kept by name
+  const CAR_PRICE = 5000;
+  let boughtCars = {};
+  try { boughtCars = JSON.parse(localStorage.getItem('nh3d-bought') || '{}') || {}; } catch (e) { boughtCars = {}; }
+  const buyable = i => { const c = CARS[i]; return !!c && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
+  const isUnlocked = i => !!CARS[i] && (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]);
   const km = m => Math.round(m / 100) / 10 + 'km';
   const km2 = m => (m / 1000).toFixed(2) + 'km';
   function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
@@ -7794,7 +7799,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const statRow = (label, v) => `<span>${label}</span><u style="--v:${Math.round(clamp(v, 0.06, 1) * 100)}%"></u>`;
   const cardHtml = (c, i) => { const open = isUnlocked(i), tr = !open && trialCar(i); return `<button class="car${open ? '' : tr ? ' trial' : ' locked'}" data-i="${i}" aria-pressed="${i === carIdx}"${open ? '' : ` aria-label="${c.name} 잠김, ${needShort(c)} 달성 시 해금"`}>
       ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>
-      <span class="badges">${open ? `<span class="badge lv">Lv${lvlOf(i)}</span>` : ''}<span class="badge drv ${c.drive}">${driveTxt(c)}</span>${c.conv ? '<span class="badge">오픈카</span>' : ''}</span>${open ? '' : tr ? '<span class="lock">🎟 시승</span>' : `<span class="lock">🔒 ${c.achNeed ? '🏅' + c.achNeed : km(c.unlock)}</span>`}
+      <span class="badges">${open ? `<span class="badge lv">Lv${lvlOf(i)}</span>` : ''}<span class="badge drv ${c.drive}">${driveTxt(c)}</span>${c.conv ? '<span class="badge">오픈카</span>' : ''}</span>${open ? '' : tr ? '<span class="lock">🎟 시승</span>' : `<span class="lock">🔒 ${c.achNeed ? '🏅' + c.achNeed : km(c.unlock)}${!MP && buyable(i) ? ' · 🪙5천' : ''}</span>`}
       <span class="nm">${c.name}</span><small>${open ? `${c.tag} · 최고 ${c.top}${c.conv ? ` · 오픈 ${c.conv.topOpen}` : ''}km/h` : tr ? '오늘의 도전 보상: 한 번 탈 수 있어요' : howTxt(c)}</small>
       <span class="cstats">${statRow('속도', (c.top - 280) / 100)}${statRow('가속', (c.accel - 0.8) / 0.45)}${statRow('핸들링', (c.grip - 0.75) / 0.6)}</span></button>`; };
   const unlockFill = $('unlockFill');
@@ -7848,9 +7853,21 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       ? `최고 거리 ${km2(bestDist)} · 차 ${have}/${CARS.length}대 · 다음 해금 ${n.name}까지 ${km(n.unlock - bestDist)} · 오늘 밤: ${EV.name}`
       : `최고 거리 ${km2(bestDist)} · 모든 차를 해금했어요! · 오늘 밤: ${EV.name}`;
   }
+  let buyAsk = { i: -1, t: 0 };
   function selectCar(i) {
     if (state !== 'ready' && state !== 'over') return;
     i = (i + CARS.length) % CARS.length;
+    if (!canDrive(i) && !MP && buyable(i)) {                // an A/S car: the first tap shows the price, a second tap within 4 s buys it
+      const c = CARS[i], now = Date.now();
+      if (meta.coins < CAR_PRICE) { if (state === 'ready') ovText.textContent = `${c.name}: 🪙 ${CAR_PRICE.toLocaleString()}코인 필요 (지금 ${meta.coins.toLocaleString()}코인) · 또는 최고 거리 ${km(c.unlock)}`; sfx.grind(); return; }
+      if (buyAsk.i !== i || now - buyAsk.t > 4000) { buyAsk = { i, t: now }; if (state === 'ready') ovText.textContent = `${c.name}을(를) 🪙 ${CAR_PRICE.toLocaleString()}코인에 살까요? 한 번 더 누르면 구매해요 (보유 ${meta.coins.toLocaleString()})`;
+        const b = garageEl.querySelector(`[data-i="${i}"]`); if (b) { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); } return; }
+      buyAsk = { i: -1, t: 0 };
+      meta.coins -= CAR_PRICE; saveMeta(); syncMetaBtn();
+      boughtCars[c.name] = true; try { localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); } catch (e) {}
+      try { fbSaveSoon(); } catch (e) {}
+      sfx.ding(); popup(`🚗 ${c.name} 구매 완료!`, 'var(--ok)');
+    }
     if (!canDrive(i)) {                                       // a locked car: say what it takes, nudge the card
       if (state === 'ready') ovText.textContent = `${CARS[i].name}: ${howTxt(CARS[i])} (지금 ${CARS[i].achNeed ? achHave + '개' : km2(bestDist)})`;
       const b = garageEl.querySelector(`[data-i="${i}"]`); if (b) { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); }
