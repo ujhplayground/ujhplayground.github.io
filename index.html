@@ -2709,6 +2709,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       extras: ['fin', 'louvres', 'diffuser', 'splitter', 'skirts', 'wing'], wing: { u: -2.35, v: 1.05, strut: 0.12 } },
   };
   for (const c of CARS) { const R = RESHAPE[c.name]; if (!R) continue; const { tag2, ...rest } = R; Object.assign(c, rest); }
+  // Retired cars: they shared a body with another car, so they leave the line-up. They stay in CARS (every saved index,
+  // level and look keeps pointing at the right car) but no list shows them; whoever owned one gets its twin instead.
+  const RETIRED = { '버팔로 머슬': '카노푸스 SS', '오리온 SR': '알타이르 R', '페가수스 GT': '폴룩스 GT', '헬릭스 GTS': '알데바란 GTS', '엘나트 SS': '알골 SS', '리가 TR': '프로키온 TR' };
+  for (const c of CARS) if (RETIRED[c.name]) c.retired = true;
+  const twinOf = i => { const c = CARS[i]; return c && c.retired ? CARS.findIndex(d => d.name === RETIRED[c.name]) : i; };
+  const LINEUP = () => CARS.filter(c => !c.retired).length;
   let achHave = 0;                                                      // how many achievements you hold (kept by the meta chunk)
   const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `최고 거리 ${km(c.unlock)}`;
   const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : c.top >= 330 ? `최고 거리 ${km(c.unlock)} 달성 또는 🪙 ${(5000).toLocaleString()}코인으로 구매` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
@@ -3150,6 +3156,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   let carIdx = 0, car = CARS[0], EXH = [], flames = [], wheels = [], roofRig = null, pCockpit = null;
   try { carIdx = clamp(parseInt(localStorage.getItem('nh3d-car2'), 10) || 0, 0, CARS.length - 1); } catch (e) {}
+  carIdx = Math.max(0, twinOf(carIdx));                    // a retired car's driver moves into its twin
   function buildPlayer(i) {
     carIdx = i; car = CARS[i];
     for (const ch of [...body.children]) body.remove(ch);
@@ -5634,21 +5641,27 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const CAR_PRICE = 5000;
   let boughtCars = {};
   try { boughtCars = JSON.parse(localStorage.getItem('nh3d-bought') || '{}') || {}; } catch (e) { boughtCars = {}; }
-  const buyable = i => { const c = CARS[i]; return !!c && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
+  const buyable = i => { const c = CARS[i]; return !!c && !c.retired && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
   // developer accounts (by Firebase uid): every car is open, and a 🛠 DEV badge shows next to the name for everyone
   const DEV_UIDS = ['djIs5etGtzPGSHWFdZm3Fi7NWsv2'];
   const isDev = id => DEV_UIDS.includes(id);
   const devOn = () => { try { return !!(fb.user && isDev(fb.user.uid)); } catch (e) { return false; } };
   const devEl = () => { const d = document.createElement('span'); d.className = 'devb'; d.textContent = '🛠 DEV'; return d; };
+  try {
+    if (localStorage.getItem('nh3d-retired-v1') !== '1') {
+      for (const c of CARS) if (c.retired && (c.unlock <= bestDist || boughtCars[c.name]) && !c.achNeed) boughtCars[RETIRED[c.name]] = true;
+      localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); localStorage.setItem('nh3d-retired-v1', '1');
+    }
+  } catch (e) {}
   const isUnlocked = i => !!CARS[i] && (devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]));
   const km = m => Math.round(m / 100) / 10 + 'km';
   const km2 = m => (m / 1000).toFixed(2) + 'km';
-  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
+  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && !c.retired && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
   function saveBest() { try { localStorage.setItem('nh3d-best-dist', String(Math.round(bestDist))); } catch (e) {} }
   function checkUnlocks() {                                   // crossing a milestone mid-run unlocks the car on the spot
     if (dist <= bestDist) return;
     const old = bestDist; bestDist = dist;
-    const got = CARS.filter(c => c.unlock > old && c.unlock <= bestDist), cu = custUnlocked(old, bestDist);
+    const got = CARS.filter(c => !c.retired && c.unlock > old && c.unlock <= bestDist), cu = custUnlocked(old, bestDist);
     if (cu.length) runCust.push(...cu);
     if (got.length) { runUnlocks.push(...got.map(c => c.name)); saveBest(); sfx.ding(); popup(`새 차 해금: ${got.map(c => c.name).join(', ')}!`, 'var(--ok)'); }
     else if (cu.length) { saveBest(); sfx.ding(); popup(`커스텀 해금: ${cu.join(', ')}`, 'var(--paint)'); }
@@ -6262,7 +6275,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const trialUsed = () => { chalRoll(); return chal.trial === chal.day; };
   const trialOK = () => dailyGoals().every(g => g.done) && !trialUsed();
   const trialCar = i => !isUnlocked(i) && tierOf(CARS[i]) === 'A' && trialOK();
-  const canDrive = i => (!MP || MP_CARS.includes(i)) && (isUnlocked(i) || trialCar(i));
+  const canDrive = i => !!CARS[i] && !CARS[i].retired && (!MP || MP_CARS.includes(i)) && (isUnlocked(i) || trialCar(i));
   function useTrial() { chal.trial = chal.day; try { localStorage.setItem('nh3d-chal', JSON.stringify(chal)); } catch (e) {} }
   function renderChal() {
     const box = document.getElementById('chalBox'); if (!box) return;
@@ -7988,19 +8001,19 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     renderCars();
   });
   function renderCars() {
-    const pass = (c, i) => (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
+    const pass = (c, i) => !c.retired && (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
     carsM.innerHTML = CARS.map((c, i) => c.trans === 'manual' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsA.innerHTML = CARS.map((c, i) => c.trans === 'auto' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsM.parentElement.style.display = carsM.innerHTML ? '' : 'none';
     carsA.parentElement.style.display = carsA.innerHTML ? '' : 'none';
     fltEmpty.hidden = !!(carsM.innerHTML || carsA.innerHTML);
     filtEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(filtOn(b.dataset.f))));
-    const n = nextUnlock(), have = CARS.filter((c, i) => isUnlocked(i)).length;
+    const n = nextUnlock(), have = CARS.filter((c, i) => !c.retired && isUnlocked(i)).length;
     let prev = 0; for (const c of CARS) if (c.unlock <= bestDist) prev = Math.max(prev, c.unlock);
     renderStats();
     unlockFill.style.width = (n ? clamp((bestDist - prev) / (n.unlock - prev), 0, 1) * 100 : 100) + '%';
     if (state === 'ready') ovText.textContent = n
-      ? `최고 거리 ${km2(bestDist)} · 차 ${have}/${CARS.length}대 · 다음 해금 ${n.name}까지 ${km(n.unlock - bestDist)} · 오늘 밤: ${EV.name}`
+      ? `최고 거리 ${km2(bestDist)} · 차 ${have}/${LINEUP()}대 · 다음 해금 ${n.name}까지 ${km(n.unlock - bestDist)} · 오늘 밤: ${EV.name}`
       : `최고 거리 ${km2(bestDist)} · 모든 차를 해금했어요! · 오늘 밤: ${EV.name}`;
   }
   let buyAsk = { i: -1, t: 0 };
