@@ -338,7 +338,8 @@ button.go:hover { filter: brightness(1.08); }
 .brick.on { outline: 3px solid #fff; outline-offset: 2px; }
 .brick.buy { filter: saturate(.35) brightness(.8); }
 .brick.buy small { color: #fff; background: rgba(0, 0, 0, .45); border-radius: 6px; padding: 1px 6px; justify-self: start; opacity: 1; }
-.bd-sw { display: flex; flex-wrap: wrap; gap: 8px; } .bd-body h5 { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
+.bd-sw { display: flex; flex-wrap: wrap; gap: 8px; } .bd-sw .swb { width: 30px; height: 30px; flex: none; }
+.bd-stats .tier, .bd-list .tier { position: static; display: inline-grid; place-items: center; min-width: 30px; } .bd-body h5 { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
 .bd-stats { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); }
 .bd-stats .tier { grid-row: span 3; font-size: 1.3rem; padding: 6px 10px; }
 .bd-stats div { display: grid; grid-template-columns: 64px 1fr 70px; gap: 8px; align-items: center; font-size: .78rem; }
@@ -6218,6 +6219,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let bdTab = 'make', bdKind = 'front', draft = cleanBuild(null), draftIdx = -1, bdPrevCar = 0, bdAsk = '', bdAskT = 0, bdEditing = '';
   let market = [], marketReady = false, marketOn = false;
   const owns = id => !!ownParts[id] || BP_KINDS.some(k => BP[k][0][0] === id);
+  function draftDue() {                                     // the parts on the draft not bought yet, and what they cost
+    const ids = [...BP_KINDS.map(k => [k, draft[k]]), ...draft.deco.map(d => ['deco', d])].filter(([, id]) => !owns(id));
+    return { ids, cost: ids.reduce((a, [k, id]) => a + bpPart(k, id)[2], 0) };
+  }
   const statDelta = d => [d.top ? `속도 ${d.top > 0 ? '+' : ''}${d.top}` : '', d.accel ? `가속 ${d.accel > 0 ? '+' : ''}${d.accel}` : '', d.grip ? `접지 ${d.grip > 0 ? '+' : ''}${d.grip}` : ''].filter(Boolean).join(' · ');
   function bdSay(t, ok) { bdMsg.textContent = t || '\u00a0'; bdMsg.style.color = ok ? 'var(--ok)' : 'var(--lamp)'; bdMsg.hidden = false; }   // the line is always there: nothing jumps under a finger
   function previewDraft() {                                // the draft rides the turntable
@@ -6229,7 +6234,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     bdCoins.textContent = `🪙 ${meta.coins.toLocaleString()}`;
     bdTabs.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === bdTab)));
     if (bdTab === 'make') {
-      const st = buildStats(draft), tier = tierOf(st);
+      const st = buildStats(draft), tier = tierOf(st), due = draftDue();
       const kinds = [...BP_KINDS, 'deco', 'paint'];
       let parts = '';
       if (bdKind === 'paint') {
@@ -6240,7 +6245,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         parts = `<div class="bd-parts">${list.map(([id, n, price, d]) => {
           const on = bdKind === 'deco' ? draft.deco.includes(id) : draft[bdKind] === id, own = owns(id);
           return `<button class="brick${on ? ' on' : ''}${own ? '' : ' buy'}" data-part="${id}" style="--bc:${BP_COLOR[bdKind]}"><i class="studs"></i><b>${n}</b>
-            <small>${own ? (on ? '장착됨' : bdKind === 'deco' ? '눌러서 붙이기' : '보유') : `🪙 ${price.toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
+            <small>${own ? (on ? '장착됨' : bdKind === 'deco' ? '눌러서 붙이기' : '보유') : on ? `시험 장착 · 🪙 ${price.toLocaleString()}` : `🪙 ${price.toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
       }
       bdBody.innerHTML = `<div class="bd-kinds">${kinds.map(k => `<button data-kind="${k}" style="--bc:${BP_COLOR[k]}" aria-pressed="${k === bdKind}">${BP_LABEL[k]}</button>`).join('')}</div>
         ${parts}
@@ -6249,7 +6254,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
           <div><i>가속</i><u><s style="width:${(st.accel - 0.8) / 0.35 * 100}%"></s></u><em>${st.accel}</em></div>
           <div><i>핸들링</i><u><s style="width:${(st.grip - 0.8) / 0.4 * 100}%"></s></u><em>${st.grip}</em></div></div>
         <div class="bd-name"><input id="bdName" maxlength="16" placeholder="차 이름을 지어 주세요" value="${escH(bdEditing)}" autocomplete="off">
-          <button class="rankbtn" id="bdSave">💾 차고에 저장</button><button class="go bd-pub" id="bdPub">🚀 출시하기</button></div>`;
+          <button class="rankbtn" id="bdSave">${due.cost ? `💾 🪙${due.cost.toLocaleString()} 결제·저장` : '💾 차고에 저장'}</button><button class="go bd-pub" id="bdPub">${due.cost ? `🚀 🪙${due.cost.toLocaleString()} 결제·출시` : '🚀 출시하기'}</button></div>`;
     } else if (bdTab === 'mine') {
       bdBody.innerHTML = myBuilds.length ? `<ul class="bd-list">${myBuilds.map((r, k) => { const st = buildStats(cleanBuild(r.b));
         return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
@@ -6304,8 +6309,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const name = cleanCarName($('bdName').value);
     if (!name) { bdSay('차 이름을 먼저 지어 주세요'); $('bdName').focus(); return; }
     if (builtinName(name) || name === '조립 중인 차') { bdSay('이미 있는 차 이름이에요. 다른 이름을 지어 주세요'); return; }
+    if (!myBuilds.some(r => r.name === (bdEditing || name)) && myBuilds.length >= 20) { bdSay('차는 20대까지 저장할 수 있어요'); return; }
+    const due = draftDue();
+    if (due.cost) {                                          // pay for the new parts first
+      if (meta.coins < due.cost) { bdSay(`코인이 모자라요: 새 부품 🪙 ${due.cost.toLocaleString()} 필요 (보유 ${meta.coins.toLocaleString()})`); sfx.grind(); return; }
+      meta.coins -= due.cost; saveMeta(); syncMetaBtn(); for (const [, id] of due.ids) ownParts[id] = true; saveBuilds(); sfx.ding();
+    }
     let rec = myBuilds.find(r => r.name === (bdEditing || name));
-    if (!rec && myBuilds.length >= 20) { bdSay('차는 20대까지 저장할 수 있어요'); return; }
     if (!rec) { rec = { id: 'b' + Date.now().toString(36), name, b: null, pub: '' }; myBuilds.push(rec); }
     if (rec.name !== name) { const old = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === rec.name && !c.draft); if (old >= 0) CARS[old] = buildSpec(draft, name, '나'); }
     rec.name = name; rec.b = cleanBuild(draft); bdEditing = name; saveBuilds();
@@ -6330,16 +6340,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (t.dataset.kind) { bdKind = t.dataset.kind; renderBuild(); return; }
     if (t.dataset.col) { draft.color = +t.dataset.col; previewDraft(); renderBuild(); return; }
     if (t.dataset.acc) { draft.accent = +t.dataset.acc; previewDraft(); renderBuild(); return; }
-    if (t.dataset.part) {
-      const id = t.dataset.part, p = bpPart(bdKind, id);
-      if (!owns(id)) {                                       // buying: the first tap asks, the second (within 4 s) pays
-        if (meta.coins < p[2]) { bdSay(`코인이 모자라요 (🪙 ${p[2].toLocaleString()} 필요)`); sfx.grind(); return; }
-        if (bdAsk !== id || Date.now() - bdAskT > 4000) { bdAsk = id; bdAskT = Date.now(); bdSay(`'${p[1]}'을(를) 🪙 ${p[2].toLocaleString()}에 살까요? 한 번 더 누르면 구매해요`); return; }
-        bdAsk = ''; meta.coins -= p[2]; saveMeta(); syncMetaBtn(); ownParts[id] = true; saveBuilds(); try { fbSaveSoon(); } catch (e) {}
-        sfx.ding(); bdSay(`'${p[1]}' 구매 완료!`, true);
-      }
+    if (t.dataset.part) {                                     // try it on: parts snap on at once; new ones are paid for when the car is saved
+      const id = t.dataset.part;
       if (bdKind === 'deco') draft.deco = draft.deco.includes(id) ? draft.deco.filter(d => d !== id) : [...draft.deco, id];
       else draft[bdKind] = id;
+      const due = draftDue();
+      bdSay(due.cost ? `시험 장착 중 · 새 부품 🪙 ${due.cost.toLocaleString()} (저장할 때 결제)` : '', false);
       previewDraft(); renderBuild(); return;
     }
     if (t.id === 'bdSave') return storeCar(false);
