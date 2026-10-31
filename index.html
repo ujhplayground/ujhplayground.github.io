@@ -294,6 +294,7 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .rank-list li.empty { display: block; padding: 22px 10px; text-align: center; color: var(--muted); }
 .rank-foot { display: grid; gap: 6px; font-size: .8rem; color: var(--muted); }
 .rank-foot label { display: flex; align-items: center; gap: 8px; }
+.devb { display: inline-block; margin-left: 6px; padding: 0 5px; border-radius: 5px; font-size: .68em; font-weight: 800; letter-spacing: .03em; color: #10131a; background: linear-gradient(90deg, #ffd34d, #ff8a3d); vertical-align: middle; }
 .odot { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #2ee66b; box-shadow: 0 0 6px #2ee66b; vertical-align: middle; flex: none; }
 .rank-foot label.ontog { cursor: pointer; user-select: none; }
 .rank-foot label.ontog input { flex: none; width: 16px; height: 16px; accent-color: #2ee66b; }
@@ -5515,7 +5516,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let boughtCars = {};
   try { boughtCars = JSON.parse(localStorage.getItem('nh3d-bought') || '{}') || {}; } catch (e) { boughtCars = {}; }
   const buyable = i => { const c = CARS[i]; return !!c && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
-  const isUnlocked = i => !!CARS[i] && (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]);
+  // developer accounts (by Firebase uid): every car is open, and a 🛠 DEV badge shows next to the name for everyone
+  const DEV_UIDS = ['djIs5etGtzPGSHWFdZm3Fi7NWsv2'];
+  const isDev = id => DEV_UIDS.includes(id);
+  const devOn = () => { try { return !!(fb.user && isDev(fb.user.uid)); } catch (e) { return false; } };
+  const devEl = () => { const d = document.createElement('span'); d.className = 'devb'; d.textContent = '🛠 DEV'; return d; };
+  const isUnlocked = i => !!CARS[i] && (devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]));
   const km = m => Math.round(m / 100) / 10 + 'km';
   const km2 = m => (m / 1000).toFixed(2) + 'km';
   function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
@@ -5684,7 +5690,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const li = document.createElement('li'); li.className = medal(i) + (all && r.id === shared.me ? ' me' : '');
       const cells = [String(i + 1), all ? (r.nick || (names[r.id] && names[r.id].name) || '익명 드라이버') + (r.id === shared.me ? ' (나)' : '') : dateText(r.at),
         r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-'];
-      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); } li.append(s); });
+      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); if (all && isDev(r.id)) s.append(devEl()); } li.append(s); });
       rankList.append(li);
     });
     rankNote.textContent = all
@@ -5702,7 +5708,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (r.me ? ' me' : '');
       [String(i + 1), (r.nick || '익명 드라이버') + (r.me ? ' (나)' : ''), r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-']
-        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); } li.append(s); });
+        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); if (isDev(r.me ? shared.me : r.id)) s.append(devEl()); } li.append(s); });
       rankList.append(li);
     });
     const online = daily.ready && daily.day === dayKey();
@@ -6685,7 +6691,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   window.addEventListener('keydown', e => { if (!gate.hidden) e.stopPropagation(); }, true);   // no driving off behind the login screen
   // ── signed in: your nickname bottom-left on the garage and results screens ──
   const whoEl = $('whoBadge');
-  function syncWho() { const on = !!fb.user; whoEl.hidden = !on; if (on) whoEl.textContent = '👤 ' + (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버') + (shared.ready ? ` · 🟢 ${Math.max(1, shared.online)}명 접속` : ''); }
+  function syncWho() { const on = !!fb.user; whoEl.hidden = !on; if (on) whoEl.textContent = '👤 ' + (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버') + (devOn() ? ' 🛠 DEV' : '') + (shared.ready ? ` · 🟢 ${Math.max(1, shared.online)}명 접속` : ''); }
   setInterval(() => { if (fb.user) syncWho(); }, 1500);           // follows nickname changes
   if (fbHere) { syncLoginBtn(); fbLoad().catch(() => { loginBtn.hidden = true; gateFail = true; gateMsg.textContent = '로그인 서비스에 연결하지 못했어요. 인터넷을 확인하고 새로고침해 주세요.'; syncGate(); }); }
 
@@ -6726,7 +6732,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (!liveBox || !fb.user || !shared.ready) return;
     liveBox.hidden = false;
     const rows = shared.rows.slice().sort((a, b) => b.dist - a.dist || b.score - a.score), mine = rows.findIndex(r => r.id === shared.me);
-    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${r.on ? '<span class="odot" title="지금 접속 중"></span>' : ''}${escH(r.nick || '드라이버')}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
+    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${r.on ? '<span class="odot" title="지금 접속 중"></span>' : ''}${escH(r.nick || '드라이버')}${isDev(r.id) ? '<span class="devb">🛠 DEV</span>' : ''}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
     liveBox.innerHTML = `<h4>🏆 실시간 랭킹 <span class="on">🟢 지금 ${Math.max(1, shared.online)}명 접속</span></h4><ol>${rows.slice(0, 5).map(li).join('') || '<li><b>·</b><span class="n">아직 기록이 없어요</span><span></span></li>'}${mine >= 5 ? li(rows[mine], mine) : ''}</ol>`;
     syncWho();
   }
@@ -6746,6 +6752,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const sys = chatList.querySelector('.sys'); if (sys) sys.remove();
       const me = m.uid === u.uid, li = document.createElement('li'); li.className = me ? 'me' : '';
       const n = document.createElement('span'); n.className = 'n'; n.textContent = String(m.n || '드라이버').slice(0, 14);
+      if (isDev(m.uid)) n.append(devEl());
       const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = tmOf(m.at);
       li.append(n, document.createTextNode(m.t.slice(0, 120)), tm); chatList.append(li);
       while (chatList.children.length > 80) chatList.firstChild.remove();
@@ -6778,6 +6785,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   async function onLogin(u, fresh) {
     if (!shared.db) { try { fbBoards(u); } catch (e) {} }
     try { chatStart(u); } catch (e) {}
+    if (isDev(u.uid)) { try { renderCars(); } catch (e) {} }
     if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
     let cloud = null;
     try { const s = await fb.D.get(fb.D.ref(fb.db, `users/${u.uid}/save`)); cloud = s.exists() ? s.val() : null; } catch (e) { return; }
