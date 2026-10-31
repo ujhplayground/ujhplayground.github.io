@@ -318,6 +318,28 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .keys dd { margin: 0; }
 button.go { padding: 11px 38px; font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: .04em; color: var(--night); background: var(--lamp); border: 0; border-radius: 999px; cursor: pointer; }
 button.go:hover { filter: brightness(1.08); }
+.rank-list li.daysum, #rankList li.daysum { display: block; text-align: center; font-weight: 700; color: #10131a; background: linear-gradient(90deg, #ffd45e, #ff8a3d); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; }
+/* the garage's button row: dark glass pills with a lit edge; the start button glows with a passing shine */
+.gorow .rankbtn { position: relative; gap: 7px; padding: 10px 17px; font-weight: 700; letter-spacing: .02em; color: #e9edf5;
+  background: linear-gradient(180deg, rgba(34, 38, 52, .94), rgba(12, 14, 20, .94)); border: 1px solid rgba(255, 255, 255, .09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), inset 0 -1px 0 rgba(0, 0, 0, .5), 0 6px 18px rgba(0, 0, 0, .38);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, color .16s ease; }
+.gorow .rankbtn::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: -1px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--lamp), transparent); opacity: 0; transition: opacity .16s ease; }
+.gorow .rankbtn:hover { transform: translateY(-2px); color: #fff; border-color: rgba(255, 181, 61, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 10px 26px rgba(255, 150, 40, .2), 0 0 0 1px rgba(255, 181, 61, .18); }
+.gorow .rankbtn:hover::after { opacity: 1; }
+.gorow .rankbtn:active { transform: translateY(0) scale(.97); }
+.gorow .rankbtn kbd { color: #aab3c5; border-color: rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .05); font-size: .68rem; }
+.gorow .rankbtn.mpbtn { border-color: rgba(79, 209, 255, .35); }
+.gorow .rankbtn.mpbtn:hover { border-color: rgba(79, 209, 255, .8); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 10px 26px rgba(79, 209, 255, .22); }
+.gorow .rankbtn.mpbtn::after { background: linear-gradient(90deg, transparent, #4fd1ff, transparent); }
+.gorow button.go { position: relative; overflow: hidden; background: linear-gradient(135deg, #ffd45e 0%, #ffab3d 45%, #ff7a2f 100%);
+  box-shadow: 0 10px 30px rgba(255, 130, 40, .45), inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -2px 0 rgba(160, 60, 0, .35); text-shadow: 0 1px 0 rgba(255, 255, 255, .3);
+  transition: transform .16s ease, box-shadow .16s ease; }
+.gorow button.go::before { content: ''; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent); transform: skewX(-20deg); animation: goShine 3.2s ease-in-out infinite; }
+.gorow button.go:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 36px rgba(255, 130, 40, .6), inset 0 1px 0 rgba(255, 255, 255, .6); }
+@keyframes goShine { 0%, 55% { left: -60%; } 85%, 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .gorow button.go::before { animation: none; } .gorow .rankbtn, .gorow button.go { transition: none; } }
 button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 .touch { position: absolute; left: 12px; right: 12px; bottom: 12px; display: none; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; pointer-events: none; }
 .touch div { display: flex; gap: 8px; pointer-events: auto; }
@@ -651,7 +673,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn" id="dexBtn">📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -3449,9 +3471,28 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         const sb2 = ac.createBiquadFilter(), sg2 = ac.createGain(); sb2.type = 'bandpass'; sb2.frequency.value = 3300; sb2.Q.value = 1.3; sg2.gain.value = 0;
         loopNoise().connect(sb2); sb2.connect(sg2); sg2.connect(fx);
         aux = { mo, mg, mw, mwg, ab, ag, sg2 };
-        setProfile(profName);
+        setProfile(profName); startSample();
         startMusic();
       } catch (e) { ac = null; }
+    }
+    // recorded engines: some S-class cars carry a real recording (snd/*.mp3), looped and pitched with the revs;
+    // the synth stays faintly underneath for the shift barks and pops. Without the file (offline copy) the synth plays alone.
+    const SAMPLES = { '이클립스 제로': 'snd/svj.mp3', '안타레스 V12': 'snd/enzo.mp3', '프로키온 TR': 'snd/f458.mp3', '오로라 V12': 'snd/testa.mp3' };
+    let smpName = '', smp = null; const smpBuf = {};
+    function setSample(name) { const n = SAMPLES[name] ? name : ''; if (n === smpName && (smp || !n)) return; smpName = n; startSample(); }
+    async function startSample() {
+      if (!ac) return;
+      if (smp) { try { smp.src.stop(); smp.g.disconnect(); } catch (e) {} smp = null; }
+      const name = smpName; if (!name || smpBuf[name] === false) return;
+      try {
+        if (!smpBuf[name]) smpBuf[name] = await fetch(SAMPLES[name]).then(r => { if (!r.ok) throw new Error('no file'); return r.arrayBuffer(); })
+          .then(b => new Promise((res, rej) => ac.decodeAudioData(b, res, rej)));
+        if (name !== smpName || smp) return;
+        const src = ac.createBufferSource(), lp = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = smpBuf[name]; src.loop = true; lp.type = 'lowpass'; lp.frequency.value = 9000; g.gain.value = 0;
+        src.connect(lp); lp.connect(g); g.connect(fx); src.start(0, Math.random() * src.buffer.duration);
+        smp = { src, lp, g };
+      } catch (e) { smpBuf[name] = false; }
     }
     function setProfile(name) {
       profName = ENGINES[name] ? name : 'v8'; prof = ENGINES[profName];
@@ -3476,10 +3517,18 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const rm = X.res * (mode ? 1 : 0.86 + 0.07 * exI);                         // shut valves: the note booms lower in the muffler
       E.r1.frequency.setTargetAtTime(prof.res[0] * rm * (0.9 + 0.3 * r), t, 0.08); E.r2.frequency.setTargetAtTime(prof.res[1] * rm * (0.9 + 0.25 * r), t, 0.08);
       const base = on ? prof.vol * X.gain * (mode ? 1.18 : 0.62 + 0.25 * exI) * (cut ? 0.06 * cutLevel / 0.12 : (0.045 + 0.065 * load) * (bark ? 1.55 : 1)) * (0.7 + 0.4 * r) * (1 + 0.3 * openAir) * (1 + 0.32 * boost) : 0;
-      E.out.gain.setTargetAtTime(base, t, cut ? 0.006 : 0.022);
+      if (smp) {                                                   // the recording: pitch follows the revs, level the throttle
+        const rate = (0.5 + 0.667 * r) * (t < blipUntil ? 1.18 : 1) * (1 + 0.04 * engT);
+        smp.src.playbackRate.setTargetAtTime(rate, t, cut ? 0.02 : 0.05);
+        const sv = on ? 0.3 * (cut ? 0.3 : 0.55 + 0.45 * load + (bark ? 0.25 : 0)) * (0.55 + 0.5 * Math.min(r, 1)) * (1 + 0.25 * boost) * (mode ? 1 : 0.8) * (1 + 0.2 * openAir) : 0;
+        smp.g.gain.setTargetAtTime(sv, t, cut ? 0.01 : 0.04);
+        smp.lp.frequency.setTargetAtTime(2600 + 9000 * (0.4 + 0.6 * load), t, 0.08);
+      }
+      const synthK = smp ? 0.22 : 1;
+      E.out.gain.setTargetAtTime(base * synthK, t, cut ? 0.006 : 0.022);
       const rasp = prof.rasp * X.rasp * (1 + 0.4 * engT) * (mode ? 1.3 : 0.35 + 0.4 * exI) * 0.5 * (1 + 0.6 * openAir) * (1 + 0.4 * boost);
       E.ng.gain.setTargetAtTime(rasp, t, 0.05); E.am.gain.setTargetAtTime(rasp, t, 0.05);
-      E.lg.gain.setTargetAtTime(limiter ? base * 0.92 : 0, t, 0.01);
+      E.lg.gain.setTargetAtTime(limiter ? base * 0.92 * synthK : 0, t, 0.01);
       const wf0 = RPM * 0.19 * (t < blipUntil ? 1.25 : 1);
       scw.o.frequency.setTargetAtTime(wf0, t, 0.03); scw.b.frequency.setTargetAtTime(wf0, t, 0.03);
       scw.g.gain.setTargetAtTime(prof.sc && on && !cut ? prof.sc * X.gain * 0.05 * (0.3 + 0.7 * load) * (0.25 + r) : 0, t, 0.05);
@@ -3679,6 +3728,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       siren: near => { if (!sir) return; const t = now(); sir.o.frequency.setTargetAtTime(Math.floor(t * 2.2) % 2 ? 980 : 720, t, 0.015); sir.g.gain.setTargetAtTime(near * 0.05, t, 0.1); },
       musicBoost: b => { if (mus) mus.lp.frequency.setTargetAtTime(1400 + b * 5000, now(), 0.2); },
       get muted() { return muted; },
+      setSample,
       setMuted(m) { muted = m; if (master) master.gain.value = m ? 0 : 0.6; },
       get musicOn() { return musicOn; },
       setMusic(m) { musicOn = m; try { localStorage.setItem('nh3d-music', m ? '1' : '0'); } catch (e) {} if (mus) mus.out.gain.setTargetAtTime(m ? 0.17 : 0, now(), 0.1); },
@@ -5702,8 +5752,16 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     tabDay.setAttribute('aria-pressed', 'true'); tabAll.setAttribute('aria-pressed', 'false'); tabMe.setAttribute('aria-pressed', 'false');
     for (const b of rankEl.querySelectorAll('[data-sort]')) b.setAttribute('aria-pressed', String(b.dataset.sort === rankSort));
     const key = rankSort === 'dist' ? 'dist' : 'score';
-    const rows = dayRows().sort((a, b) => b[key] - a[key] || b.score - a.score).slice(0, 50);
+    const allRows = dayRows().sort((a, b) => b[key] - a[key] || b.score - a.score), rows = allRows.slice(0, 50);
     rankList.textContent = '';
+    if (allRows.length) {                                     // where you stand among everyone who drove today
+      const mi = allRows.findIndex(r => r.me), sum = document.createElement('li'); sum.className = 'daysum';
+      const pct = mi >= 0 ? Math.max(1, Math.round((mi + 1) / allRows.length * 100)) : 0;
+      sum.textContent = mi >= 0
+        ? `오늘 전체 ${allRows.length}명 중 내 순위 ${mi + 1}위 · 상위 ${pct}% (${rankSort === 'dist' ? '거리' : '점수'} 기준)`
+        : `오늘 전체 ${allRows.length}명이 달렸어요 · 한 판 달리면 내 순위가 나와요`;
+      rankList.append(sum);
+    }
     if (!rows.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = '오늘은 아직 기록이 없어요. 오늘 첫 기록을 세워 보세요!'; rankList.append(li); }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (r.me ? ' me' : '');
@@ -7882,7 +7940,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       sfx.grind(); return;
     }
     sfx.init();
-    buildPlayer(i); sfx.setProfile(car.engine); sfx.setTune(car.ex, car.kit, car.eng);      // its custom look is worn by buildPlayer
+    buildPlayer(i); sfx.setProfile(car.engine); sfx.setSample(car.name); sfx.setTune(car.ex, car.kit, car.eng);      // its custom look is worn by buildPlayer
     if (state === 'over') { resetRun(); missions = []; state = 'ready'; }
     toGarage(); renderCars(); nRpm = 0.75;                   // a blip of the throttle as you pick it
     if (!isUnlocked(i) && state === 'ready') ovText.textContent = `${CARS[i].name} 시승: 출발하면 오늘의 시승권을 써요 (한 번만)`;
@@ -7919,7 +7977,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
 
   function beginRun() {
-    closeCustom(); sfx.init(); sfx.setProfile(car.engine); sfx.setTune(car.ex, car.kit, car.eng);
+    closeCustom(); sfx.init(); sfx.setProfile(car.engine); sfx.setSample(car.name); sfx.setTune(car.ex, car.kit, car.eng);
     resetRun(); state = 'count'; countT = 3.2; countShown = 0; showMenu(false); last = performance.now();
     popup(`오늘 밤: ${EV.name}`, 'var(--lamp)');
     renderShifter();
@@ -8061,7 +8119,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   setGfx(hiGfx);
   thumbs = makeThumbs();
   if (!isUnlocked(carIdx)) carIdx = 0;                        // a car saved from before it was locked: back to the starter
-  buildPlayer(carIdx); sfx.setProfile(car.engine); sfx.setTune(car.ex, car.kit, car.eng);
+  buildPlayer(carIdx); sfx.setProfile(car.engine); sfx.setSample(car.name); sfx.setTune(car.ex, car.kit, car.eng);
   resetRun(); missions = []; state = 'ready'; toGarage(); renderCars();
   if ('ResizeObserver' in window) new ResizeObserver(resize).observe(stage); else addEventListener('resize', resize);
   requestAnimationFrame(frame);
