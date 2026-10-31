@@ -156,6 +156,7 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .meta-list li[data-id], .meta-list li[data-deco], .meta-list li[data-buy] { cursor: pointer; }
 .meta-list li.ok b { color: var(--lamp); }
 .meta-list li.on { border-color: var(--lamp); background: rgba(255, 181, 71, .08); }
+.meta-list.login li:last-child:nth-child(odd) { grid-column: 1 / -1; }   /* the odd last day spans the row: no empty cell beside it */
 .car .badge.lv { background: #2a2f3c; color: var(--lamp); }
 .flt-empty { font-size: .74rem; color: var(--muted); padding: 4px 2px; }
 .cars { display: flex; gap: 8px; max-width: 100%; overflow-x: auto; padding: 2px 2px 6px; }
@@ -319,6 +320,37 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 button.go { padding: 11px 38px; font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: .04em; color: var(--night); background: var(--lamp); border: 0; border-radius: 999px; cursor: pointer; }
 button.go:hover { filter: brightness(1.08); }
 .rank-list li.daysum, #rankList li.daysum { display: block; text-align: center; font-weight: 700; color: #10131a; background: linear-gradient(90deg, #ffd45e, #ff8a3d); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; }
+/* 🛠 build garage: chunky toy-brick part tiles */
+.gorow .rankbtn.buildbtn { border-color: rgba(255, 200, 60, .45); }
+.gorow .rankbtn.buildbtn.lockd { opacity: .55; }
+.bd-tabs { margin: 2px 0 6px; }
+.bd-body { display: grid; gap: 12px; align-content: start; }
+.bd-kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+.bd-kinds button { padding: 6px 10px; font: inherit; font-size: .8rem; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--bc) 35%, #12151d); border: 2px solid transparent; border-radius: 10px; cursor: pointer; }
+.bd-kinds button[aria-pressed="true"] { background: var(--bc); border-color: #fff; box-shadow: 0 3px 0 rgba(0, 0, 0, .35); }
+.bd-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 9px; }
+.brick { position: relative; display: grid; gap: 2px; align-content: start; min-height: 78px; padding: 18px 10px 9px; text-align: left; font: inherit; color: #10131a; cursor: pointer;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 100%, #fff 18%), var(--bc)); border: 0; border-radius: 8px;
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .45), 0 3px 8px rgba(0, 0, 0, .35); transition: transform .12s ease; }
+.brick .studs { position: absolute; top: 5px; left: 10px; right: 10px; height: 9px; background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, .55) 0 2px, rgba(0, 0, 0, .18) 2.5px 4.2px, transparent 4.6px) left / 18px 9px repeat-x; }
+.brick b { font-size: .86rem; } .brick small { font-size: .72rem; font-weight: 700; opacity: .8; } .brick em { font-style: normal; font-size: .68rem; opacity: .75; }
+.brick:hover { transform: translateY(-2px); }
+.brick.on { outline: 3px solid #fff; outline-offset: 2px; }
+.brick.buy { filter: saturate(.35) brightness(.8); }
+.brick.buy small { color: #fff; background: rgba(0, 0, 0, .45); border-radius: 6px; padding: 1px 6px; justify-self: start; opacity: 1; }
+.bd-sw { display: flex; flex-wrap: wrap; gap: 8px; } .bd-body h5 { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
+.bd-stats { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); }
+.bd-stats .tier { grid-row: span 3; font-size: 1.3rem; padding: 6px 10px; }
+.bd-stats div { display: grid; grid-template-columns: 64px 1fr 70px; gap: 8px; align-items: center; font-size: .78rem; }
+.bd-stats i { font-style: normal; color: var(--muted); } .bd-stats em { font-style: normal; font-weight: 700; text-align: right; }
+.bd-stats u { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .1); overflow: hidden; } .bd-stats s { display: block; height: 100%; background: linear-gradient(90deg, #4fd1ff, var(--lamp)); text-decoration: none; }
+.bd-name { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bd-name input { flex: 1 1 160px; padding: 9px 12px; font: inherit; color: var(--paint); background: #0a0c12; border: 1px solid var(--edge); border-radius: 10px; }
+.bd-name .go.bd-pub { padding: 9px 18px; font-size: .95rem; }
+.bd-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.bd-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid var(--edge); }
+.bd-list li > div { flex: 1; display: grid; } .bd-list small { color: var(--muted); font-size: .74rem; } .bd-list .rankbtn { padding: 6px 10px; font-size: .78rem; }
+.bd-tag { font-size: .72rem; color: var(--ok); } .bd-empty { color: var(--muted); font-size: .86rem; padding: 18px 4px; }
 /* the garage's button row: dark glass pills with a lit edge; the start button glows with a passing shine */
 .gorow .rankbtn { position: relative; gap: 7px; padding: 10px 17px; font-weight: 700; letter-spacing: .02em; color: #e9edf5;
   background: linear-gradient(180deg, rgba(34, 38, 52, .94), rgba(12, 14, 20, .94)); border: 1px solid rgba(255, 255, 255, .09);
@@ -672,8 +704,9 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <small class="flt-empty" id="fltEmpty" hidden>조건에 맞는 차가 없어요</small>
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
+      <div class="grp"><h3>🛠 내가 만든 차</h3><div class="cars" id="carsC" role="group" aria-label="내가 만든 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button><button class="rankbtn buildbtn" id="buildBtn">🛠 조립 차고</button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -770,6 +803,13 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="gh-sec"><h4>달릴 고스트 고르기</h4><div class="gh-opts" id="ghOpts"></div></div>
       <div class="gh-sec"><h4>내 코드</h4><p class="gh-id">내 ID <b id="ghId"></b></p><textarea id="ghMine" rows="3" readonly></textarea><button class="rankbtn" id="ghCopy">코드 복사</button><small id="ghMineNote"></small></div>
       <div class="gh-sec"><h4>친구 코드 붙여넣기</h4><textarea id="ghFriend" rows="3" placeholder="친구가 보낸 고스트 코드를 붙여넣으세요"></textarea><button class="rankbtn" id="ghLoad">불러오기</button><small id="ghNote"></small></div>
+    </div>
+  </div>
+  <div class="cust build" id="build" hidden>
+    <div class="cust-card" id="buildCard" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="buildTitle">
+      <div class="cust-head"><div><h3 id="buildTitle">🛠 조립 차고</h3><small id="bdCoins"></small><small class="cu-msg" id="bdMsg" role="status" hidden></small></div><button class="rank-x" id="buildClose" aria-label="닫기">✕</button></div>
+      <div class="seg2 bd-tabs" id="bdTabs"><button data-t="make">🧱 조립</button><button data-t="mine">🚗 내 차</button><button data-t="shop">🌐 커뮤니티</button></div>
+      <div class="cust-body bd-body" id="bdBody"></div>
     </div>
   </div>
   <div class="cust" id="cust" hidden>
@@ -2085,16 +2125,47 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const boltEl = document.createElement('div');
   boltEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;background:#dfe8ff;opacity:0;z-index:2;mix-blend-mode:screen';
   stage.appendChild(boltEl);
-  let boltIn = 4, boltT = 0, thunderAt = 0, thunderK = 0;
+  let boltIn = 4, boltT = 0, thunderAt = 0, thunderK = 0, strike = null;
+  // ⚡ the storm's rare one: a bolt comes down on the car itself (1 in 100 flashes) and the car is blown apart
+  const boltMat = new THREE.MeshBasicMaterial({ color: 0xe4ecff, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const UPV = new THREE.Vector3(0, 1, 0);
+  function lightningStrike() {
+    playerRoot.updateMatrixWorld(true); const at = new THREE.Vector3().setFromMatrixPosition(playerRoot.matrixWorld);
+    const g = new THREE.Group(), n = 10; let p = at.clone().add(new THREE.Vector3(rnd(-5, 5), 70, rnd(-14, -6)));
+    for (let i = 1; i <= n; i++) {
+      const q = i === n ? at.clone().add(new THREE.Vector3(0, 0.9, 0)) : p.clone().lerp(at, 1 / (n - i + 1)).add(new THREE.Vector3(rnd(-2.4, 2.4), 0, rnd(-1.6, 1.6)));
+      const seg = new THREE.Mesh(new THREE.BoxGeometry(0.28, p.distanceTo(q), 0.28), boltMat);
+      seg.position.copy(p).lerp(q, 0.5); seg.quaternion.setFromUnitVectors(UPV, q.clone().sub(p).normalize()); g.add(seg);
+      if (i > 2 && i < n - 1 && Math.random() < 0.6) {                // a side fork
+        const f = q.clone().add(new THREE.Vector3(rnd(-4, 4), rnd(-5, -2), rnd(-3, 3))), fs = new THREE.Mesh(new THREE.BoxGeometry(0.14, q.distanceTo(f), 0.14), boltMat);
+        fs.position.copy(q).lerp(f, 0.5); fs.quaternion.setFromUnitVectors(UPV, f.clone().sub(q).normalize()); g.add(fs);
+      }
+      p = q;
+    }
+    scene.add(g); strike = { g, t: 0, boom: false };
+    boltT = 0.35; thunderAt = 0; sfx.thud(2); shake = Math.max(shake, 0.9);
+    popup('⚡ 번개!', 'var(--lamp)');
+  }
+  function updateStrike(dt) {
+    if (!strike) return;
+    strike.t += dt; boltMat.opacity = Math.max(0, 1 - strike.t / 0.6) * (0.75 + Math.random() * 0.25);
+    if (!strike.boom && strike.t > 0.12) { strike.boom = true; if (state === 'play') explodeCar('번개에 맞았어요! ⚡'); }
+    if (strike.t > 0.6) { scene.remove(strike.g); strike.g.traverse(o => o.geometry && o.geometry.dispose()); strike = null; }
+  }
   function updateStorm(dt) {
+    updateStrike(dt);
     if (bF.storm > 0.6 && state === 'play' && tunF < 0.5) {
       boltIn -= dt;
-      if (boltIn <= 0) { boltIn = rnd(3, 9); boltT = 0.35; thunderAt = clock + rnd(0.3, 1.6); thunderK = rnd(0.8, 1.6); }
+      if (boltIn <= 0) {
+        boltIn = rnd(3, 9);
+        if (!MP && !strike && Math.random() < 0.01) lightningStrike();
+        else { boltT = 0.35; thunderAt = clock + rnd(0.3, 1.6); thunderK = rnd(0.8, 1.6); }
+      }
     }
     if (thunderAt && clock >= thunderAt) { thunderAt = 0; sfx.thud(thunderK); shake = Math.max(shake, 0.12 * thunderK); }
     boltT = Math.max(0, boltT - dt);
     const f = boltT > 0.25 ? 1 : boltT > 0.18 ? 0.2 : boltT > 0.1 ? 0.8 : boltT * 4;    // a double flicker
-    boltEl.style.opacity = (0.55 * f).toFixed(3);
+    boltEl.style.opacity = (0.16 * f).toFixed(3);                        // a soft flash, not a white-out
     return f;
   }
   function updateSmoke() {
@@ -2169,7 +2240,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     farMtn.material.color.copy(_wc2);
     scene.fog.far *= farK;
     const bolt = updateStorm(real);                                  // lightning lights everything for a blink
-    if (bolt > 0) { hemi.intensity += 2.4 * bolt; scene.fog.color.lerp(WHITE_C, 0.35 * bolt); }
+    if (bolt > 0) { hemi.intensity += 0.8 * bolt; scene.fog.color.lerp(WHITE_C, 0.12 * bolt); }
     scene.background.copy(scene.fog.color);
     daySky.visible = sunSpr.visible = D > 0.005;
     daySky.material.opacity = D; daySky.material.color.copy(WHITE_C).lerp(WARM_SKY, W);
@@ -2341,7 +2412,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       gore.visible = true; placeObj(gore, s - f.s1 - 2, 0, 0);
       if (signFor !== f) { signFor = f; paintSign(signMatL, BIOMES[f.kinds.L].name, true); paintSign(signMatR, BIOMES[f.kinds.R].name, false); }
       forkSign.visible = true; placeObj(forkSign, s - (f.s0 + 10), 0, 0);
-      if (!f.warned && state === 'play' && f.s0 - s < 450) { f.warned = true; popup(`갈림길! ← ${BIOMES[f.kinds.L].name} · ${BIOMES[f.kinds.R].name} →`, 'var(--lamp)'); }
+      if (!f.warned && state === 'play' && f.s0 - s < 450) f.warned = true;   // no map-name popup on screen: the road signs say it
       // crossing the island: you can still change branch until the split ends; going over it gives a little hop
       if (state === 'play' && s > f.s0 + 30 && s < f.s1) {
         const side = px < 0 ? -1 : 1;
@@ -2714,12 +2785,105 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const RETIRED = { '버팔로 머슬': '카노푸스 SS', '오리온 SR': '알타이르 R', '페가수스 GT': '폴룩스 GT', '헬릭스 GTS': '알데바란 GTS', '엘나트 SS': '알골 SS', '리가 TR': '프로키온 TR' };
   for (const c of CARS) if (RETIRED[c.name]) c.retired = true;
   const twinOf = i => { const c = CARS[i]; return c && c.retired ? CARS.findIndex(d => d.name === RETIRED[c.name]) : i; };
-  const LINEUP = () => CARS.filter(c => !c.retired).length;
+  const LINEUP = () => CARS.filter(c => !c.retired && !c.custom).length;
   let achHave = 0;                                                      // how many achievements you hold (kept by the meta chunk)
   const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `최고 거리 ${km(c.unlock)}`;
   const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : c.top >= 330 ? `최고 거리 ${km(c.unlock)} 달성 또는 🪙 ${(5000).toLocaleString()}코인으로 구매` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
   const MP_CARS = ['리겔 GT', '레굴루스 S'].map(n => CARS.findIndex(c => c.name === n)).filter(i => i >= 0);   // multi: everyone on the two stock cars
   for (const c of CARS) c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: c.conv ? c.conv.topOpen : 0 };   // the stock numbers the chassis tuning works from
+  // ── 🛠 조립 차고 (the build garage): snap a car together from parts, name it, release it for everyone ──
+  // A build is a small record of part ids (b); buildSpec turns it into a car spec the normal car builder draws.
+  // Parts cost coins once (owned for good); the first of each kind is free. Stats come from the parts, capped at low S.
+  const BP = {
+    size:   [['s0', '보통 4.5m', 0, {}], ['s1', '컴팩트 4.1m', 150, { grip: 0.04, top: -2 }], ['s2', '롱 4.9m', 250, { top: 3, grip: -0.02 }]],
+    front:  [['f0', '둥근 노즈', 0, {}], ['f1', '쐐기 노즈', 300, { top: 5 }], ['f2', '머슬 노즈', 200, { top: -3, accel: 0.03 }], ['f3', '하이퍼 노즈', 700, { top: 8, grip: 0.03 }]],
+    cabin:  [['c0', '쿠페', 0, {}], ['c1', '패스트백', 200, { top: 3 }], ['c2', '해치백', 150, { grip: 0.05, top: -4 }], ['c3', '로우 캐노피', 600, { top: 6 }], ['c4', '로드스터', 400, { top: 2, accel: 0.02 }]],
+    rear:   [['r0', '덕테일', 0, { grip: 0.02 }], ['r1', '패스트백 테일', 150, { top: 2 }], ['r2', '롱테일', 500, { top: 5 }], ['r3', '캠테일', 200, { accel: 0.02 }]],
+    aero:   [['a0', '없음', 0, {}], ['a1', '립 스포일러', 150, { grip: 0.03 }], ['a2', '리어 윙', 350, { grip: 0.07, top: -2 }], ['a3', '대형 윙', 600, { grip: 0.12, top: -4 }], ['a4', '핀 + 윙', 900, { grip: 0.1, top: 2 }]],
+    engine: [['e0', '터보 4기통', 0, { top: 8, accel: 0.06 }], ['e1', '수평대향 6기통', 300, { top: 18, accel: 0.1 }], ['e2', 'V8', 400, { top: 22, accel: 0.12 }],
+             ['e3', 'V10', 800, { top: 32, accel: 0.15 }], ['e4', 'V12', 1200, { top: 40, accel: 0.14 }], ['e5', '전기 모터', 1000, { top: 28, accel: 0.22 }]],
+    wheel:  [['w0', '기본 17인치', 0, {}], ['w1', '스포츠 18인치', 200, { grip: 0.03 }], ['w2', '레이싱 19인치', 450, { grip: 0.07, accel: -0.01 }], ['w3', '오프로드 휠', 300, { grip: 0.05, top: -6 }]],
+    drive:  [['d0', '후륜', 0, {}], ['d1', '4륜', 500, { grip: 0.06 }]],
+    deco:   [['scoop', '보닛 스쿠프', 100], ['stripes', '레이싱 스트라이프', 100], ['livery', '사이드 라인', 100], ['louvres', '엔진 루버', 150],
+             ['skirts', '사이드 스커트', 100], ['splitter', '프론트 스플리터', 100], ['diffuser', '디퓨저', 150], ['grille', '그릴', 50]],
+  };
+  const BP_KINDS = ['size', 'front', 'cabin', 'rear', 'aero', 'engine', 'wheel', 'drive'];
+  const BP_ENGINE = { e0: 'turbo4', e1: 'flat6', e2: 'v8', e3: 'v10', e4: 'v12', e5: 'ev' };
+  const BP_ACC = [0x111215, 0xeef0f2, 0xd4af37, 0xff3b30, 0x1e63ff, 0x2ad1c0];
+  const bpPart = (kind, id) => (BP[kind] || []).find(p => p[0] === id);
+  function cleanBuild(b) {                                 // anything from storage or another player: keep only known parts and colours
+    const o = { deco: [] };
+    for (const k of BP_KINDS) o[k] = b && bpPart(k, b[k]) ? b[k] : BP[k][0][0];
+    if (b && Array.isArray(b.deco)) o.deco = b.deco.filter(d => bpPart('deco', d)).slice(0, 8);
+    o.color = b && Number.isInteger(b.color) && b.color >= 0 && b.color < 0x1000000 ? b.color : 0xff8a12;
+    o.accent = b && BP_ACC.includes(b.accent) ? b.accent : BP_ACC[0];
+    return o;
+  }
+  function buildStats(b) {
+    let top = 288, accel = 0.9, grip = 0.9;
+    for (const k of BP_KINDS) { const d = bpPart(k, b[k])[3]; top += d.top || 0; accel += d.accel || 0; grip += d.grip || 0; }
+    return { top: Math.round(clamp(top, 280, 340)), accel: +clamp(accel, 0.8, 1.15).toFixed(2), grip: +clamp(grip, 0.8, 1.2).toFixed(2) };
+  }
+  function buildSpec(b, name, by) {
+    b = cleanBuild(b);
+    const L = { s0: 4.5, s1: 4.1, s2: 4.9 }[b.size] + (b.rear === 'r2' ? 0.3 : 0), h = L / 2;
+    const mid = { f0: 0.78, f1: 0.68, f2: 0.9, f3: 0.6 }[b.front], dH = mid + 0.08;
+    const front = {
+      f0: [[h, 0.36], [h - 0.01, 0.56], [h - 0.16, 0.69], [h * 0.6, mid]],
+      f1: [[h, 0.28], [h - 0.02, 0.42], [h - 0.32, 0.55], [h * 0.6, mid]],
+      f2: [[h, 0.4], [h, 0.72], [h - 0.12, 0.84], [h * 0.6, mid]],
+      f3: [[h, 0.14], [h - 0.01, 0.3], [h * 0.62, mid]],
+    }[b.front];
+    const rear = {
+      r0: [[-h + 0.5, dH], [-h + 0.1, dH + 0.06], [-h, dH - 0.06], [-h, 0.42]],
+      r1: [[-h + 0.45, dH - 0.02], [-h + 0.12, dH - 0.06], [-h, dH - 0.18], [-h, 0.4]],
+      r2: [[-h + 0.6, dH], [-h + 0.15, dH - 0.02], [-h, dH - 0.12], [-h, 0.34]],
+      r3: [[-h + 0.4, dH + 0.02], [-h + 0.03, dH + 0.02], [-h, dH - 0.02], [-h, 0.44]],
+    }[b.rear];
+    const body = [...front, [0.3, mid + 0.04], [-0.6, mid + 0.06], ...rear];
+    const cabin = {
+      c0: { pts: [[0.55, mid + 0.03], [-0.1, mid + 0.4], [-0.85, mid + 0.44], [-1.45, mid + 0.26], [-h + 0.45, dH + 0.01]], w: 0.8 },
+      c1: { pts: [[0.55, mid + 0.03], [-0.15, mid + 0.4], [-0.8, mid + 0.42], [-h + 0.3, dH]], w: 0.8 },
+      c2: { pts: [[0.6, mid + 0.03], [0.0, mid + 0.42], [-0.9, mid + 0.5], [-h + 0.2, mid + 0.47], [-h + 0.08, dH + 0.02]], w: 0.84 },
+      c3: { pts: [[1.0, mid + 0.01], [0.3, mid + 0.32], [-0.4, mid + 0.34], [-1.2, mid + 0.1]], w: 0.72 },
+      c4: null,
+    }[b.cabin];
+    const r = { w0: 0.34, w1: 0.36, w2: 0.38, w3: 0.42 }[b.wheel], st = buildStats(b);
+    const headV = { f0: 0.56, f1: 0.46, f2: 0.72, f3: 0.26 }[b.front], tailV = Math.max(0.5, rear[2][1] - 0.04);
+    const X = ['mirrors', ...b.deco.filter(d => d !== 'stripes' || cabin)];
+    if (!cabin) X.push('roadster');
+    if (b.aero === 'a1') X.push('ducktail'); if (b.aero === 'a2' || b.aero === 'a3' || b.aero === 'a4') X.push('wing'); if (b.aero === 'a4') X.push('fin');
+    const c = {
+      name, tag: '커스텀 · ' + (by || '나'), trans: ['e3', 'e4', 'e5'].includes(b.engine) ? 'auto' : 'manual', gears: 9, engine: BP_ENGINE[b.engine],
+      color: b.color, accent: b.accent, rim: b.accent === 0x111215 ? 0x2b2e35 : b.accent, cal: b.accent === 0x111215 ? 0xffd400 : b.accent, metal: 0.55,
+      top: st.top, accel: st.accel, grip: st.grip, nitro: 1.0, drift: b.drive === 'd1' ? 1.0 : 1.2, drive: b.drive === 'd1' ? 'awd' : 'rwd',
+      L, W: 1.98, r, ride: b.wheel === 'w3' ? 0.22 : 0.14, fu: h - 0.86, ru: -(h - 0.9), body, cabin,
+      tail: { u: -h + 0.01, v: tailV, x: 0.6, bar: true }, head: { u: h - 0.03, v: headV, x: 0.64 },
+      exh: b.engine === 'e5' ? [] : [[-0.4, 0.3], [0.4, 0.3]], extras: X,
+      wing: { u: -h + 0.32, v: dH + (b.aero === 'a3' ? 0.44 : 0.32), strut: 0.1 }, scoop: [1.1, mid], livery: { v: 0.5, h: 0.06 },
+      stripes: [['body', 0.3, h - 0.1], ['cabin', -h + 0.6, 0]], louvres: [[-h + 0.62, -h + 1.1, 5, 0.9]], grille: { v: headV - 0.06, w: 0.9, h: 0.14 },
+      unlock: 20000, custom: true, by: by || '', build: b,
+    };
+    c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: 0 };
+    return c;
+  }
+  const BUILT_IN = CARS.length;                              // the factory line-up; custom cars come after it
+  const builtinName = n => CARS.slice(0, BUILT_IN).some(c => c.name === n);
+  let myBuilds = [], dlBuilds = [], ownParts = {};
+  try { myBuilds = (JSON.parse(localStorage.getItem('nh3d-builds') || '[]') || []).filter(x => x && typeof x.name === 'string').slice(0, 20); } catch (e) { myBuilds = []; }
+  try { dlBuilds = (JSON.parse(localStorage.getItem('nh3d-bdl') || '[]') || []).filter(x => x && typeof x.name === 'string').slice(0, 30); } catch (e) { dlBuilds = []; }
+  try { ownParts = JSON.parse(localStorage.getItem('nh3d-bparts') || '{}') || {}; } catch (e) { ownParts = {}; }
+  const saveBuilds = () => { try { localStorage.setItem('nh3d-builds', JSON.stringify(myBuilds)); localStorage.setItem('nh3d-bdl', JSON.stringify(dlBuilds)); localStorage.setItem('nh3d-bparts', JSON.stringify(ownParts)); } catch (e) {} };
+  const cleanCarName = s => String(s || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16);
+  function addCustomCar(rec, by) {                           // into the garage line-up; returns its index
+    const name = cleanCarName(rec.name) || '이름 없는 차';
+    const ex = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === name && !c.draft);
+    const c = buildSpec(rec.b, name, by);
+    if (ex >= 0) { CARS[ex] = c; return ex; }
+    CARS.push(c); return CARS.length - 1;
+  }
+  for (const rec of myBuilds) addCustomCar(rec, '나');
+  for (const rec of dlBuilds) addCustomCar(rec, rec.by);
   const driveTxt = c => c.drive === 'awd' ? '4륜' : '후륜';
 
   // ── Car builder: rounded extrusions of the side profile, smooth-shaded, plus wheels, lights and body kit ──
@@ -3113,8 +3277,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // Paint, exhaust tune and turbo kit go onto the car spec itself (color, ex, kit), so everything that reads the car sees
   // them: crash debris, turboOf(), the drive. c.oem keeps the factory colour.
   // 유광 · 메탈릭 · 무광 · 캔디 · 펄: [metalness, roughness, clearcoat, its roughness, reflections, metal flake, pearl sheen]
-  const FINISH = [[0.18, 0.24, 1, 0.015, 0.85, 0, 0], [0.55, 0.32, 1, 0.025, 1.0, 0.2, 0], [0.22, 0.6, 0.1, 0.6, 0.55, 0, 0],
-    [0.62, 0.18, 1, 0.01, 1.05, 0.08, 0], [0.3, 0.3, 1, 0.02, 0.95, 0.12, 0x34446a]];
+  const FINISH = [[0.12, 0.2, 1, 0.01, 0.95, 0, 0], [0.6, 0.3, 1, 0.02, 1.05, 0.2, 0], [0.18, 0.58, 0.18, 0.5, 0.6, 0.05, 0]];
   let flakeTex = null;                                    // tiny random normals: the metal flake that glitters under the clear coat
   function flakeMap() {
     if (flakeTex) return flakeTex;
@@ -3547,6 +3710,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     // the synth stays faintly underneath for the shift barks and pops. Without the file (offline copy) the synth plays alone.
     const SAMPLES = { '이클립스 제로': 'snd/svj.mp3', '안타레스 V12': 'snd/enzo.mp3', '프로키온 TR': 'snd/f458.mp3', '오로라 V12': 'snd/testa.mp3' };
     let smpName = '', smp = null; const smpBuf = {};
+    const SMP_GAIN = { '오로라 V12': 0.62 };                     // per recording: the Testarossa sits louder than the rest
     function setSample(name) { const n = SAMPLES[name] ? name : ''; if (n === smpName && (smp || !n)) return; smpName = n; startSample(); }
     async function startSample() {
       if (!ac) return;
@@ -3595,7 +3759,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
         smp.vg[0].gain.setTargetAtTime(Math.sqrt(bal), t, 0.15); smp.vg[1].gain.setTargetAtTime(Math.sqrt(1 - bal), t, 0.15);
         // at idle (and in the garage) the recording sits back and the synth carries the burble; it opens up with the revs
         const rk = Math.min(r, 1), idleK = 0.12 + 0.88 * Math.min(1, Math.max(0, (rk - 0.08) / 0.5));
-        const sv = on ? 0.3 * idleK * (cut ? 0.3 : 0.55 + 0.45 * load + (bark ? 0.25 : 0)) * (0.55 + 0.5 * rk) * (1 + 0.25 * boost) * (mode ? 1 : 0.8) * (1 + 0.2 * openAir) : 0;
+        const sv = on ? 0.3 * (SMP_GAIN[smpName] || 1) * idleK * (cut ? 0.3 : 0.55 + 0.45 * load + (bark ? 0.25 : 0)) * (0.55 + 0.5 * rk) * (1 + 0.25 * boost) * (mode ? 1 : 0.8) * (1 + 0.2 * openAir) : 0;
         smp.g.gain.setTargetAtTime(sv, t, cut ? 0.01 : 0.04);
         smp.lp.frequency.setTargetAtTime(2600 + 9000 * (0.4 + 0.6 * load), t, 0.08);
       }
@@ -4811,14 +4975,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     crashStart(msg, s);
   }
   // A wreck that is not repaired in time blows up: a fireball, debris all round, the body is gone, then the crash flow
-  function explodeCar() {
+  function explodeCar(msg) {
     playerRoot.updateMatrixWorld(true); wreckAt.setFromMatrixPosition(pivot.matrixWorld);
     fireball(wreckAt.clone(), 1.6, 0);
     burstDebris(wreckAt.clone(), new THREE.Vector3(0, 0, 0), car.color, 26, wreckAt.y);
     burstDebris(wreckAt.clone(), new THREE.Vector3(0, 0, 0), 0x2a2d35, 10, wreckAt.y);
     shake = Math.max(shake, 1.1); fireFlash = 2; sfx.crash(1); sfx.thud(1.6);
     playerRoot.visible = false; runBoom++;
-    crashStart('차량 폭발', Math.random() < 0.5 ? -1 : 1);
+    crashStart(msg || '차량 폭발', Math.random() < 0.5 ? -1 : 1);
   }
   function crashWall(side) { crashStart('벽에 충돌!', -side); }
   function updateCrash(dt) {
@@ -5024,8 +5188,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const rainMat = new THREE.LineBasicMaterial({ color: 0xbfd6ff, transparent: true, opacity: 0, depthWrite: false });
   const rain = new THREE.LineSegments(rainGeo, rainMat);
   rain.frustumCulled = false; rain.visible = false; scene.add(rain);
-  const dropReset = d => { d.x = rnd(-14, 14); d.y = rnd(4, 12); d.z = rnd(-30, 30); };
-  for (let i = 0; i < RAIN_N; i++) { const d = { x: 0, y: 0, z: 0 }; dropReset(d); rainDrops.push(d); }
+  const dropReset = (d, any) => { d.x = rnd(-16, 16); d.y = any ? rnd(-3, 14) : rnd(9, 16); d.z = rnd(-42, 6); };   // mostly ahead of the camera, across the whole view
+  for (let i = 0; i < RAIN_N; i++) { const d = { x: 0, y: 0, z: 0 }; dropReset(d, true); rainDrops.push(d); }
   function drawRain(dt) {
     rain.visible = rainAmt > 0.02;
     if (!rain.visible) return;
@@ -5034,7 +5198,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     for (let i = 0; i < RAIN_N; i++) {
       const d = rainDrops[i];
       d.y -= (16 + 6 * (i % 3)) * dt;
-      if (d.y < -4) dropReset(d);
+      if (d.y < -3) dropReset(d);
       rainBuf.set([d.x, d.y, d.z, d.x, d.y + 0.8, d.z], i * 6);
     }
     rainGeo.attributes.position.needsUpdate = true;
@@ -5098,8 +5262,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const inside = state === 'play' && dist >= ZONE_A && dist < ZONE_B;
     if (inside && !zoneOn) { zoneOn = true; popup('비! 노면이 미끄러워요', 'var(--lamp)'); }
     if (zoneOn && !inside && dist >= ZONE_B) zoneOn = false;
-    // a rainy night brings passing showers, not rain all run: ~1.4 km of rain, then ~2.8 km dry (it starts dry)
-    const shower = !!EV.rain && state === 'play' && dist % 4200 > 2800;
+    // a rainy night brings the odd passing shower: ~1 km of rain in every 7 km (it starts dry)
+    const shower = !!EV.rain && state === 'play' && dist % 7000 > 6000;
     if (shower && !showerOn) popup('소나기! 노면이 미끄러워요', 'var(--lamp)');
     if (!shower && showerOn && state === 'play') popup('비가 그쳤어요', 'var(--ok)');
     showerOn = shower;
@@ -5641,7 +5805,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const CAR_PRICE = 5000;
   let boughtCars = {};
   try { boughtCars = JSON.parse(localStorage.getItem('nh3d-bought') || '{}') || {}; } catch (e) { boughtCars = {}; }
-  const buyable = i => { const c = CARS[i]; return !!c && !c.retired && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
+  const buyable = i => { const c = CARS[i]; return !!c && !c.retired && !c.custom && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
   // developer accounts (by Firebase uid): every car is open, and a 🛠 DEV badge shows next to the name for everyone
   const DEV_UIDS = ['djIs5etGtzPGSHWFdZm3Fi7NWsv2'];
   const isDev = id => DEV_UIDS.includes(id);
@@ -5653,15 +5817,15 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); localStorage.setItem('nh3d-retired-v1', '1');
     }
   } catch (e) {}
-  const isUnlocked = i => !!CARS[i] && (devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]));
+  const isUnlocked = i => !!CARS[i] && (!!CARS[i].custom || devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]));
   const km = m => Math.round(m / 100) / 10 + 'km';
   const km2 = m => (m / 1000).toFixed(2) + 'km';
-  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && !c.retired && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
+  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && !c.retired && !c.custom && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
   function saveBest() { try { localStorage.setItem('nh3d-best-dist', String(Math.round(bestDist))); } catch (e) {} }
   function checkUnlocks() {                                   // crossing a milestone mid-run unlocks the car on the spot
     if (dist <= bestDist) return;
     const old = bestDist; bestDist = dist;
-    const got = CARS.filter(c => !c.retired && c.unlock > old && c.unlock <= bestDist), cu = custUnlocked(old, bestDist);
+    const got = CARS.filter(c => !c.retired && !c.custom && c.unlock > old && c.unlock <= bestDist), cu = custUnlocked(old, bestDist);
     if (cu.length) runCust.push(...cu);
     if (got.length) { runUnlocks.push(...got.map(c => c.name)); saveBest(); sfx.ding(); popup(`새 차 해금: ${got.map(c => c.name).join(', ')}!`, 'var(--ok)'); }
     else if (cu.length) { saveBest(); sfx.ding(); popup(`커스텀 해금: ${cu.join(', ')}`, 'var(--paint)'); }
@@ -5698,7 +5862,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     rankSnap = snap; {
       shared.online = snap.docs.filter(d => d.exists && freshOn(d.data() || {})).length;
       shared.rows = snap.docs.filter(d => d.exists).map(d => { const o = d.data() || {};
-        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0, on: freshOn(o) && !o.hide }; });
+        return { id: d.id, score: Math.max(0, Math.round(+o.score || 0)), dist: Math.max(0, Math.round(+o.dist || 0)), car: Number.isInteger(o.car) ? o.car : -1, nick: cleanNick(o.nick || ''), at: +o.at || 0, cn: o.cn ? cleanCarName(o.cn) : '', on: freshOn(o) && !o.hide }; });
       shared.allRows = shared.rows;
       shared.rows = shared.rows.filter(r => r.score > 0 || r.dist > 0);   // signed-in but never finished a run: online only
       shared.ready = true; lastRank = 0; onRankData(); renderLive();
@@ -5728,7 +5892,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (run.score > today.score) { today.score = run.score; today.car = run.car; }
     today.dist = Math.max(today.dist, run.dist);
     try { localStorage.setItem('nh3d-today', JSON.stringify(today)); } catch (e) {}
-    if (shared.db && shared.me && shared.canWrite) { subDaily(); shared.db.collection('daily').doc(`${dk}_${shared.me}`).set({ day: dk, pid: shared.me, score: today.score, dist: today.dist, car: today.car, nick, at: Date.now() }).catch(() => {}); }
+    if (shared.db && shared.me && shared.canWrite) { subDaily(); shared.db.collection('daily').doc(`${dk}_${shared.me}`).set({ day: dk, pid: shared.me, score: today.score, dist: today.dist, car: today.car >= BUILT_IN ? -1 : today.car, nick, at: Date.now() }).catch(() => {}); }
   }
   const sum32 = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
   function dayCode() {
@@ -5750,12 +5914,17 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     return rows;
   }
   const myShared = () => shared.rows.find(r => r.id === shared.me) || null;
+  // a custom car is named in the row (its index means nothing on another player's machine)
+  const carLabel = r => r.cn || (r.car >= 0 && r.car < BUILT_IN && CARS[r.car] ? CARS[r.car].name : '-');
   async function submitShared(run) {
     if (!shared.db || !shared.me || !shared.canWrite) return;
     const prev = myShared() || { score: 0, dist: 0, car: -1, nick: '', at: 0 };
     const better = run.score > prev.score;
-    const next = { score: Math.max(prev.score, run.score), dist: Math.max(prev.dist, run.dist), car: better || prev.car < 0 ? run.car : prev.car, nick, at: better ? run.at : prev.at || run.at };
-    if (next.score === prev.score && next.dist === prev.dist && next.nick === prev.nick && next.car === prev.car) return;
+    const rc = CARS[run.car], cus = !!(rc && rc.custom), take = better || prev.car < 0;
+    const next = { score: Math.max(prev.score, run.score), dist: Math.max(prev.dist, run.dist), car: take ? (cus ? -2 : run.car) : prev.car, nick, at: better ? run.at : prev.at || run.at };
+    const cn = take ? (cus ? rc.name : '') : prev.cn || '';
+    if (cn) next.cn = cn;
+    if (next.score === prev.score && next.dist === prev.dist && next.nick === prev.nick && next.car === prev.car && (next.cn || '') === (prev.cn || '')) return;
     try { await shared.db.collection('ranking').doc(shared.me).set(next); }
     catch (e) { if (e && (e.code === 'invalid_argument' || e.code === 'not_granted')) { shared.canWrite = false; onRankData(); } }
   }
@@ -5829,7 +5998,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (all && r.id === shared.me ? ' me' : '');
       const cells = [String(i + 1), all ? (r.nick || (names[r.id] && names[r.id].name) || '익명 드라이버') + (r.id === shared.me ? ' (나)' : '') : dateText(r.at),
-        r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-'];
+        r.score.toLocaleString() + '점', km2(r.dist), carLabel(r)];
       cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); if (all && isDev(r.id)) s.append(devEl()); } li.append(s); });
       rankList.append(li);
     });
@@ -5855,7 +6024,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (!rows.length) { const li = document.createElement('li'); li.className = 'empty'; li.textContent = '오늘은 아직 기록이 없어요. 오늘 첫 기록을 세워 보세요!'; rankList.append(li); }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (r.me ? ' me' : '');
-      [String(i + 1), (r.nick || '익명 드라이버') + (r.me ? ' (나)' : ''), r.score.toLocaleString() + '점', km2(r.dist), CARS[r.car] ? CARS[r.car].name : '-']
+      [String(i + 1), (r.nick || '익명 드라이버') + (r.me ? ' (나)' : ''), r.score.toLocaleString() + '점', km2(r.dist), carLabel(r)]
         .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); if (isDev(r.me ? shared.me : r.id)) s.append(devEl()); } li.append(s); });
       rankList.append(li);
     });
@@ -5903,13 +6072,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const PAINTS = [['미드나잇 블랙', 0x0b0d12], ['펄 화이트', 0xeef0f2], ['문라이트 실버', 0xa9b2bf], ['건메탈', 0x454b55], ['레이싱 레드', 0xc8102e],
     ['선셋 오렌지', 0xff6a13], ['네온 옐로', 0xffc80e], ['라임 그린', 0x8fd629], ['레이싱 그린', 0x1b4d36], ['아쿠아 민트', 0x2ad1c0],
     ['일렉트릭 블루', 0x1e63ff], ['네온 퍼플', 0x7a3cff], ['핫 핑크', 0xff3d8b]];
-  const FIN_TXT = [['유광', '젖은 듯 깊은 하이글로스, 주변이 거울처럼 비쳐요'], ['메탈릭', '클리어 아래 메탈 플레이크가 반짝여요'], ['무광', '은은한 새틴 광, 실루엣이 또렷해요'],
-    ['캔디', '금속 바탕 위에 색을 겹친 진한 캔디 광택'], ['펄', '보는 각도에 따라 푸른빛이 도는 펄 코팅']];
+  const FIN_TXT = [['유광', '젖은 듯 깊은 하이글로스, 주변이 거울처럼 비쳐요'], ['메탈릭', '클리어 아래 메탈 플레이크가 반짝여요'], ['무광', '은은한 새틴 광, 실루엣이 또렷해요']];
   const EX_TXT = [['순정', '조용하고 부드럽게', ''], ['스포츠 배기', '더 크게, 발 떼면 팝콘', '가속 +2%'], ['레이스 직관', '가장 크고 거칠게, 불꽃도 크게', '가속 +4%']];
   const KIT_TXT = [['없음', '', ''], ['스테이지 1', '부스트 조금, 반응 빠름', '가속 +7%'], ['스테이지 2', '부스트 크게, 터보 랙 있음', '가속 +14%']];
   // Every option unlocks with your best single-run distance, like the cars (metres)
   const PAINT_M = [0, 0, 500, 1000, 1500, 2250, 3000, 4000, 5000, 6500, 8500, 11000, 14000], PICK_M = 17500;
-  const FIN_M = [0, 3000, 7000, 10000, 13000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
+  const FIN_M = [0, 3000, 7000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
   // Performance parts, earned by distance too and fitted per car: an engine tune (top speed and pull) and tyres (grip, wet grip)
   const ENG_TXT = [['순정', '공장 세팅 그대로', ''], ['엔진 튠 1', '흡·배기 손질, 조금 더 빨라요', '최고·가속 +4%'], ['엔진 튠 2', 'ECU를 다시 맞춰 상단이 시원해요', '최고·가속 +8%']];
   const TIRE_TXT = [['순정', '공장 타이어', ''], ['스포츠 타이어', '접지가 좋아지고 젖은 길에 강해요', '접지 +4%'], ['레이싱 타이어', '접지 최고, 비 오는 길에서 특히 좋아요', '접지 +8%']];
@@ -6042,6 +6210,172 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     camera.setViewOffset(W, H, (W - W * s) / 2 + cx * s, (H - H * s) / 2 + cy * s, W * s, H * s);
   }
   if ('ResizeObserver' in window) new ResizeObserver(frameCar).observe(stage); else addEventListener('resize', frameCar);
+  // ── the build garage's panel: pick a part kind, tap a part; owned parts snap on at once, new ones cost coins (tap twice) ──
+  const BUILD_GATE = 3000;
+  const buildEl = $('build'), buildCard = $('buildCard'), bdBody = $('bdBody'), bdTabs = $('bdTabs'), bdCoins = $('bdCoins'), bdMsg = $('bdMsg');
+  const BP_LABEL = { size: '📏 크기', front: '🔺 앞부분', cabin: '🪟 운전석', rear: '🔻 뒷부분', aero: '🪽 스포일러', engine: '⚙️ 엔진', wheel: '🛞 바퀴', drive: '🔧 구동', deco: '✨ 장식', paint: '🎨 색' };
+  const BP_COLOR = { size: '#7a5cff', front: '#ff5a3c', cabin: '#29b6f6', rear: '#ffb300', aero: '#26c281', engine: '#ff3d8b', wheel: '#8d99ae', drive: '#00bfa5', deco: '#f4d03f', paint: '#ff8a12' };
+  let bdTab = 'make', bdKind = 'front', draft = cleanBuild(null), draftIdx = -1, bdPrevCar = 0, bdAsk = '', bdAskT = 0, bdEditing = '';
+  let market = [], marketReady = false, marketOn = false;
+  const owns = id => !!ownParts[id] || BP_KINDS.some(k => BP[k][0][0] === id);
+  const statDelta = d => [d.top ? `속도 ${d.top > 0 ? '+' : ''}${d.top}` : '', d.accel ? `가속 ${d.accel > 0 ? '+' : ''}${d.accel}` : '', d.grip ? `접지 ${d.grip > 0 ? '+' : ''}${d.grip}` : ''].filter(Boolean).join(' · ');
+  function bdSay(t, ok) { bdMsg.textContent = t || '\u00a0'; bdMsg.style.color = ok ? 'var(--ok)' : 'var(--lamp)'; bdMsg.hidden = false; }   // the line is always there: nothing jumps under a finger
+  function previewDraft() {                                // the draft rides the turntable
+    const c = buildSpec(draft, '조립 중인 차', '나'); c.draft = true;
+    if (draftIdx < 0 || !CARS[draftIdx] || !CARS[draftIdx].draft) { CARS.push(c); draftIdx = CARS.length - 1; } else CARS[draftIdx] = c;
+    buildPlayer(draftIdx); sfx.setProfile(c.engine); sfx.setSample(''); nRpm = 0.6;
+  }
+  function renderBuild() {
+    bdCoins.textContent = `🪙 ${meta.coins.toLocaleString()}`;
+    bdTabs.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === bdTab)));
+    if (bdTab === 'make') {
+      const st = buildStats(draft), tier = tierOf(st);
+      const kinds = [...BP_KINDS, 'deco', 'paint'];
+      let parts = '';
+      if (bdKind === 'paint') {
+        parts = `<div class="bd-sw">${PAINTS.map(p => `<button class="swb" data-col="${p[1]}" style="--c:#${p[1].toString(16).padStart(6, '0')}" aria-label="${p[0]}" aria-pressed="${draft.color === p[1]}"></button>`).join('')}</div>
+          <h5>포인트 색 (휠·장식)</h5><div class="bd-sw">${BP_ACC.map(a => `<button class="swb" data-acc="${a}" style="--c:#${a.toString(16).padStart(6, '0')}" aria-pressed="${draft.accent === a}"></button>`).join('')}</div>`;
+      } else {
+        const list = BP[bdKind];
+        parts = `<div class="bd-parts">${list.map(([id, n, price, d]) => {
+          const on = bdKind === 'deco' ? draft.deco.includes(id) : draft[bdKind] === id, own = owns(id);
+          return `<button class="brick${on ? ' on' : ''}${own ? '' : ' buy'}" data-part="${id}" style="--bc:${BP_COLOR[bdKind]}"><i class="studs"></i><b>${n}</b>
+            <small>${own ? (on ? '장착됨' : bdKind === 'deco' ? '눌러서 붙이기' : '보유') : `🪙 ${price.toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
+      }
+      bdBody.innerHTML = `<div class="bd-kinds">${kinds.map(k => `<button data-kind="${k}" style="--bc:${BP_COLOR[k]}" aria-pressed="${k === bdKind}">${BP_LABEL[k]}</button>`).join('')}</div>
+        ${parts}
+        <div class="bd-stats"><span class="tier t-${tier}">${tier}</span>
+          <div><i>최고 속도</i><u><s style="width:${(st.top - 280) / 60 * 100}%"></s></u><em>${st.top} km/h</em></div>
+          <div><i>가속</i><u><s style="width:${(st.accel - 0.8) / 0.35 * 100}%"></s></u><em>${st.accel}</em></div>
+          <div><i>핸들링</i><u><s style="width:${(st.grip - 0.8) / 0.4 * 100}%"></s></u><em>${st.grip}</em></div></div>
+        <div class="bd-name"><input id="bdName" maxlength="16" placeholder="차 이름을 지어 주세요" value="${escH(bdEditing)}" autocomplete="off">
+          <button class="rankbtn" id="bdSave">💾 차고에 저장</button><button class="go bd-pub" id="bdPub">🚀 출시하기</button></div>`;
+    } else if (bdTab === 'mine') {
+      bdBody.innerHTML = myBuilds.length ? `<ul class="bd-list">${myBuilds.map((r, k) => { const st = buildStats(cleanBuild(r.b));
+        return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
+          <button class="rankbtn" data-edit="${k}">수정</button><button class="rankbtn" data-pub="${k}">${r.pub ? '출시 취소' : '출시'}</button><button class="rankbtn" data-del="${k}">삭제</button></li>`; }).join('')}</ul>`
+        : '<p class="bd-empty">아직 만든 차가 없어요. 조립 탭에서 첫 차를 만들어 보세요!</p>';
+    } else {
+      if (!fb.user) { bdBody.innerHTML = '<p class="bd-empty">커뮤니티 차고는 구글 로그인하면 볼 수 있어요.</p>'; return; }
+      startMarket();
+      bdBody.innerHTML = !marketReady ? '<p class="bd-empty">불러오는 중…</p>' : market.length ? `<ul class="bd-list">${market.map(m => { const b = cleanBuild(m.b), st = buildStats(b), mine = m.by === fb.user.uid, has = dlBuilds.some(d => d.id === m.id);
+        return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(m.name)}</b><small>by ${escH(m.n)} · ${st.top}km/h · ${bpPart('engine', b.engine)[1]}</small></div>
+          ${mine ? '<span class="bd-tag">내 차</span>' : has ? '<span class="bd-tag">받음</span>' : `<button class="rankbtn" data-get="${escH(m.id)}">⬇ 받기</button>`}<button class="rankbtn" data-look="${escH(m.id)}">구경</button></li>`; }).join('')}</ul>`
+        : '<p class="bd-empty">아직 출시된 차가 없어요. 첫 번째로 출시해 보세요!</p>';
+    }
+  }
+  function startMarket() {
+    if (marketOn || !fb.user || !fb.D) return; marketOn = true;
+    const { D, db } = fb;
+    D.onValue(D.query(D.ref(db, 'market'), D.limitToLast(60)), s => {
+      const v = s.val() || {};
+      market = Object.entries(v).map(([id, o]) => { let b = null; try { b = JSON.parse(o.spec); } catch (e) {} return o && b ? { id, by: String(o.by || ''), n: cleanNick(o.n || '') || '드라이버', name: cleanCarName(o.name) || '이름 없는 차', b, at: +o.at || 0 } : null; })
+        .filter(Boolean).sort((a, b) => b.at - a.at);
+      marketReady = true; if (!buildEl.hidden && bdTab === 'shop') renderBuild();
+    }, () => { marketReady = true; market = []; });
+  }
+  function openBuild() {
+    if ((state !== 'ready' && state !== 'over') || !rankEl.hidden || MP) return;
+    if (meta.coins < BUILD_GATE) { ovText.textContent = `🛠 조립 차고는 코인 ${BUILD_GATE.toLocaleString()}개 이상 모으면 열려요 (지금 ${meta.coins.toLocaleString()}개)`; sfx.grind(); return; }
+    if (state === 'over') { resetRun(); missions = []; state = 'ready'; toGarage(); renderCars(); }
+    sfx.init(); bdPrevCar = carIdx; bdSay('');
+    buildEl.hidden = false; ov.hidden = true; stage.classList.add('cust-on');
+    previewDraft(); renderBuild(); frameBuild();
+  }
+  function closeBuild(keep) {
+    if (buildEl.hidden) return;
+    buildEl.hidden = true; stage.classList.remove('cust-on'); camera.clearViewOffset();
+    // the draft stays parked (hidden) in CARS: removing it would shift the index of a car saved meanwhile
+    const back = keep != null ? keep : bdPrevCar;
+    buildPlayer(back < CARS.length ? back : 0); sfx.setProfile(car.engine); sfx.setSample(car.name);
+    try { localStorage.setItem('nh3d-car2', String(carIdx)); } catch (e) {}
+    renderCars(); if (state === 'ready' || state === 'over') ov.hidden = false;
+  }
+  function frameBuild() {
+    if (buildEl.hidden) return;
+    const r = stage.getBoundingClientRect(), p = buildCard.getBoundingClientRect(), W = r.width, H = r.height;
+    if (W < 1 || H < 1) return;
+    const side = p.top - r.top < H * 0.3, fw = side ? Math.max(1, p.left - r.left) : W, fh = side ? H : Math.max(1, p.top - r.top);
+    const s = clamp(Math.max(0.8 * H / fw, 0.5 * H / fh), 1, 2.4), cx = side ? (W - fw) / 2 : 0, cy = side ? 0 : (H - fh) / 2;
+    camera.setViewOffset(W, H, (W - W * s) / 2 + cx * s, (H - H * s) / 2 + cy * s, W * s, H * s);
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(frameBuild).observe(stage);
+  function storeCar(publish) {                               // save the draft as a named car (and maybe release it)
+    const name = cleanCarName($('bdName').value);
+    if (!name) { bdSay('차 이름을 먼저 지어 주세요'); $('bdName').focus(); return; }
+    if (builtinName(name) || name === '조립 중인 차') { bdSay('이미 있는 차 이름이에요. 다른 이름을 지어 주세요'); return; }
+    let rec = myBuilds.find(r => r.name === (bdEditing || name));
+    if (!rec && myBuilds.length >= 20) { bdSay('차는 20대까지 저장할 수 있어요'); return; }
+    if (!rec) { rec = { id: 'b' + Date.now().toString(36), name, b: null, pub: '' }; myBuilds.push(rec); }
+    if (rec.name !== name) { const old = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === rec.name && !c.draft); if (old >= 0) CARS[old] = buildSpec(draft, name, '나'); }
+    rec.name = name; rec.b = cleanBuild(draft); bdEditing = name; saveBuilds();
+    const idx = addCustomCar(rec, '나'); thumbs[idx] = makeThumbs(idx);
+    try { fbSaveSoon(); } catch (e) {}
+    if (publish) releaseCar(rec); else bdSay(`'${name}'을(를) 차고에 저장했어요`, true);
+    renderBuild();
+  }
+  async function releaseCar(rec) {
+    if (!fb.user || !fb.D) { bdSay('출시하려면 구글 로그인이 필요해요 (차고에는 저장됐어요)'); return; }
+    const { D, db } = fb, data = { by: fb.user.uid, n: (nick || (fb.user.displayName || '').split(' ')[0] || '드라이버').slice(0, 14), name: rec.name, spec: JSON.stringify(rec.b), at: D.serverTimestamp() };
+    try {
+      if (rec.pub) await D.set(D.ref(db, `market/${rec.pub}`), data);
+      else { const r = D.push(D.ref(db, 'market')); await D.set(r, data); rec.pub = r.key; }
+      saveBuilds(); bdSay(`🚀 '${rec.name}' 출시 완료! 커뮤니티 차고에 올라갔어요`, true); sfx.ding();
+    } catch (e) { bdSay('출시하지 못했어요. 잠시 뒤 다시 해 주세요'); }
+    renderBuild();
+  }
+  bdTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; bdTab = b.dataset.t; bdSay(''); renderBuild(); });
+  bdBody.addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.kind) { bdKind = t.dataset.kind; renderBuild(); return; }
+    if (t.dataset.col) { draft.color = +t.dataset.col; previewDraft(); renderBuild(); return; }
+    if (t.dataset.acc) { draft.accent = +t.dataset.acc; previewDraft(); renderBuild(); return; }
+    if (t.dataset.part) {
+      const id = t.dataset.part, p = bpPart(bdKind, id);
+      if (!owns(id)) {                                       // buying: the first tap asks, the second (within 4 s) pays
+        if (meta.coins < p[2]) { bdSay(`코인이 모자라요 (🪙 ${p[2].toLocaleString()} 필요)`); sfx.grind(); return; }
+        if (bdAsk !== id || Date.now() - bdAskT > 4000) { bdAsk = id; bdAskT = Date.now(); bdSay(`'${p[1]}'을(를) 🪙 ${p[2].toLocaleString()}에 살까요? 한 번 더 누르면 구매해요`); return; }
+        bdAsk = ''; meta.coins -= p[2]; saveMeta(); syncMetaBtn(); ownParts[id] = true; saveBuilds(); try { fbSaveSoon(); } catch (e) {}
+        sfx.ding(); bdSay(`'${p[1]}' 구매 완료!`, true);
+      }
+      if (bdKind === 'deco') draft.deco = draft.deco.includes(id) ? draft.deco.filter(d => d !== id) : [...draft.deco, id];
+      else draft[bdKind] = id;
+      previewDraft(); renderBuild(); return;
+    }
+    if (t.id === 'bdSave') return storeCar(false);
+    if (t.id === 'bdPub') return storeCar(true);
+    if (t.dataset.edit != null) { const r = myBuilds[+t.dataset.edit]; if (r) { draft = cleanBuild(r.b); bdEditing = r.name; bdTab = 'make'; previewDraft(); renderBuild(); } return; }
+    if (t.dataset.del != null) {
+      const k = +t.dataset.del, r = myBuilds[k]; if (!r) return;
+      if (bdAsk !== 'del' + k || Date.now() - bdAskT > 4000) { bdAsk = 'del' + k; bdAskT = Date.now(); bdSay(`'${r.name}'을(를) 지울까요? 한 번 더 누르면 지워요`); return; }
+      bdAsk = ''; myBuilds.splice(k, 1); saveBuilds();
+      if (r.pub && fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `market/${r.pub}`), null).catch(() => {});
+      const ci = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === r.name && !c.draft && c.by === '나');
+      if (ci >= 0) { CARS[ci].retired = true; }               // gone from the lists; the index stays so nothing else shifts
+      bdSay(`'${r.name}'을(를) 지웠어요`, true); renderBuild(); return;
+    }
+    if (t.dataset.pub != null) {
+      const r = myBuilds[+t.dataset.pub]; if (!r) return;
+      if (r.pub) { if (fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `market/${r.pub}`), null).catch(() => {}); r.pub = ''; saveBuilds(); bdSay(`'${r.name}' 출시를 취소했어요`, true); renderBuild(); }
+      else releaseCar(r);
+      return;
+    }
+    if (t.dataset.look) { const m = market.find(x => x.id === t.dataset.look); if (m) { draft = cleanBuild(m.b); bdEditing = ''; previewDraft(); bdSay(`'${m.name}' 구경 중 (by ${m.n})`, true); } return; }
+    if (t.dataset.get) {
+      const m = market.find(x => x.id === t.dataset.get); if (!m || dlBuilds.some(d => d.id === m.id)) return;
+      if (dlBuilds.length >= 30) { bdSay('받은 차는 30대까지예요'); return; }
+      const rec = { id: m.id, name: m.name, by: m.n, b: cleanBuild(m.b) };
+      if (builtinName(rec.name) || myBuilds.some(r => r.name === rec.name)) rec.name = (rec.name + '·' + m.n).slice(0, 16);
+      dlBuilds.push(rec); saveBuilds(); const idx = addCustomCar(rec, rec.by); thumbs[idx] = makeThumbs(idx);
+      try { fbSaveSoon(); } catch (e) {}
+      sfx.ding(); bdSay(`'${rec.name}'을(를) 받았어요! 차고의 '내가 만든 차'에 있어요`, true); renderBuild(); return;
+    }
+  });
+  bdBody.addEventListener('keydown', e => e.stopPropagation());
+  $('buildClose').addEventListener('click', () => closeBuild());
+  $('buildBtn').addEventListener('click', openBuild);
+  window.addEventListener('keydown', e => { if (buildEl.hidden) return; if (e.target && e.target.closest && e.target.closest('input')) return; if (e.code === 'Escape') closeBuild(); e.stopPropagation(); }, true);   // no driving or car-flipping behind the panel
+  setInterval(() => { const b = $('buildBtn'); if (b) b.classList.toggle('lockd', meta.coins < BUILD_GATE); }, 1500);
 
   cuPaint.addEventListener('click', e => {
     const b = e.target.closest('.swb'); if (!b) return; const i = +b.dataset.i;
@@ -6665,7 +6999,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
           : `<li class="${meta.coins >= price ? '' : 'lk'}" data-buy="${id}"><b>${name}</b><span>🪙 ${price}</span><small>${meta.coins >= price ? '눌러서 사기' : '코인이 모자라요'}</small></li>`).join('') + '</ul>';
     } else {
       const s = meta.login.streak;
-      metaBody.innerHTML = `<p class="dex-note">📅 연속 출석 ${s}일째 · 매일 처음 켜면 코인을 받아요 (7일째까지 늘어나요)</p><ul class="dex-list meta-list">`
+      metaBody.innerHTML = `<p class="dex-note">📅 연속 출석 ${s}일째 · 매일 처음 켜면 코인을 받아요 (7일째까지 늘어나요)</p><ul class="dex-list meta-list login">`
         + [1, 2, 3, 4, 5, 6, 7].map(d => `<li class="${d <= Math.min(s, 7) ? 'ok on' : ''}"><b>${d}일째</b><span>🪙 ${loginReward(d)}</span><small>${d <= Math.min(s, 7) ? '받았어요' : d === Math.min(s, 7) + 1 ? '내일' : ''}</small></li>`).join('') + '</ul>';
     }
   }
@@ -7955,10 +8289,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   function toGarage() { neutral = true; lever = 'P'; nRpm = 0.2; holdT = 0; syncMode(); renderShifter(); hudKey = ''; }
 
-  const carsM = $('carsM'), carsA = $('carsA'), garageEl = $('garage');
+  const carsM = $('carsM'), carsA = $('carsA'), carsC = $('carsC'), garageEl = $('garage');
   let thumbs = [];
   const pickBtn = $('pickBtn');
-  function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); $('homeBtn').hidden = !(show && state === 'pause'); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = !(show && (state === 'over' || state === 'offer')); }   // after a wreck: pick another car
+  function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); $('homeBtn').hidden = !(show && state === 'pause'); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = true; }   // after a wreck: pick another car
   const statRow = (label, v) => `<span>${label}</span><u style="--v:${Math.round(clamp(v, 0.06, 1) * 100)}%"></u>`;
   const cardHtml = (c, i) => { const open = isUnlocked(i), tr = !open && trialCar(i); return `<button class="car${open ? '' : tr ? ' trial' : ' locked'}" data-i="${i}" aria-pressed="${i === carIdx}"${open ? '' : ` aria-label="${c.name} 잠김, ${needShort(c)} 달성 시 해금"`}>
       ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>
@@ -8001,14 +8335,16 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     renderCars();
   });
   function renderCars() {
-    const pass = (c, i) => !c.retired && (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
+    const pass = (c, i) => !c.retired && !c.custom && (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
     carsM.innerHTML = CARS.map((c, i) => c.trans === 'manual' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsA.innerHTML = CARS.map((c, i) => c.trans === 'auto' && pass(c, i) ? cardHtml(c, i) : '').join('');
+    carsC.innerHTML = MP ? '' : CARS.map((c, i) => c.custom && !c.draft && !c.retired ? cardHtml(c, i) : '').join('');
+    carsC.parentElement.style.display = carsC.innerHTML ? '' : 'none';
     carsM.parentElement.style.display = carsM.innerHTML ? '' : 'none';
     carsA.parentElement.style.display = carsA.innerHTML ? '' : 'none';
     fltEmpty.hidden = !!(carsM.innerHTML || carsA.innerHTML);
     filtEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(filtOn(b.dataset.f))));
-    const n = nextUnlock(), have = CARS.filter((c, i) => !c.retired && isUnlocked(i)).length;
+    const n = nextUnlock(), have = CARS.filter((c, i) => !c.retired && !c.custom && isUnlocked(i)).length;
     let prev = 0; for (const c of CARS) if (c.unlock <= bestDist) prev = Math.max(prev, c.unlock);
     renderStats();
     unlockFill.style.width = (n ? clamp((bestDist - prev) / (n.unlock - prev), 0, 1) * 100 : 100) + '%';
@@ -8199,7 +8535,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   let last = performance.now();
   let gFrame = false;
-  const custOpen = () => typeof custEl !== 'undefined' && custEl && !custEl.hidden;
+  const custOpen = () => (typeof custEl !== 'undefined' && custEl && !custEl.hidden) || (typeof buildEl !== 'undefined' && buildEl && !buildEl.hidden);
   function frame(t) {
     requestAnimationFrame(frame);
     const el = (t - last) / 1000, real = clamp(el, 0, 0.05); last = t;
