@@ -6514,6 +6514,10 @@ function buildCar(S, MATS) {
   if ('ResizeObserver' in window) new ResizeObserver(frameCar).observe(stage); else addEventListener('resize', frameCar);
   // ── the build garage's panel: pick a part kind, tap a part; owned parts snap on at once, new ones cost coins (tap twice) ──
   const BUILD_GATE = 3000;
+  // once you have reached 3,000 coins (or built a car) the garage stays open for good, even after spending them
+  const buildOpen = () => { let ok = false; try { ok = localStorage.getItem('nh3d-build-open') === '1'; } catch (e) {}
+    if (!ok && (meta.coins >= BUILD_GATE || myBuilds.length || devOn())) { ok = true; try { localStorage.setItem('nh3d-build-open', '1'); fbSaveSoon(); } catch (e) {} }
+    return ok; };
   const buildEl = $('build'), buildCard = $('buildCard'), bdBody = $('bdBody'), bdTabs = $('bdTabs'), bdCoins = $('bdCoins'), bdMsg = $('bdMsg');
   const BP_LABEL = { size: '📏 크기', front: '🔺 앞부분', cabin: '🪟 운전석', rear: '🔻 뒷부분', aero: '🪽 스포일러', engine: '⚙️ 엔진', wheel: '🛞 바퀴', drive: '🔧 구동', deco: '✨ 장식', paint: '🎨 색' };
   const BP_COLOR = { size: '#7a5cff', front: '#ff5a3c', cabin: '#29b6f6', rear: '#ffb300', aero: '#26c281', engine: '#ff3d8b', wheel: '#8d99ae', drive: '#00bfa5', deco: '#f4d03f', paint: '#ff8a12' };
@@ -6597,7 +6601,7 @@ function buildCar(S, MATS) {
   }
   function openBuild() {
     if ((state !== 'ready' && state !== 'over') || !rankEl.hidden || MP) return;
-    if (meta.coins < BUILD_GATE) { ovText.textContent = `🛠 조립 차고는 코인 ${BUILD_GATE.toLocaleString()}개 이상 모으면 열려요 (지금 ${meta.coins.toLocaleString()}개)`; sfx.grind(); return; }
+    if (!buildOpen()) { ovText.textContent = `🛠 조립 차고는 코인 ${BUILD_GATE.toLocaleString()}개 이상 모으면 열려요 (지금 ${meta.coins.toLocaleString()}개)`; sfx.grind(); return; }
     if (state === 'over') { resetRun(); missions = []; state = 'ready'; toGarage(); renderCars(); }
     sfx.init(); bdPrevCar = carIdx; bdSay('');
     buildEl.hidden = false; ov.hidden = true; stage.classList.add('cust-on');
@@ -6703,7 +6707,7 @@ function buildCar(S, MATS) {
   $('buildClose').addEventListener('click', () => closeBuild());
   $('buildBtn').addEventListener('click', openBuild);
   window.addEventListener('keydown', e => { if (buildEl.hidden) return; if (e.target && e.target.closest && e.target.closest('input')) return; if (e.code === 'Escape') closeBuild(); e.stopPropagation(); }, true);   // no driving or car-flipping behind the panel
-  setInterval(() => { const b = $('buildBtn'); if (b) b.classList.toggle('lockd', meta.coins < BUILD_GATE); }, 1500);
+  setInterval(() => { const b = $('buildBtn'); if (b) b.classList.toggle('lockd', !buildOpen()); }, 1500);
 
   cuPaint.addEventListener('click', e => {
     const b = e.target.closest('.swb'); if (!b) return; const i = +b.dataset.i;
@@ -7609,7 +7613,8 @@ function buildCar(S, MATS) {
     if (!shared.db) { try { fbBoards(u); } catch (e) {} }
     try { chatStart(u); } catch (e) {}
     setTimeout(() => { try { weekCheck(); likePay(); } catch (e) {} }, 2500);
-    if (isDev(u.uid)) { try { renderCars(); } catch (e) {} }
+    if (isDev(u.uid)) { try { renderCars(); } catch (e) {}
+      setTimeout(() => { try { if (localStorage.getItem('nh3d-devgift-1') !== '1') { meta.coins += 50000; meta.earned += 50000; saveMeta(); syncMetaBtn(); localStorage.setItem('nh3d-devgift-1', '1'); fbSaveSoon(); popup('🛠 개발자 지급 🪙 +50,000', 'var(--ok)'); } } catch (e) {} }, 6000); }
     if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
     let cloud = null;
     try { const s = await fb.D.get(fb.D.ref(fb.db, `users/${u.uid}/save`)); cloud = s.exists() ? s.val() : null; } catch (e) { return; }
