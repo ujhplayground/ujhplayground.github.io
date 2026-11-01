@@ -2855,7 +2855,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
              ['e3', 'V10', 800, { top: 32, accel: 0.15 }], ['e4', 'V12', 1200, { top: 40, accel: 0.14 }], ['e5', '전기 모터', 1000, { top: 28, accel: 0.22 }]],
     wheel:  [['w0', '기본 17인치', 0, {}], ['w1', '스포츠 18인치', 200, { grip: 0.03 }], ['w2', '레이싱 19인치', 450, { grip: 0.07, accel: -0.01 }], ['w3', '오프로드 휠', 300, { grip: 0.05, top: -6 }]],
     drive:  [['d0', '후륜', 0, {}], ['d1', '4륜', 500, { grip: 0.06 }]],
-    body:   [['b0', '기본 차체', 0, {}], ['b1', '하이퍼카 차체 (펜리르형)', 3000, { top: 8, grip: 0.04 }]],
+    body:   [['b0', '기본 차체', 0, {}], ['b1', '하이퍼카 차체', 45000, { top: 8, grip: 0.04 }]],
     exhaust:[['x0', '쌍발', 0, {}], ['x1', '4발', 300, { accel: 0.01 }], ['x2', '가운데 육각 1발', 400, { top: 2 }], ['x3', '높은 쌍발', 400, { top: 1 }],
              ['x4', '육각 쌍발', 350, { accel: 0.01 }], ['x5', '양끝 쌍발', 300, {}], ['x6', '가운데 3발 (티타늄)', 600, { top: 2, accel: 0.01 }]],
     tail:   [['t0', '일자 바', 0, {}], ['t1', 'X자', 200, {}], ['t2', 'Y자', 200, {}], ['t3', '동그라미 4개', 150, {}], ['t4', 'ㄷ자', 150, {}], ['t5', '두 줄 칼날', 250, {}]],
@@ -2921,13 +2921,22 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     };
     if (b.body === 'b1') {                                    // the Fenrir-type lofted hypercar body, dressed from the same parts
       const HL = { s0: 4.75, s1: 4.45, s2: 5.0, s3: 4.8 }[b.size] + (b.rear === 'r2' ? 0.2 : 0);
-      c.hyper = { color: b.color, L: HL, W: b.size === 's3' ? 2.16 : 2.06, r: Math.max(0.36, r), fo: 1.05, ro: 1.0, nose: 0.3, hood: 0.5, fender: 0.78, cowl: 0.58, ws: 1.05,
-        deck: 0.82, waist: 0.86, fenderR: 0.98, tail: 0.8, roof: b.cabin === 'c3' ? 1.0 : 1.08, cab: { ws: 0.55, roof: 0.6, back: 0.9 }, roadster: b.cabin === 'c4',
-        wing: { a0: null, a1: 'duck', a2: 'big', a3: 'big', a4: 'big', a5: 'swan' }[b.aero], wingH: 0.38, struts: b.aero === 'a5' ? 'straight' : null, tallPlates: b.aero === 'a5',
-        fin: b.aero === 'a4', scoop: b.deco.includes('roofscoop') || b.deco.includes('scoop') ? 'carbon' : null, vents: b.deco.includes('louvres'), nostrils: b.deco.includes('scoop'),
-        stripes: b.deco.includes('stripes') ? b.accent : null,
-        lights: 'slash', rim: c.rim, cal: c.cal, spokes: 6, blade: b.deco.includes('livery') ? b.accent : null,
-        rear: { tl: { t0: 'bar', t1: 'x', t2: 'y', t3: 'dots', t4: 'c', t5: 'split' }[b.tail], face: b.deco.includes('grille') ? 'mesh' : 'open', dif: b.aero === 'a3' || b.aero === 'a5' ? 'big' : 'small',
+      // every other part shapes the hypercar too: nose, cabin, tail, spoiler, exhaust, lamps and the decorations
+      const FR = { f0: [0.34, 0.52, { nw: 0.8, face: 'twin' }], f1: [0.28, 0.46, { nw: 0.74, face: 'v' }], f2: [0.42, 0.62, { nw: 0.92, drop: 0.12, face: 'slits' }],
+        f3: [0.22, 0.42, { nw: 0.6, ridge: 0.05, reach: 0.5, face: 'shark' }], f4: [0.26, 0.44, { nw: 0.55, ridge: 0.06, reach: 0.6, face: 'shark' }],
+        f5: [0.38, 0.58, { nw: 0.9, reach: 0.28, face: 'mouth' }], f6: [0.46, 0.66, { nw: 0.95, drop: 0.02, face: 'mouth' }] }[b.front];
+      const CB = { c0: [1.08, { ws: 0.55, roof: 0.6, back: 0.9 }], c1: [1.08, { ws: 0.55, roof: 0.5, back: 1.2 }], c2: [1.12, { ws: 0.55, roof: 0.75, back: 1.35 }],
+        c3: [1.0, { ws: 0.6, roof: 0.45, back: 0.85 }], c4: [1.0, { ws: 0.5, roof: 0.4, back: 0.8 }], c5: [1.12, { ws: 0.55, roof: 1.0, back: 1.45 }],
+        c6: [1.15, { ws: 0.75, roof: 0.55, back: 0.9 }], c7: [1.22, { ws: 0.5, roof: 0.95, back: 1.3 }] }[b.cabin];
+      const RR = { r0: [0.82, 0.82], r1: [0.76, 0.8], r2: [0.78, 0.82], r3: [0.88, 0.88], r4: [0.68, 0.78], r5: [0.92, 0.9], r6: [0.94, 0.84] }[b.rear];
+      const has = d => b.deco.includes(d);
+      c.hyper = { color: b.color, L: HL, W: b.size === 's3' ? 2.16 : 2.06, r: Math.max(0.36, r), fo: 1.05, ro: 1.0, nose: FR[0], hood: FR[1], fender: 0.78, cowl: FR[1] + 0.08, ws: 1.05,
+        deck: RR[1], waist: 0.86, fenderR: 0.98, tail: RR[0], roof: CB[0], cab: CB[1], roadster: b.cabin === 'c4', front: FR[2],
+        wing: { a0: b.rear === 'r0' ? 'duck' : null, a1: 'duck', a2: 'big', a3: 'big', a4: 'big', a5: 'swan' }[b.aero], wingH: 0.38, struts: b.aero === 'a5' ? 'straight' : null, tallPlates: b.aero === 'a5',
+        fin: b.aero === 'a4', scoop: has('roofscoop') ? 'carbon' : null, vents: has('louvres'), nostrils: has('scoop'), stripes: has('stripes') ? b.accent : null,
+        roofBand: has('roofpaint') ? 'paint' : null, blade: has('livery') ? b.accent : has('skirts') ? 'paint' : null, intakeM: has('intakes') ? 'void' : null,
+        lights: 'slash', rim: c.rim, cal: c.cal, spokes: 6,
+        rear: { tl: { t0: 'bar', t1: 'x', t2: 'y', t3: 'dots', t4: 'c', t5: 'split' }[b.tail], face: has('grille') ? 'mesh' : has('diffuser') ? 'louver' : 'open', dif: has('diffuser') || b.aero === 'a3' || b.aero === 'a5' ? 'big' : 'small',
           ex: b.engine === 'e5' ? 'none' : { x0: 'twin', x1: 'quad', x2: 'center', x3: 'high', x4: 'hex', x5: 'corner', x6: 'stack' }[b.exhaust], ti: b.exhaust === 'x6' } };
       c.L = HL; c.W = c.hyper.W;
     }
@@ -4052,11 +4061,11 @@ function buildCar(S, MATS) {
         smp.vg[0].gain.setTargetAtTime(Math.sqrt(bal), t, 0.15); smp.vg[1].gain.setTargetAtTime(Math.sqrt(1 - bal), t, 0.15);
         // at idle (and in the garage) the recording sits back and the synth carries the burble; it opens up with the revs
         const rk = Math.min(r, 1), idleK = 0.12 + 0.88 * Math.min(1, Math.max(0, (rk - 0.08) / 0.5));
-        const sv = on ? 0.3 * (SMP_GAIN[smpName] || 1) * idleK * (cut ? 0.3 : 0.55 + 0.45 * load + (bark ? 0.25 : 0)) * (0.55 + 0.5 * rk) * (1 + 0.25 * boost) * (mode ? 1 : 0.8) * (1 + 0.2 * openAir) : 0;
+        const sv = on ? 0.3 * (SMP_GAIN[smpName] || 1) * idleK * (cut ? 0.2 : 0.12 + 0.88 * load + (bark ? 0.25 : 0)) * (0.55 + 0.5 * rk) * (1 + 0.25 * boost) * (mode ? 1 : 0.8) * (1 + 0.2 * openAir) : 0;
         smp.g.gain.setTargetAtTime(sv, t, cut ? 0.01 : 0.04);
         smp.lp.frequency.setTargetAtTime(2600 + 9000 * (0.4 + 0.6 * load), t, 0.08);
       }
-      const synthK = smp ? 0.22 + 0.6 * Math.max(0, 1 - Math.min(r, 1) / 0.45) : 1;
+      const synthK = smp ? 0.22 + 0.5 * (1 - load) + 0.3 * Math.max(0, 1 - Math.min(r, 1) / 0.45) : 1;   // off the throttle the synth carries the quieter note
       E.out.gain.setTargetAtTime(base * synthK, t, cut ? 0.006 : 0.022);
       const rasp = prof.rasp * X.rasp * (1 + 0.4 * engT) * (mode ? 1.3 : 0.35 + 0.4 * exI) * 0.5 * (1 + 0.6 * openAir) * (1 + 0.4 * boost);
       E.ng.gain.setTargetAtTime(rasp, t, 0.05); E.am.gain.setTargetAtTime(rasp, t, 0.05);
@@ -6665,7 +6674,7 @@ function buildCar(S, MATS) {
             <small>${own ? (on ? '장착됨 · 무료' : '무료') : `${on ? '장착 · ' : ''}🪙 ${Math.round(price * partsMult(bdEditing || null)).toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
       }
       bdBody.innerHTML = `<div class="bd-kinds">${kinds.map(k => `<button data-kind="${k}" style="--bc:${BP_COLOR[k]}" aria-pressed="${k === bdKind}">${BP_LABEL[k]}</button>`).join('')}</div>
-        ${parts}${draft.body === 'b1' && ['front', 'cabin', 'rear'].includes(bdKind) ? '<p class="bd-empty" style="padding:4px 2px">하이퍼카 차체에서는 앞부분·운전석 모양이 펜리르형으로 고정돼요 (로드스터·롱테일만 반영)</p>' : ''}
+        ${parts}
         <div class="bd-stats"><span class="tier t-${tier}">${tier}</span>
           <div><i>최고 속도</i><u><s style="width:${(st.top - 280) / 60 * 100}%"></s></u><em>${st.top} km/h</em></div>
           <div><i>가속</i><u><s style="width:${(st.accel - 0.8) / 0.35 * 100}%"></s></u><em>${st.accel}</em></div>
