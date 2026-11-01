@@ -351,6 +351,7 @@ button.go:hover { filter: brightness(1.08); }
 .bd-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .bd-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid var(--edge); }
 .bd-list li > div { flex: 1; display: grid; } .bd-list small { color: var(--muted); font-size: .74rem; } .bd-list .rankbtn { padding: 6px 10px; font-size: .78rem; }
+.bd-like.on { border-color: var(--lamp); color: var(--lamp); }
 .bd-tag { font-size: .72rem; color: var(--ok); } .bd-empty { color: var(--muted); font-size: .86rem; padding: 18px 4px; }
 /* the garage's button row: dark glass pills with a lit edge; the start button glows with a passing shine */
 .gorow .rankbtn { position: relative; gap: 7px; padding: 10px 17px; font-weight: 700; letter-spacing: .02em; color: #e9edf5;
@@ -424,6 +425,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 @media (pointer: coarse) { .boost { display: none; } }                 /* phones: the HUD is already packed at the top; you hear the boost */
 /* Showroom: on wide screens the garage reads like a showroom: the selected car's stats on the left, the car list on the right, the 3D car between */
 .side, .stats, .chal { display: none; }
+.car .emb { position: absolute; top: 4px; right: 6px; width: 30px; height: auto; z-index: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); pointer-events: none; }
 .tier { position: absolute; top: 6px; left: 6px; z-index: 1; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 6px; font-family: var(--display); font-weight: 700; font-size: .85rem; line-height: 1; color: #0b0c10; background: #7a8294; box-shadow: 0 0 10px rgba(0, 0, 0, .5); }
 .tier.t-S { background: #ffd23a; box-shadow: 0 0 12px rgba(255, 210, 58, .55); }
 .tier.t-A { background: #ff7a1a; }
@@ -1310,6 +1312,27 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
   }
 
+  // ── seasons: 🎃 Halloween (Oct 20 – Nov 7) and 🎄 Christmas (Dec 10 – 31): roadside decorations, falling leaves/snow, a limited paint ──
+  const SEASON = (() => { const d = new Date(), m = d.getMonth() + 1, day = d.getDate();
+    if ((m === 10 && day >= 20) || (m === 11 && day <= 7)) return { id: 'halloween', name: '🎃 할로윈 이벤트', paint: ['할로윈 펌킨', 0xff6a00], fall: [0xff8a2a, 0.22, 1.2, 1.6] };
+    if (m === 12 && day >= 10) return { id: 'xmas', name: '🎄 크리스마스 이벤트', paint: ['크리스마스 레드', 0xb3001b], fall: [0xffffff, 0.2, 2.0, 0.9] };
+    return null; })();
+  function seasonDeco() {                                   // a jack-o'-lantern or a little lit tree at the foot of each lamp
+    const g = new THREE.Group(); g.position.set(0.7, 0, 0.6);
+    if (SEASON.id === 'halloween') {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 10), new THREE.MeshLambertMaterial({ color: 0xff7a12, emissive: 0x401400 })); p.scale.y = 0.78; p.position.y = 0.34; g.add(p);
+      box(g, new THREE.MeshLambertMaterial({ color: 0x3a5a1a }), 0.08, 0.16, 0.08, 0, 0.72, 0);
+      const face = new THREE.MeshBasicMaterial({ color: 0xffd23a });
+      for (const x of [-0.14, 0.14]) box(g, face, 0.1, 0.08, 0.02, x, 0.42, 0.41); box(g, face, 0.26, 0.06, 0.02, 0, 0.24, 0.4);
+      const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xff9a2a, blending: ADD, depthWrite: false, transparent: true, opacity: 0.6 })); gl.position.y = 0.4; gl.scale.set(1.6, 1.6, 1); g.add(gl);
+    } else {
+      const tm = new THREE.MeshLambertMaterial({ color: 0x1f5a2e });
+      for (const [r, h, y] of [[0.7, 0.9, 0.55], [0.55, 0.75, 1.05], [0.38, 0.6, 1.5]]) { const c = new THREE.Mesh(new THREE.ConeGeometry(r, h, 10), tm); c.position.y = y; g.add(c); }
+      for (let k = 0; k < 9; k++) { const a = k * 2.3, y = 0.3 + k * 0.15, r = 0.62 - k * 0.055, b = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), new THREE.MeshBasicMaterial({ color: [0xff3344, 0xffd23a, 0x44aaff][k % 3] })); b.position.set(Math.cos(a) * r, y, Math.sin(a) * r); g.add(b); }
+      box(g, new THREE.MeshBasicMaterial({ color: 0xffe066 }), 0.16, 0.16, 0.16, 0, 1.86, 0);
+    }
+    return g;
+  }
   // Sodium streetlamps, alternating sides every 30 m, each throwing a pool of light on the asphalt
   const L_GAP = 30, lPool = [], lSlots = new Map();
   const poleGeo = new THREE.CylinderGeometry(0.11, 0.14, 9, 8); poleGeo.translate(0, 4.5, 0);
@@ -1324,6 +1347,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     box(g, headMat, 1.1, 0.16, 0.42, -2.9, 8.82, 0);
     const glow = new THREE.Sprite(lampGlow); glow.position.set(-2.9, 8.6, 0); glow.scale.set(3.4, 3.4, 1); g.add(glow);
     const pool = new THREE.Mesh(poolGeo, poolMat); pool.position.set(-3.2, 0.02, 0); g.add(pool);
+    if (SEASON) g.add(seasonDeco());
     g.visible = false; scene.add(g); lPool.push({ g, key: null, s: 0 });
   }
   function updateLamps(s) {
@@ -2111,6 +2135,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const _fc = new THREE.Color();
   function updateFall(dt) {
     let amt = 0, sz = 0, sp2 = 0, sw = 0; _fc.setRGB(0, 0, 0);
+    if (SEASON && state === 'play') { const [c, s2, v2, w2] = SEASON.fall, f = 0.45; amt += f; _fc.add(new THREE.Color(c).multiplyScalar(f)); sz += s2 * f; sp2 += v2 * f; sw += w2 * f; }   // the season's leaves or snow on every map
     for (const k in FALL_KIND) { const f = bF[k]; if (f < 0.01) continue; const [c, s, v, w] = FALL_KIND[k]; amt += f; _fc.add(new THREE.Color(c).multiplyScalar(f)); sz += s * f; sp2 += v * f; sw += w * f; }
     fall.visible = amt > 0.02 && tunF < 0.9;
     if (!fall.visible) return;
@@ -2713,26 +2738,26 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   // character. drive: 'rwd' = 후륜 (stamp on it and the nose lifts), 'awd' = 4륜 (puts the power down cleanly).
   //   name: [unlock m, top km/h, accel, grip, drive, roof-down top speed]
   const TUNE = {
-    '리겔 GT': [0, 300, 0.92, 0.92, 'rwd', 275], '레굴루스 S': [0, 295, 0.9, 0.92, 'rwd', 270], '베텔게우스 427': [1000, 290, 0.95, 0.8, 'rwd'],
-    '데네브 66': [2000, 300, 0.96, 0.84, 'rwd'], '오리온 SR': [3500, 302, 0.98, 1.0, 'rwd'], '알타이르 R': [5500, 305, 1.0, 0.98, 'awd'],
-    '페가수스 GT': [10000, 334, 1.0, 1.0, 'awd'], '카노푸스 SS': [12500, 315, 1.03, 0.86, 'rwd', 290], '안드로메다 RT': [15500, 318, 1.04, 1.1, 'rwd'],
-    '알골 SS': [21500, 320, 1.02, 0.9, 'rwd'], '로켓 머슬 MK': [28000, 318, 1.04, 0.9, 'rwd'], '벨라트릭스 RS': [31000, 322, 1.06, 1.15, 'rwd'],
-    '헬릭스 GTS': [35000, 332, 1.09, 1.02, 'rwd', 300], '스피카 SC': [38500, 330, 1.1, 0.98, 'rwd'], '리가 TR': [42000, 340, 1.12, 1.18, 'awd'],
-    '알데바란 GTS': [46000, 335, 1.08, 1.0, 'rwd', 305], '폴룩스 GT': [54000, 345, 1.1, 1.04, 'awd'], '프로키온 TR': [58500, 352, 1.16, 1.2, 'awd'],
-    '카스토르 LM': [62500, 362, 1.18, 1.25, 'awd'], '안타레스 V12': [67000, 378, 1.15, 1.08, 'awd'], '시리우스 XR': [71500, 395, 1.24, 1.3, 'awd'],
-    '미라지 V6': [8000, 316, 1.02, 1.02, 'rwd'], '버팔로 머슬': [18500, 322, 1.04, 0.9, 'rwd'], '오로라 V12': [50000, 342, 1.09, 1.02, 'awd'],
+    '리겔 GT': [0, 290, 0.9, 0.92, 'rwd', 275], '레굴루스 S': [0, 292, 0.9, 0.94, 'rwd', 270], '베텔게우스 427': [1000, 295, 0.94, 0.89, 'rwd'],
+    '데네브 66': [2000, 302, 0.95, 0.92, 'rwd'], '오리온 SR': [3500, 302, 0.98, 1.0, 'rwd'], '알타이르 R': [5500, 307, 0.97, 1.02, 'awd'],
+    '페가수스 GT': [10000, 334, 1.0, 1.0, 'awd'], '카노푸스 SS': [12500, 317, 1.01, 0.96, 'rwd', 290], '안드로메다 RT': [15500, 322, 1.03, 1.1, 'rwd'],
+    '알골 SS': [21500, 327, 1.03, 1.01, 'rwd'], '로켓 머슬 MK': [28000, 330, 1.05, 1.02, 'rwd'], '벨라트릭스 RS': [31000, 335, 1.08, 1.17, 'rwd'],
+    '헬릭스 GTS': [35000, 332, 1.09, 1.02, 'rwd', 300], '스피카 SC': [38500, 341, 1.11, 1.09, 'rwd'], '리가 TR': [42000, 340, 1.12, 1.18, 'awd'],
+    '알데바란 GTS': [46000, 346, 1.11, 1.11, 'rwd', 305], '폴룩스 GT': [54000, 355, 1.14, 1.13, 'awd'], '프로키온 TR': [58500, 360, 1.19, 1.21, 'awd'],
+    '카스토르 LM': [62500, 367, 1.21, 1.24, 'awd'], '안타레스 V12': [67000, 424, 1.3, 1.32, 'awd'], '시리우스 XR': [71500, 450, 1.33, 1.35, 'awd'],
+    '미라지 V6': [8000, 314, 0.99, 1.02, 'rwd'], '버팔로 머슬': [18500, 322, 1.04, 0.9, 'rwd'], '오로라 V12': [50000, 351, 1.12, 1.13, 'awd'],
     '엘나트 SS': [24500, 321, 1.03, 0.92, 'rwd', 296],
-    '플럭스 로드스터': [76000, 370, 1.05, 1.2, 'awd'],
+    '플럭스 로드스터': [76000, 373, 1.16, 1.21, 'awd'],
   };
   for (const c of CARS) {
     const t = TUNE[c.name]; if (!t) { c.unlock = c.unlock || 0; c.drive = c.drive || 'rwd'; continue; }
-    [c.unlock, c.top, c.accel, c.grip, c.drive] = t;
+    [c.unlock, c.top, c.accel, c.grip, c.drive] = t; c.unlock *= 4;   // car unlocks count the distance of all runs together
     if (c.conv && t[5]) c.conv.topOpen = t[5];
   }
   // Achievement cars: they never unlock by distance, only by the number of 🏅 achievements you hold
   for (const [from, spec, t] of [
     ['오로라 V12', { name: '네뷸라 팬텀', tag: '업적 보상 · 블랙 크롬 GT', color: 0x0c0d12, metal: 0.65, accent: 0xd4af37, rim: 0xd4af37, cal: 0xd4af37, achNeed: 10 }, [360, 1.15, 1.12, 'awd']],
-    ['시리우스 XR', { name: '이클립스 제로', tag: '업적 보상 · 모든 업적', color: 0x101217, metal: 0.2, accent: 0x16e0ff, rim: 0x16e0ff, cal: 0x16e0ff, achNeed: 20 }, [410, 1.3, 1.36, 'awd']],
+    ['시리우스 XR', { name: '이클립스 제로', tag: '업적 보상 · 모든 업적', color: 0x101217, metal: 0.2, accent: 0x16e0ff, rim: 0x16e0ff, cal: 0x16e0ff, achNeed: 20 }, [412, 1.28, 1.3, 'awd']],
   ]) {
     const b = CARS.find(c => c.name === from); if (!b) continue;
     const c = Object.assign({}, b, spec); [c.top, c.accel, c.grip, c.drive] = t; c.unlock = 1e9; CARS.push(c);
@@ -2787,9 +2812,18 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   for (const c of CARS) if (RETIRED[c.name]) c.retired = true;
   const twinOf = i => { const c = CARS[i]; return c && c.retired ? CARS.findIndex(d => d.name === RETIRED[c.name]) : i; };
   const LINEUP = () => CARS.filter(c => !c.retired && !c.custom).length;
+  // 안타레스 V12 → 슬레이프니르 V, 시리우스 XR → 펜리르 X: same slot, unlock, numbers and sound; a new hypercar body
+  const HYPER = {
+    '시리우스 XR': ['펜리르 X', '트랙 하이퍼카', { n: '펜리르 X', d: '트랙 전용 하이퍼카. 아주 낮은 차체에 거대한 스완넥 윙, 지붕 흡기구, 상어 지느러미.', color: 0x1b2a55, L: 4.75, W: 2.08, r: 0.37, fo: 1.05, ro: 1.0, nose: 0.3, hood: 0.5, fender: 0.78, cowl: 0.58, ws: 1.05, deck: 0.82, waist: 0.86, fenderR: 0.98, tail: 0.8, roof: 1.08, cab: { ws: 0.55, roof: 0.6, back: 0.9 }, wing: 'swan', scoop: 'carbon', fin: true, lights: 'x', noLights: true, nostrils: true, struts: 'straight', tallPlates: true, rim: 0x101114, cal: 0x2f6bff, spokes: 6, blade: 0x3a7bff }],
+    '안타레스 V12': ['슬레이프니르 V', 'V12 하이퍼카', { n: '슬레이프니르 V', d: '종이접기처럼 각진 V12 슈퍼카. X자 후미등.', color: 0xa7adb8, L: 4.8, W: 2.06, r: 0.37, fo: 1.05, ro: 1.0, nose: 0.32, hood: 0.52, fender: 0.76, cowl: 0.58, ws: 1.0, deck: 0.84, waist: 0.8, fenderR: 0.96, tail: 0.82, roof: 1.1, cab: { ws: 0.6, roof: 0.5, back: 1.0 }, lights: 'y', noLights: true, rear: { tl: 'x', ex: 'twin' }, wing: 'swan', struts: 'swan', tallPlates: true, fenderLines: true, brows: true, exGlow: true, rim: 0x2a2d33, cal: 0x00d2ff, spokes: 5, blade: 0x00d2ff }],
+  };
+  for (const c of CARS) { const H = HYPER[c.name]; if (!H || c.achNeed) continue; c.oldName = c.name; c.name = H[0]; c.tag = H[1]; c.hyper = H[2]; c.L = H[2].L; c.W = H[2].W; c.color = H[2].color; c.oem = null; }
+  // (badges were tried and dropped)
+  let cumBase = () => 0;                                   // all runs' metres (set once the meta chunk is up)
+  const cumDist = () => cumBase() + (typeof state !== 'undefined' && state === 'play' ? Math.max(0, dist) : 0);
   let achHave = 0;                                                      // how many achievements you hold (kept by the meta chunk)
-  const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `최고 거리 ${km(c.unlock)}`;
-  const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : c.top >= 330 ? `최고 거리 ${km(c.unlock)} 달성 또는 🪙 ${(5000).toLocaleString()}코인으로 구매` : `최고 거리 ${km(c.unlock)}를 달리면 해금돼요`;
+  const needShort = c => c.achNeed ? `업적 ${c.achNeed}개` : `누적 ${km(c.unlock)}`;
+  const howTxt = c => c.achNeed ? `🏅 업적 ${c.achNeed}개를 달성하면 해금돼요` : c.top >= 330 ? `누적 거리 ${km(c.unlock)} 달성 또는 🪙 ${priceOf(c).toLocaleString()}코인으로 구매` : `누적 거리 ${km(c.unlock)}를 달리면 해금돼요`;
   const MP_CARS = ['리겔 GT', '레굴루스 S'].map(n => CARS.findIndex(c => c.name === n)).filter(i => i >= 0);   // multi: everyone on the two stock cars
   for (const c of CARS) c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: c.conv ? c.conv.topOpen : 0 };   // the stock numbers the chassis tuning works from
   // ── 🛠 조립 차고 (the build garage): snap a car together from parts, name it, release it for everyone ──
@@ -3032,7 +3066,230 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
 
   // Assemble a car. m = { paint, accent, glass, rim, cal, tail, tailGlow, detail, heads }
+  // ── hypercar builder (펜리르 X · 슬레이프니르 V): its own lofted, faceted body ──
+  const hyperCar = (() => {
+// materials
+const paintM = c => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.12, roughness: 0.36, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 0.42, flatShading: true });
+const carbon = new THREE.MeshStandardMaterial({ color: 0x0d0e11, metalness: 0.3, roughness: 0.55, envMapIntensity: 0.25, flatShading: true });
+const glass = new THREE.MeshPhysicalMaterial({ color: 0x030407, metalness: 0.5, roughness: 0.05, clearcoat: 1, envMapIntensity: 0.6, flatShading: true });
+const voidM = new THREE.MeshStandardMaterial({ color: 0x050608, roughness: 0.9, side: THREE.DoubleSide });
+const rubber = new THREE.MeshStandardMaterial({ color: 0x0c0c0e, roughness: 0.9 });
+const glow = c => new THREE.MeshBasicMaterial({ color: c, toneMapped: false });
+const lerp = (a, b, t) => a + (b - a) * t;
+function add(g, geo, m, x = 0, y = 0, z = 0) { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; g.add(o); return o; }
+const box = (g, w, h, d, m, x, y, z) => add(g, new THREE.BoxGeometry(w, h, d), m, x, y, z);
+const keyAt = (K, u) => { for (let i = 0; i < K.length - 1; i++) { const a = K[i], b = K[i + 1]; if (u <= a[0] && u >= b[0]) { const t = (a[0] - u) / (a[0] - b[0]); return a.map((v, k) => lerp(v, b[k], t)); } } return u > K[0][0] ? K[0] : K[K.length - 1]; };
+
+// loft: rings of points along the car (u = forward), quads between them, split in two materials by segment
+function loft(rings, segMat, mats, capF, capR) {
+  const pos = mats.map(() => []), V = mats.map(() => []), I = mats.map(() => []);
+  const P = (r, k) => rings[r][k % rings[r].length];
+  for (let r = 0; r < rings.length - 1; r++) for (let k = 0; k < rings[r].length; k++) {
+    const a = P(r, k), b = P(r, k + 1), c = P(r + 1, k + 1), d = P(r + 1, k);
+    pos[segMat(k)].push(...a, ...b, ...d, ...b, ...c, ...d);
+  }
+  const cap = (ring, flip, mi) => { const c = ring.reduce((s, p) => [s[0] + p[0], s[1] + p[1], s[2] + p[2]], [0, 0, 0]).map(v => v / ring.length);
+    for (let k = 0; k < ring.length; k++) { const a = ring[k], b = ring[(k + 1) % ring.length]; pos[mi].push(...(flip ? [...c, ...a, ...b] : [...c, ...b, ...a])); } };
+  if (capF != null) cap(rings[0], false, capF); if (capR != null) cap(rings[rings.length - 1], true, capR);
+  const out = [];
+  mats.forEach((m, i) => {
+    if (I[i].length) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(V[i], 3)); g.setIndex(I[i]); g.computeVertexNormals(); out.push([g, m]); }
+    if (pos[i].length) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos[i], 3)); g.computeVertexNormals(); out.push([g, m]); }
+  });
+  return out;
+}
+
+function buildCar(S, MATS) {
+  const g = new THREE.Group(), h = S.L / 2, hw = S.W / 2, r = S.r, fu = h - S.fo, ru = -h + S.ro, FL = 0.13;
+  const P = (MATS && MATS.paint) || paintM(S.color), lower = S.mono ? P : carbon, F = Object.assign({ nw: 0.8, ridge: 0, reach: 0.32, drop: 0.08, face: 'twin' }, S.front);
+  // body keyframes: [u, centre height, shoulder height, half width, belt height]
+  const ws = S.ws, K = [
+    [h, S.nose + F.ridge, S.nose + 0.05, hw * F.nw, S.nose - 0.08],
+    [h - F.reach, S.hood + 0.02 + F.ridge * 0.6, S.fender - F.drop, hw * lerp(F.nw, 1, 0.75), 0.4],
+    [fu, S.hood, S.fender, hw, 0.46],
+    [ws, S.cowl, S.fender - 0.06, hw * 0.95, 0.46],
+    [lerp(ws, ru, 0.55), S.deck - 0.05, S.waist, hw * 0.9, 0.42],
+    [ru, S.deck, S.fenderR, hw * 1.02, 0.48],
+    [-h + 0.22, S.tail, S.tail + 0.03, hw * 0.96, S.tail - 0.14],
+    [-h, S.tail - 0.06, S.tail - 0.03, hw * 0.9, 0.34],
+  ];
+  const rings = [];
+  for (let u = h; u >= -h - 1e-6; u -= 0.09) {
+    let [, cy, sy, w, belt] = keyAt(K, u); let inner = w * 0.92;
+    for (const wu of [fu, ru]) { const d = Math.abs(u - wu), R2 = r + 0.07;      // the wheel arch: the belt climbs over the tyre, the lower body tucks in
+      if (d < R2 + 0.06) { const ay = r + Math.sqrt(Math.max(0, R2 * R2 - Math.min(d, R2) ** 2)); belt = Math.max(belt, ay + 0.03); inner = Math.min(inner, w - 0.42); } }
+    sy = Math.max(sy, belt + 0.08); cy = Math.min(cy, sy + 0.02);
+    const pts = [[0, FL], [inner, FL], [Math.min(w, inner + 0.06), FL + 0.14], [w, belt], [w * 0.86, sy], [w * 0.45, lerp(sy, cy, 0.7)], [0, cy]];
+    let ringU = [...pts, ...pts.slice(1, 6).reverse().map(([x, y]) => [-x, y])];
+    rings.push(ringU.map(([x, y]) => [x, y, -u]));
+  }
+  // segments 0-2 and 9-11 are the lower body (carbon on the two-tone cars), 3-8 the painted top
+  // three panels with a hard crease between them (lower · flank · top); inside a panel the surface runs smooth
+  for (const [geo, m] of loft(rings, k => (k <= 2 || k >= 9) ? 1 : 0, [P, lower], 1, 1)) add(g, geo, m);
+
+  // canopy: windshield → roof → rear slope, or a low screen and roll hoops for a roadster
+  if (S.roadster) {
+    const scr = box(g, hw * 1.2, 0.3, 0.04, glass, 0, S.cowl + 0.12, -(ws - 0.15)); scr.rotation.x = -0.9;
+    for (const s of [-1, 1]) { box(g, 0.42, 0.26, 0.5, P, s * 0.36, S.deck + 0.12, -(ws - 1.1)); box(g, 0.36, 0.22, 0.9, lower, s * 0.36, S.deck + 0.05, -(ws - 1.6)); }
+  } else {
+    const C = S.cab, CK = [[ws, S.cowl - 0.02, S.cowl, hw * 0.86, hw * 0.84], [ws - C.ws, 0, S.roof, hw * 0.78, hw * 0.58], [ws - C.ws - C.roof, 0, S.roof - 0.02, hw * 0.8, hw * 0.56], [ws - C.ws - C.roof - C.back, 0, S.deck + 0.03, hw * 0.82, hw * 0.74]];
+    const cr = []; for (let i = 0; i <= 20; i++) { const u = lerp(CK[0][0], CK[3][0], i / 20), q = keyAt(CK, u), base = keyAt(K, u)[1] - 0.03;
+      const top = Math.max(base + 0.01, q[2]); cr.push([[q[3], base, -u], [q[4], top, -u], [-q[4], top, -u], [-q[3], base, -u]]); }
+    for (const [geo, m] of loft(cr, k => k === 3 ? 1 : 0, [glass, carbon], null, null)) add(g, geo, m);
+    if (S.roofBand) for (const [geo, m] of loft(cr.map(rg => [[rg[1][0] * 0.55, rg[1][1] + 0.006, rg[1][2]], [-rg[1][0] * 0.55, rg[1][1] + 0.006, rg[1][2]]]), () => 0, [S.roofBand === 'paint' ? P : carbon], null, null)) add(g, geo, S.roofBand === 'paint' ? P : carbon);
+    for (const s of [-1, 1]) { const m = box(g, 0.2, 0.07, 0.1, S.mirror === 'paint' ? P : carbon, s * (hw * 0.86 + 0.1), S.cowl + 0.12, -(ws - 0.3)); box(g, 0.03, 0.12, 0.03, carbon, s * (hw * 0.86), S.cowl + 0.06, -(ws - 0.3)); }
+  }
+  // wheels: low profile tyre, multi-spoke rim, coloured caliper
+  const exhList = [];
+  const rimM = new THREE.MeshStandardMaterial({ color: S.rim || 0x16181d, metalness: 0.85, roughness: 0.3 }), calM = glow(S.cal || 0xff3b30);
+  const wheels = [];
+  for (const wu of [fu, ru]) for (const s of [-1, 1]) {
+    const wg = new THREE.Group(), tw = wu === ru ? 0.36 : 0.3;
+    const tire = new THREE.Mesh(new THREE.CylinderGeometry(r, r, tw, 40), rubber); tire.rotation.z = Math.PI / 2; wg.add(tire);
+    const face = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.74, r * 0.74, 0.02, 40), rimM); face.rotation.z = Math.PI / 2; face.position.x = s * (tw / 2 + 0.005); wg.add(face);
+    const sp = new THREE.Group(); sp.position.x = s * (tw / 2 + 0.02);
+    const n = S.spokes || 10; for (let i = 0; i < n; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.02, r * 0.68, 0.035), rimM); b.position.y = r * 0.34; const p = new THREE.Group(); p.rotation.x = i / n * Math.PI * 2; p.add(b); sp.add(p); }
+    const hole = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.66, r * 0.66, 0.012, 40), voidM); hole.rotation.z = Math.PI / 2; hole.position.x = s * (tw / 2 + 0.012); wg.add(hole); wg.add(sp);
+    const cal = box(wg, 0.05, 0.16, 0.1, calM, s * (tw / 2 - 0.02), r * 0.35, -0.1);
+    wg.position.set(s * (hw - tw / 2 - 0.03), r, -wu); g.add(wg); wheels.push(sp);
+  }
+  // lights
+  const LED = glow(0xeaf6ff), TL = glow(S.tailC || 0xff1a2c);
+  const nose = K[0], hy = S.nose + 0.02;
+  for (const s of [-1, 1]) {
+    if (S.noLights) continue;
+    if (S.lights === 'x') {                                     // an X in each lamp, laid on the nose surface
+      const lu = h - 0.1, kk = keyAt(K, lu), ly = lerp(kk[1], kk[2], 0.5) - 0.02;
+      const xg = new THREE.Group(); xg.position.set(s * hw * 0.52, ly + 0.03, -lu + 0.02); xg.rotation.x = 0.75; xg.rotation.y = s * 0.3; g.add(xg);   // leans back with the nose, faces forward
+      xg.scale.setScalar(1.7);                                   // a big X, as in the sketch
+      box(xg, 0.34, 0.2, 0.03, voidM, 0, 0, 0);
+      for (const t of [0.52, -0.52]) { const a = box(xg, 0.38, 0.045, 0.04, LED, 0, 0, -0.02); a.rotation.z = t; }
+    }
+    else if (S.lights === 'y') {                               // big Y lamps, the car's signature
+      const lu = h - 0.1, kk = keyAt(K, lu), ly = lerp(kk[1], kk[2], 0.5) + 0.01;
+      const yg = new THREE.Group(); yg.position.set(s * hw * 0.55, ly, -lu + 0.02); yg.rotation.x = 0.75; yg.rotation.y = s * 0.3; yg.scale.setScalar(1.6); g.add(yg);
+      box(yg, 0.36, 0.24, 0.03, voidM, 0, 0, 0);
+      for (const t of [0.6, -0.6]) { const a = box(yg, 0.2, 0.045, 0.04, LED, Math.sin(t) * -0.07 * Math.sign(t) * -1, 0.05, -0.02); a.position.x = (t > 0 ? -1 : 1) * 0.075; a.position.y = 0.06; a.rotation.z = -t; }
+      box(yg, 0.045, 0.14, 0.04, LED, 0, -0.06, -0.02);
+      const hgl = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), new THREE.MeshBasicMaterial({ color: 0xbfefff, transparent: true, opacity: 0.25, toneMapped: false, depthWrite: false })); hgl.position.z = -0.03; yg.add(hgl);
+    }
+    else if (S.lights === 'slash') { const a = box(g, 0.42, 0.03, 0.03, LED, s * hw * 0.62, hy, -(h - 0.14)); a.rotation.y = s * 0.55; a.rotation.z = s * 0.12; }
+    else { const a = box(g, 0.3, 0.035, 0.03, LED, s * hw * 0.62, hy - 0.02, -(h - 0.08)); a.rotation.y = s * 0.35; }
+  }
+  if (S.lights === 'bar') box(g, hw * 1.5, 0.02, 0.02, LED, 0, hy - 0.08, -(h + 0.0));
+  // the face: two big dark intakes under the lamps and a centre mouth
+  const fz = -(h - 0.02), fw = hw * F.nw;
+  if (F.face === 'twin') { for (const s of [-1, 1]) { const it = box(g, fw * 0.55, 0.16, 0.08, voidM, s * fw * 0.55, FL + 0.16, fz); it.rotation.y = s * 0.25; } box(g, fw * 0.4, 0.09, 0.06, voidM, 0, FL + 0.12, fz - 0.02); }
+  else if (F.face === 'mouth') { box(g, fw * 1.5, 0.2, 0.08, voidM, 0, FL + 0.17, fz); for (let i = 0; i < 3; i++) box(g, fw * 1.5, 0.012, 0.09, carbon, 0, FL + 0.11 + i * 0.06, fz - 0.005); }
+  else if (F.face === 'v') { for (const s of [-1, 1]) { const a = box(g, fw * 0.75, 0.13, 0.08, voidM, s * fw * 0.36, FL + 0.17, fz); a.rotation.z = -s * 0.32; const l = box(g, fw * 0.95, 0.018, 0.03, glow(0xf4f8ff), s * fw * 0.46, FL + 0.3, fz - 0.03); l.rotation.z = -s * 0.32; } }
+  else if (F.face === 'slits') { for (const s of [-1, 1]) for (let i = 0; i < 4; i++) box(g, 0.05, 0.2, 0.08, voidM, s * (fw * 0.22 + i * 0.13), FL + 0.17, fz); box(g, fw * 1.6, 0.02, 0.09, carbon, 0, FL + 0.28, fz - 0.005); }
+  else if (F.face === 'tri') { box(g, fw * 0.5, 0.2, 0.08, voidM, 0, FL + 0.17, fz); for (const s of [-1, 1]) { const t = box(g, fw * 0.32, 0.22, 0.08, voidM, s * fw * 0.66, FL + 0.17, fz + 0.03); t.rotation.y = s * 0.4; t.rotation.z = s * 0.25; } }
+  else if (F.face === 'shark') { box(g, fw * 1.2, 0.07, 0.08, voidM, 0, FL + 0.1, fz); for (const s of [-1, 1]) { const c = box(g, 0.04, 0.2, 0.32, carbon, s * fw * 0.5, FL + 0.08, fz - 0.1); } }
+  // carbon aero: splitter, side blades, diffuser fins
+  box(g, hw * 1.9, 0.03, 0.34, carbon, 0, FL + 0.02, -(h - 0.05));
+  for (const s of [-1, 1]) box(g, 0.05, 0.12, (fu - ru) - 2 * r - 0.3, carbon, s * (hw - 0.02), FL + 0.06, -(fu + ru) / 2);
+  // ── the rear: lamp signature, rear face, diffuser and exhausts all come from S.rear ──
+  const B = Object.assign({ tl: 'bar', face: 'clean', dif: 'small', ex: 'twin' }, S.rear), rz = h + 0.006, ty = S.tail - 0.1, tw2 = hw * 0.92;
+  const lamp = (w, x, y, rz2 = 0, hh = 0.03) => { const q = box(g, w, hh, 0.02, TL, x, y, rz); q.rotation.z = rz2; return q; };
+  if (B.tl === 'bar') lamp(tw2 * 1.9, 0, ty);
+  if (B.tl === 'x') for (const s of [-1, 1]) for (const t of [0.6, -0.6]) lamp(0.32, s * tw2 * 0.66, ty - 0.02, t, 0.026);
+  if (B.tl === 'y') for (const s of [-1, 1]) { lamp(0.34, s * tw2 * 0.7, ty, s * 0.35); lamp(0.2, s * tw2 * 0.55, ty - 0.08, -s * 0.7); }
+  if (B.tl === 'dots') for (const s of [-1, 1]) for (const k of [0.5, 0.8]) { const d = add(g, new THREE.CylinderGeometry(0.075, 0.075, 0.03, 20), TL, s * tw2 * k, ty - 0.03, rz); d.rotation.x = Math.PI / 2; }
+  if (B.tl === 'c') for (const s of [-1, 1]) { lamp(0.3, s * tw2 * 0.68, ty + 0.03); lamp(0.3, s * tw2 * 0.68, ty - 0.11); const v = box(g, 0.03, 0.17, 0.02, TL, s * tw2 * 0.83, ty - 0.04, rz); }
+  if (B.tl === 'split') for (const s of [-1, 1]) { lamp(0.5, s * tw2 * 0.6, ty, s * 0.12, 0.02); lamp(0.4, s * tw2 * 0.64, ty - 0.06, s * 0.12, 0.012); }
+  if (B.face === 'open') box(g, tw2 * 1.6, 0.24, 0.02, voidM, 0, ty - 0.22, rz - 0.01);
+  if (B.face === 'louver') { box(g, tw2 * 1.5, 0.22, 0.02, voidM, 0, ty - 0.22, rz - 0.01); for (let i = 0; i < 4; i++) box(g, tw2 * 1.5, 0.014, 0.05, carbon, 0, ty - 0.31 + i * 0.06, rz); }
+  if (B.face === 'mesh') { box(g, tw2 * 1.4, 0.2, 0.02, voidM, 0, ty - 0.2, rz - 0.01); for (let i = -6; i <= 6; i++) box(g, 0.012, 0.2, 0.04, carbon, i * tw2 * 0.1, ty - 0.2, rz); }
+  const dfn = B.dif === 'big' ? 7 : 5, dh = B.dif === 'big' ? 0.3 : 0.18, dl = B.dif === 'big' ? 0.6 : 0.42;
+  const dif = box(g, hw * 1.7, dh * 0.8, dl, carbon, 0, FL + dh * 0.4, h - dl / 2 + 0.1); dif.rotation.x = -0.25;
+  for (let i = 0; i < dfn; i++) box(g, 0.025, dh + 0.04, dl + 0.04, carbon, (i - (dfn - 1) / 2) * hw * 1.5 / (dfn - 1), FL + dh * 0.5, h - dl / 2 + 0.1);
+  const tipM = new THREE.MeshStandardMaterial({ color: B.ti ? 0x6f6a8f : 0x9a948c, metalness: 1, roughness: 0.28 });
+  const pipe = (x, y, rr, sides = 20) => { exhList.push(new THREE.Vector3(x, y, h + 0.1)); const e = add(g, new THREE.CylinderGeometry(rr, rr * 0.92, 0.16, sides, 1, true), tipM, x, y, h + 0.03); e.rotation.x = Math.PI / 2; const inner = add(g, new THREE.CircleGeometry(rr * 0.9, sides), voidM, x, y, h + 0.02); };
+  if (B.ex === 'twin') for (const x of [-0.2, 0.2]) pipe(x, FL + 0.3, 0.065);
+  if (B.ex === 'quad') for (const x of [-0.32, -0.16, 0.16, 0.32]) pipe(x, FL + 0.28, 0.05);
+  if (B.ex === 'high') for (const x of [-0.1, 0.1]) pipe(x, S.tail - 0.24, 0.07);
+  if (B.ex === 'center') pipe(0, FL + 0.32, 0.11, 6);
+  if (B.ex === 'hex') for (const x of [-0.24, 0.24]) pipe(x, FL + 0.3, 0.09, 6);
+  if (B.ex === 'corner') for (const s of [-1, 1]) pipe(s * tw2 * 0.78, FL + 0.24, 0.07);
+  if (B.ex === 'stack') for (const x of [-0.14, 0, 0.14]) pipe(x, S.tail - 0.2, 0.05);
+  // side intake: a dark scoop on the flank between the doors and the rear wheel
+  const iu0 = lerp(ws, ru, 0.25), iu1 = ru + r + 0.18;
+  for (const s of [-1, 1]) {
+    const k0 = keyAt(K, iu0), k1 = keyAt(K, iu1), sh = new THREE.Shape();
+    sh.moveTo(-iu0, k0[4] + 0.02); sh.lineTo(-iu1, k1[4] - 0.02); sh.lineTo(-iu1, k1[2] - 0.06); sh.lineTo(-lerp(iu0, iu1, 0.4), lerp(k0[2], k1[2], 0.4) - 0.04);
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), S.intakeM === 'paint' ? P : voidM); m.rotation.y = -s * Math.PI / 2; m.position.x = s * (Math.min(k0[3], k1[3]) * 0.94 + 0.012); g.add(m);
+    if (S.blade) { const bl = box(g, 0.04, 0.05, iu0 - iu1 + 0.3, S.blade === 'paint' ? P : glow(S.blade), s * (Math.min(k0[3], k1[3]) * 0.95 + 0.02), k0[4] - 0.02, -(iu0 + iu1) / 2); bl.rotation.x = 0.08; }
+  }
+  // hood vents, roof scoop, fin, stripes
+  if (S.vents) for (const s of [-1, 1]) { const v = box(g, hw * 0.42, 0.012, 0.42, voidM, s * hw * 0.32, keyAt(K, fu - 0.15)[1] + 0.02, -(fu - 0.15)); v.rotation.x = -0.12; }
+  if (S.scoop) box(g, 0.32, 0.16, 0.5, S.scoop === 'paint' ? P : carbon, 0, S.roof + 0.07, -(ws - S.cab.ws - 0.15));
+  if (S.fin) { const fs = new THREE.Shape(), u0 = ws - S.cab.ws - S.cab.roof * 0.5; fs.moveTo(-u0, S.roof - 0.02); fs.lineTo(h - 0.15, S.tail + 0.16); fs.lineTo(h - 0.15, S.tail); fs.lineTo(-u0 + 0.4, S.deck);
+    const fm = new THREE.Mesh(new THREE.ExtrudeGeometry(fs, { depth: 0.04, bevelEnabled: false }), S.mono ? P : carbon); fm.rotation.y = -Math.PI / 2; fm.position.x = 0.02; g.add(fm); }
+  if (S.stripes) { const sm = glow(S.stripes); for (const x of [-0.17, 0.17]) for (let u = h - 0.05; u > ws + 0.05; u -= 0.12) { const y = keyAt(K, u)[1] + 0.012, y2 = keyAt(K, u - 0.12)[1] + 0.012, b = box(g, 0.13, 0.008, 0.125, new THREE.MeshStandardMaterial({ color: S.stripes, roughness: 0.3 }), x, (y + y2) / 2, -(u - 0.06)); b.rotation.x = Math.atan2(y2 - y, 0.12) * -1; } }
+  // wing
+  if (S.wing === 'swan' || S.wing === 'big') {
+    const wy = S.deck + (S.wing === 'swan' ? 0.62 : 0.4), wu = -h + 0.3, plane = (() => {                         // an angular airfoil, its nose dipped forward
+      const af = new THREE.Shape(); af.moveTo(-0.24, -0.04); af.lineTo(-0.1, 0.05); af.lineTo(0.18, 0.035); af.lineTo(0.26, 0.0); af.lineTo(0.04, -0.035); af.closePath();
+      const geo = new THREE.ExtrudeGeometry(af, { depth: hw * 1.95, bevelEnabled: false }); geo.translate(0, 0, -hw * 0.975);
+      const m = new THREE.Mesh(geo, carbon); m.rotation.y = -Math.PI / 2; m.rotation.order = 'YXZ'; m.rotation.x = 0; m.position.set(0, wy, -wu); m.castShadow = true; g.add(m);
+      m.rotateZ(-0.28); return m; })();
+    for (const s of [-1, 1]) { if (!S.tallPlates) box(g, 0.03, 0.34, 0.5, carbon, s * hw * 0.98, wy - 0.06, -wu);
+      if (S.struts) continue; if (S.wing === 'swan') { const n1 = box(g, 0.04, 0.5, 0.06, carbon, s * 0.4, wy + 0.08, -(wu + 0.2)); n1.rotation.x = -0.6; } else box(g, 0.05, wy - S.deck, 0.12, carbon, s * 0.45, (wy + S.deck) / 2, -wu); }
+  } else if (S.wing === 'duck') { const d = box(g, hw * 1.8, 0.06, 0.18, S.mono ? P : carbon, 0, S.tail + 0.06, h - 0.12); d.rotation.x = 0.35; }
+  // ── sketch extras ──
+  const surfY = (u, x) => { const k = keyAt(K, u), w = k[3], p5 = lerp(Math.max(k[2], k[4] + 0.08), Math.min(k[1], Math.max(k[2], k[4] + 0.08) + 0.02), 0.7); return lerp(k[1], p5, Math.min(1, Math.abs(x) / (w * 0.45))); };
+  const hoodY = (u, x = 0.14) => surfY(u, x), CY = glow(0x19e3ff);
+  if (S.nostrils) for (const sx of [-1, 1]) {
+    const u0 = fu + 0.15, u1 = ws + 0.15, y0 = hoodY(u0), y1 = hoodY(u1), len = Math.hypot(u0 - u1, y0 - y1);
+    const v = box(g, 0.1, 0.05, len, voidM, sx * 0.14, (y0 + y1) / 2 + 0.03, -(u0 + u1) / 2); v.rotation.x = Math.atan2(y1 - y0, u0 - u1);
+  }
+  if (S.brows) for (const sx of [-1, 1]) {
+    for (let k = 0; k < 3; k++) { const u = lerp(fu + 0.25, ws + 0.2, k / 2), xx = sx * (0.16 + 0.06 * Math.sin(k / 2 * Math.PI)), b = box(g, 0.07, 0.05, 0.26, voidM, xx, hoodY(u, xx) + 0.03, -u); b.rotation.y = -sx * (k - 1) * 0.45; }
+  }
+  if (S.fenderLines) for (const sx of [-1, 1]) {
+    let prev = null;
+    for (let u = ws; u <= h - 0.1 + 1e-6; u += 0.1) { const k = keyAt(K, u), p = new THREE.Vector3(sx * k[3] * 0.86, Math.max(k[2], k[4] + 0.08) + 0.035, -u);
+      if (prev) { const sg = box(g, 0.024, 0.024, p.distanceTo(prev), CY, (p.x + prev.x) / 2, (p.y + prev.y) / 2, (p.z + prev.z) / 2); sg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), p.clone().sub(prev).normalize()); }
+      prev = p; }
+  }
+  if (S.struts) {
+    const wy = S.deck + (S.wing === 'swan' ? 0.62 : 0.4), wu = -h + 0.3;
+    for (const sx of [-1, 1]) {
+      if (S.struts === 'straight') { const st = box(g, 0.06, wy - S.deck + 0.08, 0.12, carbon, sx * 0.42, (wy + S.deck) / 2, -wu - 0.06); st.rotation.x = -0.22; }
+      else { const st = box(g, 0.05, 0.66, 0.1, carbon, sx * 0.4, S.deck + 0.3, -(wu + 0.15)); st.rotation.x = -0.3; st.position.z -= 0.12; box(g, 0.12, 0.04, 0.14, CY, sx * 0.4, S.deck + 0.02, -(wu + 0.28)); }
+    }
+  }
+  if (S.tallPlates) { const wy = S.deck + 0.62, wu = -h + 0.3;
+    for (const sx of [-1, 1]) { const ep = new THREE.Shape(); ep.moveTo(-0.42, -0.2); ep.lineTo(0.22, -0.2); ep.lineTo(0.5, 0.32); ep.lineTo(0.08, 0.32); ep.lineTo(-0.2, 0.06); ep.closePath();
+      const m = new THREE.Mesh(new THREE.ExtrudeGeometry(ep, { depth: 0.035, bevelEnabled: false }), carbon); m.rotation.y = -Math.PI / 2; m.position.set(sx * hw * 0.98, wy, -wu); g.add(m); } }
+  if (S.exGlow) { const add2 = []; g.traverse(o => { if (o.isMesh && o.geometry.type === 'CylinderGeometry' && o.geometry.parameters.openEnded) add2.push(o); });
+    for (const o of add2) { const t = new THREE.Mesh(new THREE.TorusGeometry(o.geometry.parameters.radiusTop, 0.016, 8, 24), CY); t.position.copy(o.position); t.position.z += 0.08; g.add(t); } }
+  g.userData.wheels = wheels;
+  const eu = h - 0.42, ey0 = keyAt(K, eu + 0.08)[1], ey1 = keyAt(K, eu - 0.08)[1];
+  g.userData.emb = { z: -eu, y: (ey0 + ey1) / 2 + 0.02, slope: Math.atan2(ey0 - ey1, 0.16) };
+  g.userData.exh = exhList;
+  return g;
+}
+
+
+  return buildCar;
+  })();
+  const EMB_TEX = {};
+  function emblemMesh(id) {                                 // a little shield decal for the hood
+    const t = EMB_TEX[id] || (EMB_TEX[id] = new THREE.TextureLoader().load('img/emb_' + id + '.png'));
+    t.encoding = THREE.sRGBEncoding;
+    return new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.33), new THREE.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: 0.55, transparent: true, alphaTest: 0.08, roughness: 0.35, metalness: 0.3, depthWrite: false }));
+  }
+  // the badge, worn like a maker's logo: upright on the nose and on the tail
+  function placeEmblem(g, c, at) {
+    const f = emblemMesh(c.emblem); f.scale.setScalar(0.68); f.rotation.y = Math.PI; f.rotation.x = at.lean || 0; f.position.set(0, at.fy, at.fz); g.add(f);   // small, on the nose, front only
+  }
   function buildCar(c, m) {
+    if (c.hyper) {
+      const hg = hyperCar(c.hyper, m), spins = hg.userData.wheels;
+      if (c.emblem && m.detail !== false) { const S = c.hyper, h = S.L / 2; const k0 = hg.userData.emb; placeEmblem(hg, c, { fy: S.nose + 0.05, fz: -(h + 0.01), lean: -0.6 }); }
+      return { group: hg, exh: hg.userData.exh, spins, heads: [], roof: null, cockpit: null };
+    }
     const G = carGeos(c), g = new THREE.Group(), half = c.W / 2, spins = [], heads = [];
     g.add(new THREE.Mesh(G.body, m.paint));
     if (G.pods) for (const s of [-1, 1]) { const pm = new THREE.Mesh(G.pods, m.paint); pm.position.x = s * (half - c.pods.w / 2); g.add(pm); }
@@ -3160,6 +3417,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
     const cockpit = m.detail && c.cabin ? buildCockpit(c, G, c.W * c.cabin.w) : null;   // seen with the roof down or from the driver's seat
     if (cockpit) g.add(cockpit);
+    if (c.emblem && m.detail !== false) { const eu = c.L / 2 - 0.45, y0 = topAt(G.top, eu + 0.08), y1 = topAt(G.top, eu - 0.08); const nu = c.L / 2 - 0.1, ny0 = topAt(G.top, nu + 0.06), ny1 = topAt(G.top, nu - 0.06); placeEmblem(g, c, { fy: topAt(G.top, c.L / 2 - 0.02) - 0.04, fz: -(c.L / 2 + 0.03), lean: -0.6 }); }
     return { group: g, exh, spins, heads, roof, cockpit };
   }
 
@@ -3709,7 +3967,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     }
     // recorded engines: some S-class cars carry a real recording (snd/*.mp3), looped and pitched with the revs;
     // the synth stays faintly underneath for the shift barks and pops. Without the file (offline copy) the synth plays alone.
-    const SAMPLES = { '이클립스 제로': 'snd/svj.mp3', '안타레스 V12': 'snd/enzo.mp3', '프로키온 TR': 'snd/f458.mp3', '오로라 V12': 'snd/testa.mp3' };
+    const SAMPLES = { '펜리르 X': 'snd/svj.mp3', '슬레이프니르 V': 'snd/enzo.mp3' };
     let smpName = '', smp = null; const smpBuf = {};
     const SMP_GAIN = { '오로라 V12': 0.62 };                     // per recording: the Testarossa sits louder than the rest
     function setSample(name) { const n = SAMPLES[name] ? name : ''; if (n === smpName && (smp || !n)) return; smpName = n; startSample(); }
@@ -4188,7 +4446,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   let eco = false, intakeT = 0;          // the roadster's ECO mode (Q) · how long the intake has been running
   let state = 'ready', speed = 0, dist = 0, px = 0, vx = 0, nitro = 3, boostT = 0, boost = 0, perfect = false;
   // nitro charges slower in the cheap cars: a low-unlock car gets about half the gain, the top cars the full gain
-  const nitroK = c => (0.45 + 0.55 * clamp(c.unlock / 50000, 0, 1)) * (EV.nitro || 1);   // tonight's event may charge faster
+  const nitroK = c => (0.45 + 0.55 * clamp(c.unlock / 200000, 0, 1)) * (EV.nitro || 1);   // tonight's event may charge faster
   const NITRO_MAX = MP ? 1 : 3;                              // multi: one bar of nitro
   const addNitro = v => { nitro = Math.min(NITRO_MAX, nitro + v * nitroK(car)); };
   // how fast the road slides past: zero while paused or counting down (the car keeps its speed for the restart, the world must not move)
@@ -5168,7 +5426,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   }
   // ── The 50–60 km zone: rain slicks the tarmac, a police roadblock closes three lanes, a truck convoy crawls along two,
   //    and spike strips lie across the road. A spike that you run over blows a tyre: the car wobbles and grips worse for a bit. ──
-  const ZONE_A = 50000, ZONE_B = 60000;                       // metres (dist)
+  const ZONE_A = 30000, ZONE_B = 40000;                       // metres (dist)
   let punctT = -1, stuckT = 0;                                   // a police spike's puncture: seconds since (−1: none), seconds stuck at a standstill
   let showerOn = false, zoneOn = false, wetK = 1, rainAmt = 0, flatT = 0, convoyIn = 4, blockIn = 8, spikeIn = 3;
   const roadGrip = () => Math.min(1, wetK + 0.06 * (car.tire || 0)) * (flatT > 0 ? 0.6 : 1);   // wet tarmac and a flat tyre cut grip; sport tyres bite better in the wet
@@ -5803,10 +6061,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   try { nick = cleanNick(localStorage.getItem('nh3d-nick') || ''); } catch (e) {}
   function cleanNick(s) { return String(s).replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 12); }
   // A and S class cars can also be bought outright with coins (achievement cars cannot); bought cars are kept by name
-  const CAR_PRICE = 5000;
+  // the price follows the car: A 5,000 · S 10,000 · S with a recorded engine 20,000 · the two hypercars 30,000 / 40,000
+  const priceOf = c => c.name === '펜리르 X' ? 40000 : c.name === '슬레이프니르 V' ? 30000 : c.top >= 340 ? 10000 : 5000;
+  const priceTag = p => p >= 10000 ? p / 10000 + '만' : p / 1000 + '천';
   let boughtCars = {};
   try { boughtCars = JSON.parse(localStorage.getItem('nh3d-bought') || '{}') || {}; } catch (e) { boughtCars = {}; }
-  const buyable = i => { const c = CARS[i]; return !!c && !c.retired && !c.custom && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > bestDist; };   // A (330+) and S (340+) by top speed
+  const buyable = i => { const c = CARS[i]; return !!c && !c.retired && !c.custom && !c.achNeed && (c.top >= 330) && !boughtCars[c.name] && c.unlock > cumDist(); };   // A (330+) and S (340+) by top speed
   // developer accounts (by Firebase uid): every car is open, and a 🛠 DEV badge shows next to the name for everyone
   const DEV_UIDS = ['djIs5etGtzPGSHWFdZm3Fi7NWsv2'];
   const isDev = id => DEV_UIDS.includes(id);
@@ -5818,18 +6078,28 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); localStorage.setItem('nh3d-retired-v1', '1');
     }
   } catch (e) {}
-  const isUnlocked = i => !!CARS[i] && (!!CARS[i].custom || devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= bestDist || !!boughtCars[CARS[i].name]));
+  try {
+    for (const c of CARS) if (c.oldName && boughtCars[c.oldName]) { boughtCars[c.name] = true; delete boughtCars[c.oldName]; localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); }   // bought under the old name
+    if (localStorage.getItem('nh3d-cum-v1') !== '1') {           // switching to cumulative unlocks: nobody loses a car they already had
+      for (const c of CARS) if (!c.custom && !c.achNeed && !c.retired && c.unlock > 0 && c.unlock / 4 <= bestDist) boughtCars[c.name] = true;
+      localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); localStorage.setItem('nh3d-cum-v1', '1');
+    }
+  } catch (e) {}
+  const isUnlocked = i => !!CARS[i] && (!!CARS[i].custom || devOn() || (CARS[i].achNeed ? achHave >= CARS[i].achNeed : CARS[i].unlock <= cumDist() || !!boughtCars[CARS[i].name]));
   const km = m => Math.round(m / 100) / 10 + 'km';
   const km2 = m => (m / 1000).toFixed(2) + 'km';
-  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && !c.retired && !c.custom && c.unlock > bestDist && (!n || c.unlock < n.unlock)) n = c; return n; }
+  function nextUnlock() { let n = null; for (const c of CARS) if (!c.achNeed && !c.retired && !c.custom && c.unlock > cumDist() && (!n || c.unlock < n.unlock)) n = c; return n; }
   function saveBest() { try { localStorage.setItem('nh3d-best-dist', String(Math.round(bestDist))); } catch (e) {} }
+  let carCum = null;
   function checkUnlocks() {                                   // crossing a milestone mid-run unlocks the car on the spot
+    const cur = cumDist(); if (carCum == null || dist < 5) carCum = cur;
+    const got = CARS.filter(c => !c.retired && !c.custom && !c.achNeed && !boughtCars[c.name] && c.unlock > carCum && c.unlock <= cur); carCum = cur;
+    if (got.length) { runUnlocks.push(...got.map(c => c.name)); sfx.ding(); popup(`새 차 해금: ${got.map(c => c.name).join(', ')}!`, 'var(--ok)'); }
     if (dist <= bestDist) return;
     const old = bestDist; bestDist = dist;
-    const got = CARS.filter(c => !c.retired && !c.custom && c.unlock > old && c.unlock <= bestDist), cu = custUnlocked(old, bestDist);
+    const cu = custUnlocked(old, bestDist);
     if (cu.length) runCust.push(...cu);
-    if (got.length) { runUnlocks.push(...got.map(c => c.name)); saveBest(); sfx.ding(); popup(`새 차 해금: ${got.map(c => c.name).join(', ')}!`, 'var(--ok)'); }
-    else if (cu.length) { saveBest(); sfx.ding(); popup(`커스텀 해금: ${cu.join(', ')}`, 'var(--paint)'); }
+    if (cu.length) { saveBest(); sfx.ding(); popup(`커스텀 해금: ${cu.join(', ')}`, 'var(--paint)'); } else saveBest();
   }
 
   // ── Shared board (claude.ai only): ranking/<player id> holds that player's best ──
@@ -5888,7 +6158,34 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   try { today = Object.assign(today, JSON.parse(localStorage.getItem('nh3d-today') || '{}')); } catch (e) {}
   try { dayFriends = JSON.parse(localStorage.getItem('nh3d-dayfr') || '{}') || {}; } catch (e) { dayFriends = {}; }
   const todayMine = () => today.day === dayKey() ? today : null;
+  // ── 4. weekly board: daily/W<week>/<uid> holds your best of the week (Mon–Sun); last week's top 3 get coins and a medal ──
+  const weekNo = (n = dayNum()) => Math.floor((n + 3) / 7);           // weeks start on Monday
+  let weekBest = { wk: 0, score: 0, dist: 0 }, WEEK_TOP = {};
+  try { weekBest = Object.assign(weekBest, JSON.parse(localStorage.getItem('nh3d-week') || '{}')); } catch (e) {}
+  const wkMedal = id => ['', '🥇', '🥈', '🥉'][WEEK_TOP[id] || 0];
+  function recordWeek(run) {
+    const wk = weekNo(); if (weekBest.wk !== wk) weekBest = { wk, score: 0, dist: 0 };
+    if (run.score <= weekBest.score && run.dist <= weekBest.dist) return;
+    weekBest.score = Math.max(weekBest.score, run.score); weekBest.dist = Math.max(weekBest.dist, run.dist);
+    try { localStorage.setItem('nh3d-week', JSON.stringify(weekBest)); } catch (e) {}
+    if (fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `daily/W${wk}/${fb.user.uid}`), { score: weekBest.score, dist: weekBest.dist, nick: nick || '드라이버', at: Date.now() }).catch(() => {});
+  }
+  async function weekCheck() {                               // last week's podium: medals for everyone, coins for me if I was on it
+    if (!fb.user || !fb.D) return;
+    const prev = weekNo() - 1; let v = null;
+    try { const sn = await fb.D.get(fb.D.ref(fb.db, `daily/W${prev}`)); v = sn.exists() ? sn.val() : null; } catch (e) { return; }
+    if (!v) return;
+    const top = Object.entries(v).filter(([, o]) => o && +o.score > 0).sort((a, b) => b[1].score - a[1].score).slice(0, 3);
+    WEEK_TOP = {}; top.forEach(([id], k) => { WEEK_TOP[id] = k + 1; });
+    const me = WEEK_TOP[fb.user.uid]; let got = {};
+    try { got = JSON.parse(localStorage.getItem('nh3d-wkpaid') || '{}') || {}; } catch (e) {}
+    if (me && !got[prev]) { const c = [0, 5000, 3000, 1000][me]; got[prev] = 1; try { localStorage.setItem('nh3d-wkpaid', JSON.stringify(got)); } catch (e) {}
+      meta.coins += c; meta.earned += c; saveMeta(); try { syncMetaBtn(); fbSaveSoon(); } catch (e) {}
+      ovText.textContent = `${wkMedal(fb.user.uid)} 지난주 랭킹 ${me}위! 🪙 +${c.toLocaleString()}`; popup(`${wkMedal(fb.user.uid)} 지난주 ${me}위 보상 🪙 +${c.toLocaleString()}`, 'var(--ok)'); }
+    try { renderLive(); renderRank(); } catch (e) {}
+  }
   function recordToday(run) {
+    try { recordWeek(run); } catch (e) {}
     const dk = dayKey(); if (today.day !== dk) today = { day: dk, score: 0, dist: 0, car: -1 };
     if (run.score > today.score) { today.score = run.score; today.car = run.car; }
     today.dist = Math.max(today.dist, run.dist);
@@ -6000,7 +6297,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const li = document.createElement('li'); li.className = medal(i) + (all && r.id === shared.me ? ' me' : '');
       const cells = [String(i + 1), all ? (r.nick || (names[r.id] && names[r.id].name) || '익명 드라이버') + (r.id === shared.me ? ' (나)' : '') : dateText(r.at),
         r.score.toLocaleString() + '점', km2(r.dist), carLabel(r)];
-      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); if (all && isDev(r.id)) s.append(devEl()); } li.append(s); });
+      cells.forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (all && r.on) s.prepend(dotEl()); if (all && isDev(r.id)) s.append(devEl()); if (all && wkMedal(r.id)) s.prepend(wkMedal(r.id) + ' '); } li.append(s); });
       rankList.append(li);
     });
     rankNote.textContent = all
@@ -6026,7 +6323,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     rows.forEach((r, i) => {
       const li = document.createElement('li'); li.className = medal(i) + (r.me ? ' me' : '');
       [String(i + 1), (r.nick || '익명 드라이버') + (r.me ? ' (나)' : ''), r.score.toLocaleString() + '점', km2(r.dist), carLabel(r)]
-        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); if (isDev(r.me ? shared.me : r.id)) s.append(devEl()); } li.append(s); });
+        .forEach((t, k) => { const s = document.createElement('span'); s.textContent = t; if (k === 0) s.className = 'no'; else if (k === 1) { s.className = 'who'; if (shared.ready && isOn(r.me ? shared.me : r.id)) s.prepend(dotEl()); if (isDev(r.me ? shared.me : r.id)) s.append(devEl()); if (wkMedal(r.me ? shared.me : r.id)) s.prepend(wkMedal(r.me ? shared.me : r.id) + ' '); } li.append(s); });
       rankList.append(li);
     });
     const online = daily.ready && daily.day === dayKey();
@@ -6078,24 +6375,28 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const KIT_TXT = [['없음', '', ''], ['스테이지 1', '부스트 조금, 반응 빠름', '가속 +7%'], ['스테이지 2', '부스트 크게, 터보 랙 있음', '가속 +14%']];
   // Every option unlocks with your best single-run distance, like the cars (metres)
   const PAINT_M = [0, 0, 500, 1000, 1500, 2250, 3000, 4000, 5000, 6500, 8500, 11000, 14000], PICK_M = 17500;
-  const FIN_M = [0, 3000, 7000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
+  // ── 9. car levels: Lv5 opens a champagne-gold paint, Lv10 black-gold wheels, on that car (a negative "metres" = a level) ──
+  PAINTS.push(['Lv5 샴페인 골드', 0xc9a45c]); PAINT_M.push(-5);
+  if (SEASON) { PAINTS.push(SEASON.paint); PAINT_M.push(0); }        // the season's limited colour, free while it lasts
+  RIMS.push(['Lv10 블랙 골드', 0x2a2108, 1, 0.18]);
+  const FIN_M = [0, 3000, 7000], RIM_M = [1000, 2500, 4500, 7500, 12000, 16500, -10], EX_M = [0, 4000, 13000], KIT_M = [0, 6000, 20000];
   // Performance parts, earned by distance too and fitted per car: an engine tune (top speed and pull) and tyres (grip, wet grip)
   const ENG_TXT = [['순정', '공장 세팅 그대로', ''], ['엔진 튠 1', '흡·배기 손질, 조금 더 빨라요', '최고·가속 +4%'], ['엔진 튠 2', 'ECU를 다시 맞춰 상단이 시원해요', '최고·가속 +8%']];
   const TIRE_TXT = [['순정', '공장 타이어', ''], ['스포츠 타이어', '접지가 좋아지고 젖은 길에 강해요', '접지 +4%'], ['레이싱 타이어', '접지 최고, 비 오는 길에서 특히 좋아요', '접지 +8%']];
   const ENG_M = [0, 3000, 10000], TIRE_M = [0, 5000, 15000];       // tyres: metres driven in THAT car (all its runs added up)
   const tireOpen = (ci, t) => (carDist[ci] || 0) >= (TIRE_M[t] || 0);
-  const opened = m => bestDist >= (m || 0);
+  const opened = (m, ci = carIdx) => m < 0 ? lvlOf(ci) >= -m : bestDist >= (m || 0);
   lookGate = (L, ci) => {
     const pi = L.paint == null ? -1 : PAINTS.findIndex(p => p[1] === L.paint);
     if (MP) L = { ...L, ex: 0, kit: 0, eng: 0, tire: 0 };       // multi: colours only, every car stock underneath
-    return { paint: L.paint == null || (pi >= 0 ? opened(PAINT_M[pi]) : opened(PICK_M)) ? L.paint : null,
-      finish: L.finish == null || opened(FIN_M[L.finish]) ? L.finish : null, rim: L.rim == null || opened(RIM_M[L.rim]) ? L.rim : null,
+    return { paint: L.paint == null || (pi >= 0 ? opened(PAINT_M[pi], ci) : opened(PICK_M)) ? L.paint : null,
+      finish: L.finish == null || opened(FIN_M[L.finish]) ? L.finish : null, rim: L.rim == null || opened(RIM_M[L.rim], ci) ? L.rim : null,
       ex: !(CARS[ci] && CARS[ci].thr) && opened(EX_M[L.ex]) ? L.ex : 0, kit: !(CARS[ci] && CARS[ci].thr) && opened(KIT_M[L.kit]) ? L.kit : 0,   // electric: no exhaust, no turbo
       eng: opened(ENG_M[L.eng]) ? L.eng : 0, tire: tireOpen(ci, L.tire) ? L.tire : 0 };
   };
   CARS.forEach((c, i) => fitLook(i));
-  const CUST_LIST = [...PAINTS.map((p, i) => [PAINT_M[i], `${p[0]} 도장`]), [PICK_M, '색상 직접 고르기'], ...FIN_TXT.map((t, i) => [FIN_M[i], `${t[0]} 마감`]),
-    ...RIMS.map((r, i) => [RIM_M[i], `${r[0]} 휠`]), ...EX_TXT.map((t, i) => [EX_M[i], t[0]]), ...KIT_TXT.map((t, i) => [KIT_M[i], `터보 ${t[0]}`]),
+  const CUST_LIST = [...PAINTS.map((p, i) => [PAINT_M[i], `${p[0]} 도장`]).filter(([m]) => m > 0), [PICK_M, '색상 직접 고르기'], ...FIN_TXT.map((t, i) => [FIN_M[i], `${t[0]} 마감`]),
+    ...RIMS.map((r, i) => [RIM_M[i], `${r[0]} 휠`]).filter(([m]) => m > 0), ...EX_TXT.map((t, i) => [EX_M[i], t[0]]), ...KIT_TXT.map((t, i) => [KIT_M[i], `터보 ${t[0]}`]),
     ...ENG_TXT.map((t, i) => [ENG_M[i], t[0]])].filter(u => u[0] > 0);
   function custUnlocked(a, b) { return CUST_LIST.filter(u => u[0] > a && u[0] <= b).map(u => u[1]); }   // what a run just opened up
   const POPS = [[[0.06, 0.35]], [[0.05, 0.6], [0.17, 0.42], [0.3, 0.65]], [[0.04, 0.8], [0.13, 0.55], [0.23, 0.9], [0.36, 0.5], [0.5, 0.75]]];
@@ -6109,12 +6410,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     clearTimeout(msgTimer); msgTimer = setTimeout(() => { cuMsg.hidden = true; }, 2800);
   }
   function lockedMsg(what, m) {                                   // a locked option: say what it takes
-    cuMsg.textContent = `🔒 ${what}: 최고 거리 ${km(m)}를 달리면 열려요 (지금 ${km2(bestDist)})`; cuMsg.hidden = false; sfx.grind();
+    cuMsg.textContent = m < 0 ? `🔒 ${what}: 이 차를 레벨 ${-m}까지 올리면 열려요 (지금 Lv${lvlOf(carIdx)})` : `🔒 ${what}: 최고 거리 ${km(m)}를 달리면 열려요 (지금 ${km2(bestDist)})`; cuMsg.hidden = false; sfx.grind();
     clearTimeout(msgTimer); msgTimer = setTimeout(() => { cuMsg.hidden = true; }, 2800);
   }
   function paintLocks() {                                         // lock badges for everything not unlocked yet
-    for (const b of cuPaint.children) { const i = +b.dataset.i, lk = i >= 0 && !opened(PAINT_M[i]); b.classList.toggle('lk', lk); if (i >= 0) b.title = PAINTS[i][0] + (lk ? ` · ${km(PAINT_M[i])}에 열려요` : ''); }
-    for (const b of cuRim.children) { const i = +b.dataset.i, lk = i >= 0 && !opened(RIM_M[i]); b.classList.toggle('lk', lk); if (i >= 0) b.title = RIMS[i][0] + (lk ? ` · ${km(RIM_M[i])}에 열려요` : ''); }
+    for (const b of cuPaint.children) { const i = +b.dataset.i, lk = i >= 0 && !opened(PAINT_M[i]); b.classList.toggle('lk', lk); if (i >= 0) b.title = PAINTS[i][0] + (lk ? ` · ${PAINT_M[i] < 0 ? '이 차 Lv' + -PAINT_M[i] : km(PAINT_M[i])}에 열려요` : ''); }
+    for (const b of cuRim.children) { const i = +b.dataset.i, lk = i >= 0 && !opened(RIM_M[i]); b.classList.toggle('lk', lk); if (i >= 0) b.title = RIMS[i][0] + (lk ? ` · ${RIM_M[i] < 0 ? '이 차 Lv' + -RIM_M[i] : km(RIM_M[i])}에 열려요` : ''); }
     [...cuFin.children].forEach((b, i) => { const lk = !opened(FIN_M[i]); b.classList.toggle('lk', lk); b.textContent = FIN_TXT[i][0] + (lk ? ` 🔒${km(FIN_M[i])}` : ''); });
     [...cuEx.children].forEach((b, i) => { if (car.thr && i > 0) { b.classList.add('lk'); b.querySelector('small').textContent = '⚡ 전기차 불가'; return; } const lk = !opened(EX_M[i]); b.classList.toggle('lk', lk); b.querySelector('small').textContent = lk ? `🔒 최고 거리 ${km(EX_M[i])}` : EX_TXT[i][1]; });
     [...cuKit.children].forEach((b, i) => { if (car.thr && i > 0) { b.classList.add('lk'); b.querySelector('small').textContent = '⚡ 전기차 불가'; return; } const lk = !opened(KIT_M[i]); b.classList.toggle('lk', lk); b.querySelector('small').textContent = lk ? `🔒 최고 거리 ${km(KIT_M[i])}` : KIT_TXT[i][1]; });
@@ -6265,9 +6566,23 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       startMarket();
       bdBody.innerHTML = !marketReady ? '<p class="bd-empty">불러오는 중…</p>' : market.length ? `<ul class="bd-list">${market.map(m => { const b = cleanBuild(m.b), st = buildStats(b), mine = m.by === fb.user.uid, has = dlBuilds.some(d => d.id === m.id);
         return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(m.name)}</b><small>by ${escH(m.n)} · ${st.top}km/h · ${bpPart('engine', b.engine)[1]}</small></div>
-          ${mine ? '<span class="bd-tag">내 차</span>' : has ? '<span class="bd-tag">받음</span>' : `<button class="rankbtn" data-get="${escH(m.id)}">⬇ 받기</button>`}<button class="rankbtn" data-look="${escH(m.id)}">구경</button></li>`; }).join('')}</ul>`
+          <button class="rankbtn bd-like${likeMine[m.id] ? ' on' : ''}" data-like="${escH(m.id)}"${mine ? ' disabled' : ''}>👍 ${likeCnt[m.id] ?? '·'}</button>${mine ? '<span class="bd-tag">내 차</span>' : has ? '<span class="bd-tag">받음</span>' : `<button class="rankbtn" data-get="${escH(m.id)}">⬇ 받기</button>`}<button class="rankbtn" data-look="${escH(m.id)}">구경</button></li>`; }).join('')}</ul>`
         : '<p class="bd-empty">아직 출시된 차가 없어요. 첫 번째로 출시해 보세요!</p>';
     }
+  }
+  // ── 6. likes on community cars (daily/L<car id>/<uid>); the maker earns 🪙50 for each new like ──
+  const likeCnt = {}, likeMine = {}; let likeBusy = false;
+  async function likeFetch(ids) {
+    if (!fb.user || !fb.D || likeBusy) return; likeBusy = true;
+    try { await Promise.all(ids.map(async id => { const sn = await fb.D.get(fb.D.ref(fb.db, `daily/L${id}`)); const v = sn.exists() ? sn.val() : {}; likeCnt[id] = Object.keys(v).length; likeMine[id] = !!v[fb.user.uid]; })); } catch (e) {}
+    likeBusy = false; if (!buildEl.hidden && bdTab === 'shop') renderBuild();
+  }
+  async function likePay() {                                 // my released cars: pay for likes not paid yet
+    if (!fb.user || !fb.D) return;
+    let paid = {}; try { paid = JSON.parse(localStorage.getItem('nh3d-likepaid') || '{}') || {}; } catch (e) {}
+    let gain = 0, n = 0;
+    for (const r of myBuilds) if (r.pub) { try { const sn = await fb.D.get(fb.D.ref(fb.db, `daily/L${r.pub}`)); const c = sn.exists() ? Object.keys(sn.val()).length : 0; if (c > (paid[r.pub] || 0)) { gain += 50 * (c - (paid[r.pub] || 0)); n += c - (paid[r.pub] || 0); paid[r.pub] = c; } } catch (e) {} }
+    if (gain) { meta.coins += gain; meta.earned += gain; saveMeta(); try { syncMetaBtn(); fbSaveSoon(); localStorage.setItem('nh3d-likepaid', JSON.stringify(paid)); } catch (e) {} popup(`👍 내 차에 좋아요 ${n}개! 🪙 +${gain}`, 'var(--ok)'); }
   }
   function startMarket() {
     if (marketOn || !fb.user || !fb.D) return; marketOn = true;
@@ -6277,6 +6592,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       market = Object.entries(v).map(([id, o]) => { let b = null; try { b = JSON.parse(o.spec); } catch (e) {} return o && b ? { id, by: String(o.by || ''), n: cleanNick(o.n || '') || '드라이버', name: cleanCarName(o.name) || '이름 없는 차', b, at: +o.at || 0 } : null; })
         .filter(Boolean).sort((a, b) => b.at - a.at);
       marketReady = true; if (!buildEl.hidden && bdTab === 'shop') renderBuild();
+      likeFetch(market.filter(m => likeCnt[m.id] == null).map(m => m.id));
     }, () => { marketReady = true; market = []; });
   }
   function openBuild() {
@@ -6364,6 +6680,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const r = myBuilds[+t.dataset.pub]; if (!r) return;
       if (r.pub) { if (fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `market/${r.pub}`), null).catch(() => {}); r.pub = ''; saveBuilds(); bdSay(`'${r.name}' 출시를 취소했어요`, true); renderBuild(); }
       else releaseCar(r);
+      return;
+    }
+    if (t.dataset.like) {
+      const id = t.dataset.like; if (!fb.user || !fb.D) return;
+      const on = !likeMine[id]; likeMine[id] = on; likeCnt[id] = Math.max(0, (likeCnt[id] || 0) + (on ? 1 : -1)); renderBuild();
+      fb.D.set(fb.D.ref(fb.db, `daily/L${id}/${fb.user.uid}`), on ? { at: Date.now() } : null).catch(() => {});
       return;
     }
     if (t.dataset.look) { const m = market.find(x => x.id === t.dataset.look); if (m) { draft = cleanBuild(m.b); bdEditing = ''; previewDraft(); bdSay(`'${m.name}' 구경 중 (by ${m.n})`, true); } return; }
@@ -6810,11 +7132,12 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
 
   // ── Meta progression: coins, achievements and titles, a daily login streak, garage decorations, car levels,
   //    the hot-seat two-player duel and the 100 km finale. Everything persists in localStorage 'nh3d-meta'. ──
+  cumBase = () => (meta.tot && meta.tot.dist) || 0;
   const meta = { coins: 0, earned: 0, tot: { dist: 0, runs: 0, take: 0, cops: 0, near: 0, rolls: 0, perfect: 0, escapes: 0, boom: 0, deer: 0 },
     ach: {}, title: null, login: { day: -1, streak: 0 }, deco: { own: {}, on: {} }, seen: {} };
   try { const o = JSON.parse(localStorage.getItem('nh3d-meta') || 'null'); if (o && typeof o === 'object') { Object.assign(meta, o); meta.tot = Object.assign({ dist: 0, runs: 0, take: 0, cops: 0, near: 0, rolls: 0, perfect: 0, escapes: 0, boom: 0, deer: 0 }, o.tot || {}); meta.deco = Object.assign({ own: {}, on: {} }, o.deco || {}); } } catch (e) {}
   const saveMeta = () => { try { localStorage.setItem('nh3d-meta', JSON.stringify(meta)); } catch (e) {} };
-  const FINISH_M = 80000;                                       // the ending: one run of 80 km
+  const FINISH_M = 50000;                                       // the ending: one run of 50 km
   let runDeer = 0, runBoom = 0, run100 = false;
 
   // ── car levels: every 5 km driven in a car is a level (max 10); each level adds 0.6 % top speed, pull and grip ──
@@ -6828,7 +7151,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     ['d5', '동네 한 바퀴', '한 판에 5km', (t, r) => r.dist >= 5000],
     ['d20', '고속도로 주행자', '한 판에 20km', (t, r) => r.dist >= 20000],
     ['d50', '장거리 운전자', '한 판에 50km', (t, r) => r.dist >= 50000],
-    ['d100', '전설의 80km', '한 판에 80km 완주', (t, r) => r.dist >= FINISH_M],
+    ['d100', '전설의 50km', '한 판에 50km 완주', (t, r) => r.dist >= FINISH_M],
     ['t100', '누적 100km', '모든 판 합쳐서 100km', t => t.dist >= 100000],
     ['take50', '파괴왕', '테이크다운 누적 50번', t => t.take >= 50],
     ['cop20', '경찰 사냥꾼', '경찰차 테이크다운 누적 20번', t => t.cops >= 20],
@@ -6860,13 +7183,17 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function showTitle() { const t = titleName(); ttlNow.textContent = t ? '🏅 ' + t : ''; ttlNow.hidden = !t; }
 
   // ── daily login: a streak of days; the reward grows for a week ──
-  const loginReward = n => 100 + 50 * (Math.min(n, 7) - 1);
+  // a 5-day cycle, the reward growing each day; weekends don't break the streak
+  const CYCLE = 5, cycleDay = n => ((Math.max(1, n) - 1) % CYCLE) + 1;
+  const mpPaid = {};
+  const loginReward = n => 400 + 400 * cycleDay(n);   // 800 · 1,200 · 1,600 · 2,000 · 2,400
+  const weekendGap = (a, b) => { for (let d = a + 1; d < b; d++) { const w = (d + 4) % 7; if (w !== 0 && w !== 6) return false; } return true; };   // every day between was Sat/Sun
   let loginMsg = '';
   { const today = dayNum();
     if (meta.login.day !== today) {
-      meta.login.streak = meta.login.day === today - 1 ? meta.login.streak + 1 : 1; meta.login.day = today;
+      meta.login.streak = meta.login.day < today && weekendGap(meta.login.day, today) ? meta.login.streak + 1 : 1; meta.login.day = today;
       const c = loginReward(meta.login.streak); meta.coins += c; meta.earned += c; saveMeta();
-      loginMsg = `📅 출석 ${meta.login.streak}일째! 🪙 +${c}`;
+      loginMsg = `📅 출석 ${cycleDay(meta.login.streak)}일째! 🪙 +${c.toLocaleString()}`;
     } }
 
   // ── garage decorations: bought with coins, shown around the car in the garage only ──
@@ -6934,8 +7261,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   const endMsg = $('endMsg');
   function finale() {
     run100 = true; fwShow = 9; fwNext = 0;
-    addCombo(50000, '🏁 80km 완주!', 'var(--ok)'); meta.coins += 1000; meta.earned += 1000; saveMeta();
-    endMsg.querySelector('b').textContent = '🏁 80km 완주!';
+    addCombo(50000, '🏁 50km 완주!', 'var(--ok)'); meta.coins += 1000; meta.earned += 1000; saveMeta();
+    endMsg.querySelector('b').textContent = '🏁 50km 완주!';
     endMsg.querySelector('small').textContent = '엔딩이에요. 그래도 계속 달릴 수 있어요 · 🪙 +1000';
     endMsg.hidden = false; endMsg.style.animation = 'none'; void endMsg.offsetWidth; endMsg.style.animation = '';
     setTimeout(() => { endMsg.hidden = true; }, 6500);
@@ -7005,8 +7332,9 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
           : `<li class="${meta.coins >= price ? '' : 'lk'}" data-buy="${id}"><b>${name}</b><span>🪙 ${price}</span><small>${meta.coins >= price ? '눌러서 사기' : '코인이 모자라요'}</small></li>`).join('') + '</ul>';
     } else {
       const s = meta.login.streak;
-      metaBody.innerHTML = `<p class="dex-note">📅 연속 출석 ${s}일째 · 매일 처음 켜면 코인을 받아요 (7일째까지 늘어나요)</p><ul class="dex-list meta-list login">`
-        + [1, 2, 3, 4, 5, 6, 7].map(d => `<li class="${d <= Math.min(s, 7) ? 'ok on' : ''}"><b>${d}일째</b><span>🪙 ${loginReward(d)}</span><small>${d <= Math.min(s, 7) ? '받았어요' : d === Math.min(s, 7) + 1 ? '내일' : ''}</small></li>`).join('') + '</ul>';
+      const cd = cycleDay(s);
+      metaBody.innerHTML = `<p class="dex-note">📅 출석 ${cd}/5일째 · 매일 보상이 늘어나요 · 주말은 쉬어도 이어져요</p><ul class="dex-list meta-list login">`
+        + [1, 2, 3, 4, 5].map(d => `<li class="${d <= cd ? 'ok on' : ''}"><b>${d}일째</b><span>🪙 ${loginReward(d).toLocaleString()}</span><small>${d <= cd ? '받았어요' : d === cd + 1 ? '다음 출석' : ''}</small></li>`).join('') + '</ul>';
     }
   }
   metaTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; metaTab = b.dataset.t; renderMeta(); });
@@ -7227,7 +7555,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     if (!liveBox || !fb.user || !shared.ready) return;
     liveBox.hidden = false;
     const rows = shared.rows.slice().sort((a, b) => b.dist - a.dist || b.score - a.score), mine = rows.findIndex(r => r.id === shared.me);
-    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${r.on ? '<span class="odot" title="지금 접속 중"></span>' : ''}${escH(r.nick || '드라이버')}${isDev(r.id) ? '<span class="devb">🛠 DEV</span>' : ''}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
+    const li = (r, i) => `<li class="${r.id === shared.me ? 'me' : ''}"><b>${i + 1}</b><span class="n">${r.on ? '<span class="odot" title="지금 접속 중"></span>' : ''}${wkMedal(r.id)}${escH(r.nick || '드라이버')}${isDev(r.id) ? '<span class="devb">🛠 DEV</span>' : ''}</span><span class="d">${(r.dist / 1000).toFixed(1)}km</span></li>`;
     liveBox.innerHTML = `<h4>🏆 실시간 랭킹 <span class="on">🟢 지금 ${Math.max(1, shared.online)}명 접속</span></h4><ol>${rows.slice(0, 5).map(li).join('') || '<li><b>·</b><span class="n">아직 기록이 없어요</span><span></span></li>'}${mine >= 5 ? li(rows[mine], mine) : ''}</ol>`;
     syncWho();
   }
@@ -7247,7 +7575,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       const sys = chatList.querySelector('.sys'); if (sys) sys.remove();
       const me = m.uid === u.uid, li = document.createElement('li'); li.className = me ? 'me' : '';
       const n = document.createElement('span'); n.className = 'n'; n.textContent = String(m.n || '드라이버').slice(0, 14);
-      if (isDev(m.uid)) n.append(devEl());
+      if (isDev(m.uid)) n.append(devEl()); if (wkMedal(m.uid)) n.prepend(wkMedal(m.uid));
       const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = tmOf(m.at);
       li.append(n, document.createTextNode(m.t.slice(0, 120)), tm); chatList.append(li);
       while (chatList.children.length > 80) chatList.firstChild.remove();
@@ -7280,6 +7608,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   async function onLogin(u, fresh) {
     if (!shared.db) { try { fbBoards(u); } catch (e) {} }
     try { chatStart(u); } catch (e) {}
+    setTimeout(() => { try { weekCheck(); likePay(); } catch (e) {} }, 2500);
     if (isDev(u.uid)) { try { renderCars(); } catch (e) {} }
     if (!nick && u.displayName) { try { saveNick(u.displayName.split(' ')[0]); } catch (e) {} }
     let cloud = null;
@@ -7674,6 +8003,9 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       if (raceNow && state === 'over') {                        // results: my place
         const pl = list.findIndex(e => e.me) + 1, t = myFin ? (pl === 1 ? `🏆 우승! (${fmtT(myFin)})` : `🏁 ${pl}위 완주 (${fmtT(myFin)})`) : timedOut ? '리타이어' : '뷰응신';
         if (ovTitle.textContent !== t) ovTitle.textContent = t;
+        const rid = lastRaceId();                                // multi prize, once per race: 1st 300 · 2nd 150 · finished 50
+        if (myFin && rid && !mpPaid[rid]) { mpPaid[rid] = 1; const c = pl === 1 ? 300 : pl === 2 ? 150 : 50;
+          meta.coins += c; meta.earned += c; saveMeta(); try { syncMetaBtn(); } catch (e) {} popup(`멀티 ${pl}위 보상 🪙 +${c}`, 'var(--ok)'); }
       }
     } else { lastGo = ''; goBtn.disabled = false; }
     // the chip while driving
@@ -8301,8 +8633,8 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
   function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); $('homeBtn').hidden = !(show && state === 'pause'); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = true; }   // after a wreck: pick another car
   const statRow = (label, v) => `<span>${label}</span><u style="--v:${Math.round(clamp(v, 0.06, 1) * 100)}%"></u>`;
   const cardHtml = (c, i) => { const open = isUnlocked(i), tr = !open && trialCar(i); return `<button class="car${open ? '' : tr ? ' trial' : ' locked'}" data-i="${i}" aria-pressed="${i === carIdx}"${open ? '' : ` aria-label="${c.name} 잠김, ${needShort(c)} 달성 시 해금"`}>
-      ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>
-      <span class="badges">${open ? `<span class="badge lv">Lv${lvlOf(i)}</span>` : ''}<span class="badge drv ${c.drive}">${driveTxt(c)}</span>${c.conv ? '<span class="badge">오픈카</span>' : ''}</span>${open ? '' : tr ? '<span class="lock">🎟 시승</span>' : `<span class="lock">🔒 ${c.achNeed ? '🏅' + c.achNeed : km(c.unlock)}${!MP && buyable(i) ? ' · 🪙5천' : ''}</span>`}
+      ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>${c.emblem ? `<img class="emb" src="img/emb_${c.emblem}.png" alt="">` : ''}
+      <span class="badges">${open ? `<span class="badge lv">Lv${lvlOf(i)}</span>` : ''}<span class="badge drv ${c.drive}">${driveTxt(c)}</span>${c.conv ? '<span class="badge">오픈카</span>' : ''}</span>${open ? '' : tr ? '<span class="lock">🎟 시승</span>' : `<span class="lock">🔒 ${c.achNeed ? '🏅' + c.achNeed : km(c.unlock)}${!MP && buyable(i) ? ' · 🪙' + priceTag(priceOf(c)) : ''}</span>`}
       <span class="nm">${c.name}</span><small>${open ? `${c.tag} · 최고 ${c.top}${c.conv ? ` · 오픈 ${c.conv.topOpen}` : ''}km/h` : tr ? '오늘의 도전 보상: 한 번 탈 수 있어요' : howTxt(c)}</small>
       <span class="cstats">${statRow('속도', (c.top - 280) / 100)}${statRow('가속', (c.accel - 0.8) / 0.45)}${statRow('핸들링', (c.grip - 0.75) / 0.6)}</span></button>`; };
   const unlockFill = $('unlockFill');
@@ -8351,11 +8683,11 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     fltEmpty.hidden = !!(carsM.innerHTML || carsA.innerHTML);
     filtEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(filtOn(b.dataset.f))));
     const n = nextUnlock(), have = CARS.filter((c, i) => !c.retired && !c.custom && isUnlocked(i)).length;
-    let prev = 0; for (const c of CARS) if (c.unlock <= bestDist) prev = Math.max(prev, c.unlock);
+    const cum = cumDist(); let prev = 0; for (const c of CARS) if (!c.custom && !c.achNeed && c.unlock <= cum) prev = Math.max(prev, c.unlock);
     renderStats();
-    unlockFill.style.width = (n ? clamp((bestDist - prev) / (n.unlock - prev), 0, 1) * 100 : 100) + '%';
+    unlockFill.style.width = (n ? clamp((cum - prev) / (n.unlock - prev), 0, 1) * 100 : 100) + '%';
     if (state === 'ready') ovText.textContent = n
-      ? `최고 거리 ${km2(bestDist)} · 차 ${have}/${LINEUP()}대 · 다음 해금 ${n.name}까지 ${km(n.unlock - bestDist)} · 오늘 밤: ${EV.name}`
+      ? `누적 ${km(cum)} · 최고 ${km2(bestDist)} · 차 ${have}/${LINEUP()}대 · 다음 해금 ${n.name}까지 ${km(n.unlock - cum)} · 오늘 밤: ${EV.name}`
       : `최고 거리 ${km2(bestDist)} · 모든 차를 해금했어요! · 오늘 밤: ${EV.name}`;
   }
   let buyAsk = { i: -1, t: 0 };
@@ -8364,17 +8696,17 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     i = (i + CARS.length) % CARS.length;
     if (!canDrive(i) && !MP && buyable(i)) {                // an A/S car: the first tap shows the price, a second tap within 4 s buys it
       const c = CARS[i], now = Date.now();
-      if (meta.coins < CAR_PRICE) { if (state === 'ready') ovText.textContent = `${c.name}: 🪙 ${CAR_PRICE.toLocaleString()}코인 필요 (지금 ${meta.coins.toLocaleString()}코인) · 또는 최고 거리 ${km(c.unlock)}`; sfx.grind(); return; }
-      if (buyAsk.i !== i || now - buyAsk.t > 4000) { buyAsk = { i, t: now }; if (state === 'ready') ovText.textContent = `${c.name}을(를) 🪙 ${CAR_PRICE.toLocaleString()}코인에 살까요? 한 번 더 누르면 구매해요 (보유 ${meta.coins.toLocaleString()})`;
+      if (meta.coins < priceOf(c)) { if (state === 'ready') ovText.textContent = `${c.name}: 🪙 ${priceOf(c).toLocaleString()}코인 필요 (지금 ${meta.coins.toLocaleString()}코인) · 또는 최고 거리 ${km(c.unlock)}`; sfx.grind(); return; }
+      if (buyAsk.i !== i || now - buyAsk.t > 4000) { buyAsk = { i, t: now }; if (state === 'ready') ovText.textContent = `${c.name}을(를) 🪙 ${priceOf(c).toLocaleString()}코인에 살까요? 한 번 더 누르면 구매해요 (보유 ${meta.coins.toLocaleString()})`;
         const b = garageEl.querySelector(`[data-i="${i}"]`); if (b) { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); } return; }
       buyAsk = { i: -1, t: 0 };
-      meta.coins -= CAR_PRICE; saveMeta(); syncMetaBtn();
+      meta.coins -= priceOf(c); saveMeta(); syncMetaBtn();
       boughtCars[c.name] = true; try { localStorage.setItem('nh3d-bought', JSON.stringify(boughtCars)); } catch (e) {}
       try { fbSaveSoon(); } catch (e) {}
       sfx.ding(); popup(`🚗 ${c.name} 구매 완료!`, 'var(--ok)');
     }
     if (!canDrive(i)) {                                       // a locked car: say what it takes, nudge the card
-      if (state === 'ready') ovText.textContent = `${CARS[i].name}: ${howTxt(CARS[i])} (지금 ${CARS[i].achNeed ? achHave + '개' : km2(bestDist)})`;
+      if (state === 'ready') ovText.textContent = `${CARS[i].name}: ${howTxt(CARS[i])} (지금 ${CARS[i].achNeed ? achHave + '개' : '누적 ' + km(cumDist())})`;
       const b = garageEl.querySelector(`[data-i="${i}"]`); if (b) { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); }
       sfx.grind(); return;
     }
