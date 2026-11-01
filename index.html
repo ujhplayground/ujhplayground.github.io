@@ -359,6 +359,7 @@ button.go:hover { filter: brightness(1.08); }
 .bd-list li { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid var(--edge); }
 .bd-list li > div { flex: 1; display: grid; } .bd-list small { color: var(--muted); font-size: .74rem; } .bd-list .rankbtn { padding: 6px 10px; font-size: .78rem; }
 .bd-like.on { border-color: var(--lamp); color: var(--lamp); }
+.bd-list li[data-view] { cursor: pointer; } .bd-list li.sel { border-color: var(--lamp); background: rgba(255, 181, 71, .08); }
 .bd-tag { font-size: .72rem; color: var(--ok); } .bd-empty { color: var(--muted); font-size: .86rem; padding: 18px 4px; }
 /* the garage's button row: dark glass pills with a lit edge; the start button glows with a passing shine */
 .gorow .rankbtn { position: relative; gap: 7px; padding: 10px 17px; font-weight: 700; letter-spacing: .02em; color: #e9edf5;
@@ -2832,7 +2833,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     '시리우스 XR': ['펜리르 X', '트랙 하이퍼카', { n: '펜리르 X', d: '트랙 전용 하이퍼카. 아주 낮은 차체에 거대한 스완넥 윙, 지붕 흡기구, 상어 지느러미.', color: 0x1b2a55, L: 4.75, W: 2.08, r: 0.37, fo: 1.05, ro: 1.0, nose: 0.3, hood: 0.5, fender: 0.78, cowl: 0.58, ws: 1.05, deck: 0.82, waist: 0.86, fenderR: 0.98, tail: 0.8, roof: 1.08, cab: { ws: 0.55, roof: 0.6, back: 0.9 }, wing: 'swan', wingH: 0.36, scoop: 'carbon', fin: true, lights: 'x', noLights: true, nostrils: true, struts: 'straight', tallPlates: true, rim: 0x101114, cal: 0x2f6bff, spokes: 6, blade: 0x3a7bff }],
     '안타레스 V12': ['슬레이프니르 V', 'V12 하이퍼카', { n: '슬레이프니르 V', d: '종이접기처럼 각진 V12 슈퍼카. X자 후미등.', color: 0xa7adb8, L: 4.8, W: 2.06, r: 0.37, fo: 1.05, ro: 1.0, nose: 0.32, hood: 0.52, fender: 0.76, cowl: 0.58, ws: 1.0, deck: 0.84, waist: 0.8, fenderR: 0.96, tail: 0.82, roof: 1.1, cab: { ws: 0.6, roof: 0.5, back: 1.0 }, lights: 'y', noLights: true, rear: { tl: 'x', ex: 'twin' }, wing: 'swan', wingH: 0.38, struts: 'swan', tallPlates: true, fenderLines: true, brows: true, exGlow: true, rim: 0x2a2d33, cal: 0x00d2ff, spokes: 5, blade: 0x00d2ff }],
   };
-  for (const c of CARS) { const H = HYPER[c.name]; if (!H || c.achNeed) continue; c.oldName = c.name; c.name = H[0]; c.tag = H[1]; c.hyper = H[2]; c.L = H[2].L; c.W = H[2].W; c.color = H[2].color; c.oem = null; }
+  for (const c of CARS) { const H = HYPER[c.name]; if (!H || c.achNeed) continue; c.oldName = c.name; c.name = H[0]; c.tag = H[1]; c.hyper = H[2]; c.L = H[2].L; c.W = H[2].W; c.color = H[2].color; c.rim = H[2].rim || 0x16181d; c.cal = H[2].cal || 0xff3b30; c.oem = null; }
   // (badges were tried and dropped)
   let cumBase = () => 0;                                   // all runs' metres (set once the meta chunk is up)
   const cumDist = () => cumBase() + (typeof state !== 'undefined' && state === 'play' ? Math.max(0, dist) : 0);
@@ -3172,7 +3173,7 @@ function buildCar(S, MATS) {
   }
   // wheels: low profile tyre, multi-spoke rim, coloured caliper
   const exhList = [];
-  const rimM = new THREE.MeshStandardMaterial({ color: S.rim || 0x16181d, metalness: 0.85, roughness: 0.3 }), calM = glow(S.cal || 0xff3b30);
+  const rimM = MATS && MATS.rim ? MATS.rim : new THREE.MeshStandardMaterial({ color: S.rim || 0x16181d, metalness: 0.85, roughness: 0.3 }), calM = MATS && MATS.cal ? MATS.cal : glow(S.cal || 0xff3b30);   // the player's car wears the garage's wheel colour
   const wheels = [];
   for (const wu of [fu, ru]) for (const s of [-1, 1]) {
     const wg = new THREE.Group(), tw = wu === ru ? 0.36 : 0.3;
@@ -3181,8 +3182,8 @@ function buildCar(S, MATS) {
     if (TL && TL.stripe) for (const sd of [-1, 1]) { const st = new THREE.Mesh(new THREE.TorusGeometry(r * 0.86, 0.012, 6, 40), TL.stripe); st.rotation.y = Math.PI / 2; st.position.x = sd * (tw2 / 2 + 0.003); wg.add(st); }
     const face = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.74, r * 0.74, 0.02, 40), rimM); face.rotation.z = Math.PI / 2; face.position.x = s * (tw / 2 + 0.005); wg.add(face);
     const sp = new THREE.Group(); sp.position.x = s * (tw / 2 + 0.02);
-    const n = S.spokes || 10; for (let i = 0; i < n; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.02, r * 0.68, 0.035), rimM); b.position.y = r * 0.34; const p = new THREE.Group(); p.rotation.x = i / n * Math.PI * 2; p.add(b); sp.add(p); }
-    const hole = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.66, r * 0.66, 0.012, 40), voidM); hole.rotation.z = Math.PI / 2; hole.position.x = s * (tw / 2 + 0.012); wg.add(hole); wg.add(sp);
+    const n = S.spokes || 10; for (let i = 0; i < n; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.025, r * 0.7, 0.06), rimM); b.position.y = r * 0.35; const p = new THREE.Group(); p.rotation.x = i / n * Math.PI * 2; p.add(b); sp.add(p); }
+    const hole = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.56, r * 0.56, 0.012, 40), voidM); hole.rotation.z = Math.PI / 2; hole.position.x = s * (tw / 2 + 0.012); wg.add(hole); wg.add(sp);
     const cal = box(wg, 0.05, 0.16, 0.1, calM, s * (tw / 2 - 0.02), r * 0.35, -0.1);
     wg.position.set(s * (hw - tw / 2 - 0.03), r, -wu); g.add(wg); wheels.push(sp);
   }
@@ -6674,7 +6675,7 @@ function buildCar(S, MATS) {
         <small class="dex-note">부품은 차마다 새로 사요 · 지금 부품 가격 ×${due.mult.toFixed(2)} (차가 늘수록 비싸져요) · 차를 지우면 쓴 코인을 돌려받아요</small>`;
     } else if (bdTab === 'mine') {
       bdBody.innerHTML = myBuilds.length ? `<ul class="bd-list">${myBuilds.map((r, k) => { const st = buildStats(cleanBuild(r.b));
-        return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
+        return `<li class="${bdEditing === r.name ? 'sel' : ''}" data-view="${k}"><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
           <button class="rankbtn" data-edit="${k}">수정</button><button class="rankbtn" data-pub="${k}">${r.pub ? '출시 취소' : '출시'}</button><button class="rankbtn" data-del="${k}">삭제</button></li>`; }).join('')}</ul>`
         : '<p class="bd-empty">아직 만든 차가 없어요. 조립 탭에서 첫 차를 만들어 보세요!</p>';
     } else {
@@ -6766,6 +6767,8 @@ function buildCar(S, MATS) {
   }
   bdTabs.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; bdTab = b.dataset.t; bdSay(''); renderBuild(); });
   bdBody.addEventListener('click', e => {
+    const lv = e.target.closest('li[data-view]');
+    if (lv && !e.target.closest('button')) { const r = myBuilds[+lv.dataset.view]; if (r) { draft = cleanBuild(r.b); bdEditing = r.name; previewDraft(); bdSay(`'${r.name}' 보는 중 · 수정하려면 [수정]`, true); renderBuild(); } return; }
     const t = e.target.closest('button'); if (!t) return;
     if (t.dataset.kind) { bdKind = t.dataset.kind; renderBuild(); return; }
     if (t.dataset.col) { draft.color = +t.dataset.col; previewDraft(); renderBuild(); return; }
