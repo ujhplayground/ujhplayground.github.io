@@ -2849,15 +2849,19 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     front:  [['f0', '둥근 노즈', 0, {}], ['f1', '쐐기 노즈', 300, { top: 5 }], ['f2', '머슬 노즈', 200, { top: -3, accel: 0.03 }], ['f3', '하이퍼 노즈', 700, { top: 8, grip: 0.03 }]],
     cabin:  [['c0', '쿠페', 0, {}], ['c1', '패스트백', 200, { top: 3 }], ['c2', '해치백', 150, { grip: 0.05, top: -4 }], ['c3', '로우 캐노피', 600, { top: 6 }], ['c4', '로드스터', 400, { top: 2, accel: 0.02 }]],
     rear:   [['r0', '덕테일', 0, { grip: 0.02 }], ['r1', '패스트백 테일', 150, { top: 2 }], ['r2', '롱테일', 500, { top: 5 }], ['r3', '캠테일', 200, { accel: 0.02 }]],
-    aero:   [['a0', '없음', 0, {}], ['a1', '립 스포일러', 150, { grip: 0.03 }], ['a2', '리어 윙', 350, { grip: 0.07, top: -2 }], ['a3', '대형 윙', 600, { grip: 0.12, top: -4 }], ['a4', '핀 + 윙', 900, { grip: 0.1, top: 2 }]],
+    aero:   [['a0', '없음', 0, {}], ['a1', '립 스포일러', 150, { grip: 0.03 }], ['a2', '리어 윙', 350, { grip: 0.07, top: -2 }], ['a3', '대형 윙', 600, { grip: 0.12, top: -4 }], ['a4', '핀 + 윙', 900, { grip: 0.1, top: 2 }], ['a5', '각진 스완넥 윙', 800, { grip: 0.11, top: 1 }]],
     engine: [['e0', '터보 4기통', 0, { top: 8, accel: 0.06 }], ['e1', '수평대향 6기통', 300, { top: 18, accel: 0.1 }], ['e2', 'V8', 400, { top: 22, accel: 0.12 }],
              ['e3', 'V10', 800, { top: 32, accel: 0.15 }], ['e4', 'V12', 1200, { top: 40, accel: 0.14 }], ['e5', '전기 모터', 1000, { top: 28, accel: 0.22 }]],
     wheel:  [['w0', '기본 17인치', 0, {}], ['w1', '스포츠 18인치', 200, { grip: 0.03 }], ['w2', '레이싱 19인치', 450, { grip: 0.07, accel: -0.01 }], ['w3', '오프로드 휠', 300, { grip: 0.05, top: -6 }]],
     drive:  [['d0', '후륜', 0, {}], ['d1', '4륜', 500, { grip: 0.06 }]],
+    body:   [['b0', '기본 차체', 0, {}], ['b1', '하이퍼카 차체 (펜리르형)', 3000, { top: 8, grip: 0.04 }]],
+    exhaust:[['x0', '쌍발', 0, {}], ['x1', '4발', 300, { accel: 0.01 }], ['x2', '가운데 육각 1발', 400, { top: 2 }], ['x3', '높은 쌍발', 400, { top: 1 }],
+             ['x4', '육각 쌍발', 350, { accel: 0.01 }], ['x5', '양끝 쌍발', 300, {}], ['x6', '가운데 3발 (티타늄)', 600, { top: 2, accel: 0.01 }]],
+    tail:   [['t0', '일자 바', 0, {}], ['t1', 'X자', 200, {}], ['t2', 'Y자', 200, {}], ['t3', '동그라미 4개', 150, {}], ['t4', 'ㄷ자', 150, {}], ['t5', '두 줄 칼날', 250, {}]],
     deco:   [['scoop', '보닛 스쿠프', 100], ['stripes', '레이싱 스트라이프', 100], ['livery', '사이드 라인', 100], ['louvres', '엔진 루버', 150],
              ['skirts', '사이드 스커트', 100], ['splitter', '프론트 스플리터', 100], ['diffuser', '디퓨저', 150], ['grille', '그릴', 50]],
   };
-  const BP_KINDS = ['size', 'front', 'cabin', 'rear', 'aero', 'engine', 'wheel', 'drive'];
+  const BP_KINDS = ['body', 'size', 'front', 'cabin', 'rear', 'aero', 'exhaust', 'tail', 'engine', 'wheel', 'drive'];
   const BP_ENGINE = { e0: 'turbo4', e1: 'flat6', e2: 'v8', e3: 'v10', e4: 'v12', e5: 'ev' };
   const BP_ACC = [0x111215, 0xeef0f2, 0xd4af37, 0xff3b30, 0x1e63ff, 0x2ad1c0];
   const bpPart = (kind, id) => (BP[kind] || []).find(p => p[0] === id);
@@ -2902,18 +2906,30 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     const headV = { f0: 0.56, f1: 0.46, f2: 0.72, f3: 0.26 }[b.front], tailV = Math.max(0.5, rear[2][1] - 0.04);
     const X = ['mirrors', ...b.deco.filter(d => d !== 'stripes' || cabin)];
     if (!cabin) X.push('roadster');
-    if (b.aero === 'a1') X.push('ducktail'); if (b.aero === 'a2' || b.aero === 'a3' || b.aero === 'a4') X.push('wing'); if (b.aero === 'a4') X.push('fin');
+    if (b.aero === 'a1') X.push('ducktail'); if (['a2', 'a3', 'a4', 'a5'].includes(b.aero)) X.push('wing'); if (b.aero === 'a4') X.push('fin');
     const c = {
       name, tag: '커스텀 · ' + (by || '나'), trans: ['e3', 'e4', 'e5'].includes(b.engine) ? 'auto' : 'manual', gears: 9, engine: BP_ENGINE[b.engine],
       color: b.color, accent: b.accent, rim: b.accent === 0x111215 ? 0x2b2e35 : b.accent, cal: b.accent === 0x111215 ? 0xffd400 : b.accent, metal: 0.55,
       top: st.top, accel: st.accel, grip: st.grip, nitro: 1.0, drift: b.drive === 'd1' ? 1.0 : 1.2, drive: b.drive === 'd1' ? 'awd' : 'rwd',
       L, W: 1.98, r, ride: b.wheel === 'w3' ? 0.22 : 0.14, fu: h - 0.86, ru: -(h - 0.9), body, cabin,
       tail: { u: -h + 0.01, v: tailV, x: 0.6, bar: true }, head: { u: h - 0.03, v: headV, x: 0.64 },
-      exh: b.engine === 'e5' ? [] : [[-0.4, 0.3], [0.4, 0.3]], extras: X,
-      wing: { u: -h + 0.32, v: dH + (b.aero === 'a3' ? 0.44 : 0.32), strut: 0.1 }, scoop: [1.1, mid], livery: { v: 0.5, h: 0.06 },
+      exh: b.engine === 'e5' ? [] : ({ x0: [[-0.4, 0.3], [0.4, 0.3]], x1: [[-0.5, 0.3], [-0.32, 0.3], [0.32, 0.3], [0.5, 0.3]], x2: [[0, 0.32]], x3: [[-0.16, 0.56], [0.16, 0.56]], x4: [[-0.26, 0.3], [0.26, 0.3]], x5: [[-0.72, 0.3], [0.72, 0.3]], x6: [[-0.14, 0.5], [0, 0.5], [0.14, 0.5]] }[b.exhaust]), extras: X,
+      wing: { u: -h + 0.32, v: dH + (b.aero === 'a3' ? 0.44 : b.aero === 'a5' ? 0.5 : 0.32), strut: 0.1 }, scoop: [1.1, mid], livery: { v: 0.5, h: 0.06 },
       stripes: [['body', 0.3, h - 0.1], ['cabin', -h + 0.6, 0]], louvres: [[-h + 0.62, -h + 1.1, 5, 0.9]], grille: { v: headV - 0.06, w: 0.9, h: 0.14 },
       unlock: 20000, custom: true, by: by || '', build: b,
     };
+    if (b.body === 'b1') {                                    // the Fenrir-type lofted hypercar body, dressed from the same parts
+      const HL = { s0: 4.75, s1: 4.45, s2: 5.0, s3: 4.8 }[b.size] + (b.rear === 'r2' ? 0.2 : 0);
+      c.hyper = { color: b.color, L: HL, W: b.size === 's3' ? 2.16 : 2.06, r: Math.max(0.36, r), fo: 1.05, ro: 1.0, nose: 0.3, hood: 0.5, fender: 0.78, cowl: 0.58, ws: 1.05,
+        deck: 0.82, waist: 0.86, fenderR: 0.98, tail: 0.8, roof: b.cabin === 'c3' ? 1.0 : 1.08, cab: { ws: 0.55, roof: 0.6, back: 0.9 }, roadster: b.cabin === 'c4',
+        wing: { a0: null, a1: 'duck', a2: 'big', a3: 'big', a4: 'big', a5: 'swan' }[b.aero], wingH: 0.38, struts: b.aero === 'a5' ? 'straight' : null, tallPlates: b.aero === 'a5',
+        fin: b.aero === 'a4', scoop: b.deco.includes('roofscoop') || b.deco.includes('scoop') ? 'carbon' : null, vents: b.deco.includes('louvres'), nostrils: b.deco.includes('scoop'),
+        stripes: b.deco.includes('stripes') ? b.accent : null,
+        lights: 'slash', rim: c.rim, cal: c.cal, spokes: 6, blade: b.deco.includes('livery') ? b.accent : null,
+        rear: { tl: { t0: 'bar', t1: 'x', t2: 'y', t3: 'dots', t4: 'c', t5: 'split' }[b.tail], face: b.deco.includes('grille') ? 'mesh' : 'open', dif: b.aero === 'a3' || b.aero === 'a5' ? 'big' : 'small',
+          ex: b.engine === 'e5' ? 'none' : { x0: 'twin', x1: 'quad', x2: 'center', x3: 'high', x4: 'hex', x5: 'corner', x6: 'stack' }[b.exhaust], ti: b.exhaust === 'x6' } };
+      c.L = HL; c.W = c.hyper.W;
+    }
     c.base = { top: c.top, accel: c.accel, grip: c.grip, topOpen: 0 };
     return c;
   }
@@ -6609,14 +6625,19 @@ function buildCar(S, MATS) {
     if (!ok && (meta.coins >= BUILD_GATE || myBuilds.length || devOn())) { ok = true; try { localStorage.setItem('nh3d-build-open', '1'); fbSaveSoon(); } catch (e) {} }
     return ok; };
   const buildEl = $('build'), buildCard = $('buildCard'), bdBody = $('bdBody'), bdTabs = $('bdTabs'), bdCoins = $('bdCoins'), bdMsg = $('bdMsg');
-  const BP_LABEL = { size: '📏 크기', front: '🔺 앞부분', cabin: '🪟 운전석', rear: '🔻 뒷부분', aero: '🪽 스포일러', engine: '⚙️ 엔진', wheel: '🛞 바퀴', drive: '🔧 구동', deco: '✨ 장식', paint: '🎨 색' };
-  const BP_COLOR = { size: '#7a5cff', front: '#ff5a3c', cabin: '#29b6f6', rear: '#ffb300', aero: '#26c281', engine: '#ff3d8b', wheel: '#8d99ae', drive: '#00bfa5', deco: '#f4d03f', paint: '#ff8a12' };
-  let bdTab = 'make', bdKind = 'front', draft = cleanBuild(null), draftIdx = -1, bdPrevCar = 0, bdAsk = '', bdAskT = 0, bdEditing = '';
+  const BP_LABEL = { body: '🏎️ 차체', exhaust: '💨 배기구', tail: '🔴 후미등', size: '📏 크기', front: '🔺 앞부분', cabin: '🪟 운전석', rear: '🔻 뒷부분', aero: '🪽 스포일러', engine: '⚙️ 엔진', wheel: '🛞 바퀴', drive: '🔧 구동', deco: '✨ 장식', paint: '🎨 색' };
+  const BP_COLOR = { body: '#e53935', exhaust: '#78909c', tail: '#ff5252', size: '#7a5cff', front: '#ff5a3c', cabin: '#29b6f6', rear: '#ffb300', aero: '#26c281', engine: '#ff3d8b', wheel: '#8d99ae', drive: '#00bfa5', deco: '#f4d03f', paint: '#ff8a12' };
+  let bdTab = 'make', bdKind = 'body', draft = cleanBuild(null), draftIdx = -1, bdPrevCar = 0, bdAsk = '', bdAskT = 0, bdEditing = '';
   let market = [], marketReady = false, marketOn = false;
-  const owns = id => !!ownParts[id] || BP_KINDS.some(k => BP[k][0][0] === id);
-  function draftDue() {                                     // the parts on the draft not bought yet, and what they cost
-    const ids = [...BP_KINDS.map(k => [k, draft[k]]), ...draft.deco.map(d => ['deco', d])].filter(([, id]) => !owns(id));
-    return { ids, cost: ids.reduce((a, [k, id]) => a + bpPart(k, id)[2], 0) };
+  // Parts are used up: every car pays for its own parts, and each car you keep makes the next one dearer (+25% a car).
+  // Deleting a car pays back what it cost. Only the first, basic option of each kind is free.
+  const owns = id => BP_KINDS.some(k => BP[k][0][0] === id);
+  const partsMult = (skip) => 1 + 0.25 * myBuilds.filter(r => r.name !== skip).length;
+  const partsCost = b => [...BP_KINDS.map(k => [k, b[k]]), ...b.deco.map(d => ['deco', d])].reduce((a, [k, id]) => a + (owns(id) ? 0 : bpPart(k, id)[2]), 0);
+  function draftDue() {                                     // what saving the draft costs now (an edit pays only the difference)
+    const rec = bdEditing ? myBuilds.find(r => r.name === bdEditing) : null, mult = partsMult(rec ? rec.name : null);
+    const price = Math.round(partsCost(draft) * mult), paid = rec ? rec.paid || 0 : 0;
+    return { price, paid, cost: price - paid, mult };
   }
   const statDelta = d => [d.top ? `속도 ${d.top > 0 ? '+' : ''}${d.top}` : '', d.accel ? `가속 ${d.accel > 0 ? '+' : ''}${d.accel}` : '', d.grip ? `접지 ${d.grip > 0 ? '+' : ''}${d.grip}` : ''].filter(Boolean).join(' · ');
   function bdSay(t, ok) { bdMsg.textContent = t || '\u00a0'; bdMsg.style.color = ok ? 'var(--ok)' : 'var(--lamp)'; bdMsg.hidden = false; }   // the line is always there: nothing jumps under a finger
@@ -6640,16 +6661,17 @@ function buildCar(S, MATS) {
         parts = `<div class="bd-parts">${list.map(([id, n, price, d]) => {
           const on = bdKind === 'deco' ? draft.deco.includes(id) : draft[bdKind] === id, own = owns(id);
           return `<button class="brick${on ? ' on' : ''}${own ? '' : ' buy'}" data-part="${id}" style="--bc:${BP_COLOR[bdKind]}"><i class="studs"></i><b>${n}</b>
-            <small>${own ? (on ? '장착됨' : bdKind === 'deco' ? '눌러서 붙이기' : '보유') : on ? `시험 장착 · 🪙 ${price.toLocaleString()}` : `🪙 ${price.toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
+            <small>${own ? (on ? '장착됨 · 무료' : '무료') : `${on ? '장착 · ' : ''}🪙 ${Math.round(price * partsMult(bdEditing || null)).toLocaleString()}`}</small>${d && statDelta(d) ? `<em>${statDelta(d)}</em>` : ''}</button>`; }).join('')}</div>`;
       }
       bdBody.innerHTML = `<div class="bd-kinds">${kinds.map(k => `<button data-kind="${k}" style="--bc:${BP_COLOR[k]}" aria-pressed="${k === bdKind}">${BP_LABEL[k]}</button>`).join('')}</div>
-        ${parts}
+        ${parts}${draft.body === 'b1' && ['front', 'cabin', 'rear'].includes(bdKind) ? '<p class="bd-empty" style="padding:4px 2px">하이퍼카 차체에서는 앞부분·운전석 모양이 펜리르형으로 고정돼요 (로드스터·롱테일만 반영)</p>' : ''}
         <div class="bd-stats"><span class="tier t-${tier}">${tier}</span>
           <div><i>최고 속도</i><u><s style="width:${(st.top - 280) / 60 * 100}%"></s></u><em>${st.top} km/h</em></div>
           <div><i>가속</i><u><s style="width:${(st.accel - 0.8) / 0.35 * 100}%"></s></u><em>${st.accel}</em></div>
           <div><i>핸들링</i><u><s style="width:${(st.grip - 0.8) / 0.4 * 100}%"></s></u><em>${st.grip}</em></div></div>
         <div class="bd-name"><input id="bdName" maxlength="16" placeholder="차 이름을 지어 주세요" value="${escH(bdEditing)}" autocomplete="off">
-          <button class="rankbtn" id="bdSave">${due.cost ? `💾 🪙${due.cost.toLocaleString()} 결제·저장` : '💾 차고에 저장'}</button><button class="go bd-pub" id="bdPub">${due.cost ? `🚀 🪙${due.cost.toLocaleString()} 결제·출시` : '🚀 출시하기'}</button></div>`;
+          ${bdEditing ? `<button class="rankbtn" id="bdNew">🆕 새 차</button>` : ''}<button class="rankbtn" id="bdSave">${due.cost > 0 ? `💾 🪙${due.cost.toLocaleString()} 결제·저장` : due.cost < 0 ? `💾 저장 (🪙${(-due.cost).toLocaleString()} 환불)` : '💾 차고에 저장'}</button><button class="go bd-pub" id="bdPub">${due.cost > 0 ? `🚀 🪙${due.cost.toLocaleString()} 결제·출시` : '🚀 출시하기'}</button></div>
+        <small class="dex-note">부품은 차마다 새로 사요 · 지금 부품 가격 ×${due.mult.toFixed(2)} (차가 늘수록 비싸져요) · 차를 지우면 쓴 코인을 돌려받아요</small>`;
     } else if (bdTab === 'mine') {
       bdBody.innerHTML = myBuilds.length ? `<ul class="bd-list">${myBuilds.map((r, k) => { const st = buildStats(cleanBuild(r.b));
         return `<li><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
@@ -6721,14 +6743,12 @@ function buildCar(S, MATS) {
     if (builtinName(name) || name === '조립 중인 차') { bdSay('이미 있는 차 이름이에요. 다른 이름을 지어 주세요'); return; }
     if (!myBuilds.some(r => r.name === (bdEditing || name)) && myBuilds.length >= 20) { bdSay('차는 20대까지 저장할 수 있어요'); return; }
     const due = draftDue();
-    if (due.cost) {                                          // pay for the new parts first
-      if (meta.coins < due.cost) { bdSay(`코인이 모자라요: 새 부품 🪙 ${due.cost.toLocaleString()} 필요 (보유 ${meta.coins.toLocaleString()})`); sfx.grind(); return; }
-      meta.coins -= due.cost; saveMeta(); syncMetaBtn(); for (const [, id] of due.ids) ownParts[id] = true; saveBuilds(); sfx.ding();
-    }
+    if (due.cost > 0 && meta.coins < due.cost) { bdSay(`코인이 모자라요: 부품 🪙 ${due.cost.toLocaleString()} 필요 (보유 ${meta.coins.toLocaleString()})`); sfx.grind(); return; }
+    if (due.cost) { meta.coins -= due.cost; if (due.cost > 0) sfx.ding(); saveMeta(); syncMetaBtn(); }   // pay for the parts (or get the difference back)
     let rec = myBuilds.find(r => r.name === (bdEditing || name));
     if (!rec) { rec = { id: 'b' + Date.now().toString(36), name, b: null, pub: '' }; myBuilds.push(rec); }
     if (rec.name !== name) { const old = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === rec.name && !c.draft); if (old >= 0) CARS[old] = buildSpec(draft, name, '나'); }
-    rec.name = name; rec.b = cleanBuild(draft); bdEditing = name; saveBuilds();
+    rec.name = name; rec.b = cleanBuild(draft); rec.paid = due.price; bdEditing = name; saveBuilds();
     const idx = addCustomCar(rec, '나'); thumbs[idx] = makeThumbs(idx);
     try { fbSaveSoon(); } catch (e) {}
     if (publish) releaseCar(rec); else bdSay(`'${name}'을(를) 차고에 저장했어요`, true);
@@ -6755,20 +6775,22 @@ function buildCar(S, MATS) {
       if (bdKind === 'deco') draft.deco = draft.deco.includes(id) ? draft.deco.filter(d => d !== id) : [...draft.deco, id];
       else draft[bdKind] = id;
       const due = draftDue();
-      bdSay(due.cost ? `시험 장착 중 · 새 부품 🪙 ${due.cost.toLocaleString()} (저장할 때 결제)` : '', false);
+      bdSay(due.cost > 0 ? `시험 장착 중 · 저장하면 🪙 ${due.cost.toLocaleString()}` : '', false);
       previewDraft(); renderBuild(); return;
     }
     if (t.id === 'bdSave') return storeCar(false);
     if (t.id === 'bdPub') return storeCar(true);
+    if (t.id === 'bdNew') { bdEditing = ''; draft = cleanBuild(null); previewDraft(); bdSay('새 차를 조립해요', true); renderBuild(); return; }
     if (t.dataset.edit != null) { const r = myBuilds[+t.dataset.edit]; if (r) { draft = cleanBuild(r.b); bdEditing = r.name; bdTab = 'make'; previewDraft(); renderBuild(); } return; }
     if (t.dataset.del != null) {
       const k = +t.dataset.del, r = myBuilds[k]; if (!r) return;
       if (bdAsk !== 'del' + k || Date.now() - bdAskT > 4000) { bdAsk = 'del' + k; bdAskT = Date.now(); bdSay(`'${r.name}'을(를) 지울까요? 한 번 더 누르면 지워요`); return; }
-      bdAsk = ''; myBuilds.splice(k, 1); saveBuilds();
+      bdAsk = ''; myBuilds.splice(k, 1); saveBuilds(); if (bdEditing === r.name) bdEditing = '';
+      const back = Math.max(0, Math.round(r.paid || 0)); if (back) { meta.coins += back; saveMeta(); syncMetaBtn(); try { fbSaveSoon(); } catch (e) {} }   // the parts' coins come back
       if (r.pub && fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `market/${r.pub}`), null).catch(() => {});
       const ci = CARS.findIndex((c, i) => i >= BUILT_IN && c.name === r.name && !c.draft && c.by === '나');
       if (ci >= 0) { CARS[ci].retired = true; }               // gone from the lists; the index stays so nothing else shifts
-      bdSay(`'${r.name}'을(를) 지웠어요`, true); renderBuild(); return;
+      bdSay(back ? `'${r.name}'을(를) 지우고 🪙 ${back.toLocaleString()}을 돌려받았어요` : `'${r.name}'을(를) 지웠어요`, true); renderBuild(); return;
     }
     if (t.dataset.pub != null) {
       const r = myBuilds[+t.dataset.pub]; if (!r) return;
