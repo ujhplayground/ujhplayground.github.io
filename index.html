@@ -310,6 +310,8 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 @media (max-width: 560px) { .rank-list li { grid-template-columns: 28px minmax(0, 1fr) auto auto; } .rank-list li span:nth-child(5) { display: none; } }
 .car .badge { position: absolute; top: 5px; left: 5px; padding: 1px 7px; border-radius: 999px; font-size: .6rem; font-weight: 600; color: var(--night); background: var(--ok); }
 .car .badges { position: absolute; top: 5px; left: 5px; display: flex; gap: 3px; }
+.car .cdel { position: absolute; top: 4px; right: 4px; z-index: 2; min-width: 24px; height: 24px; padding: 0 6px; display: grid; place-items: center; border-radius: 999px; font-size: .72rem; font-weight: 700; color: #fff; background: rgba(0, 0, 0, .72); border: 1px solid var(--edge); }
+.car .cdel.ask { background: #c62828; border-color: #ff8a80; }
 .car .badges .badge { position: static; }
 .car .badge.drv { color: #0c0f15; background: #ffcf8a; }                    /* 후륜 */
 .car .badge.drv.awd { background: #8fd3ff; }                                 /* 4륜 */
@@ -8837,7 +8839,7 @@ function buildCar(S, MATS) {
   const cardHtml = (c, i) => { const open = isUnlocked(i), tr = !open && trialCar(i); return `<button class="car${open ? '' : tr ? ' trial' : ' locked'}" data-i="${i}" aria-pressed="${i === carIdx}"${open ? '' : ` aria-label="${c.name} 잠김, ${needShort(c)} 달성 시 해금"`}>
       ${thumbs[i] ? `<img src="${thumbs[i]}" alt="${c.name}">` : ''}<span class="tier t-${tierOf(c)}">${tierOf(c)}</span>${c.emblem ? `<img class="emb" src="img/emb_${c.emblem}.png" alt="">` : ''}
       <span class="badges">${open ? `<span class="badge lv">Lv${lvlOf(i)}</span>` : ''}<span class="badge drv ${c.drive}">${driveTxt(c)}</span>${c.conv ? '<span class="badge">오픈카</span>' : ''}</span>${open ? '' : tr ? '<span class="lock">🎟 시승</span>' : `<span class="lock">🔒 ${c.reward ? (c.reward === 'hard' ? '💀 하드' : '🏁 완주3') : c.achNeed ? '🏅' + c.achNeed : km(c.unlock)}${!MP && buyable(i) ? ' · 🪙' + priceTag(priceOf(c)) : ''}</span>`}
-      <span class="nm">${c.name}</span><small>${open ? `${c.tag} · 최고 ${c.top}${c.conv ? ` · 오픈 ${c.conv.topOpen}` : ''}km/h` : tr ? '오늘의 도전 보상: 한 번 탈 수 있어요' : howTxt(c)}</small>
+      ${c.custom && !c.community && !c.draft ? `<span class="cdel" data-del="${i}" role="button" aria-label="${c.name} 삭제">✕</span>` : ''}<span class="nm">${c.name}</span><small>${open ? `${c.tag} · 최고 ${c.top}${c.conv ? ` · 오픈 ${c.conv.topOpen}` : ''}km/h` : tr ? '오늘의 도전 보상: 한 번 탈 수 있어요' : howTxt(c)}</small>
       <span class="cstats">${statRow('속도', (c.top - 280) / 100)}${statRow('가속', (c.accel - 0.8) / 0.45)}${statRow('핸들링', (c.grip - 0.75) / 0.6)}</span></button>`; };
   const unlockFill = $('unlockFill');
   const tierOf = c => c.top >= 340 ? 'S' : c.top >= 330 ? 'A' : c.top >= 315 ? 'B' : 'C';   // from top speed
@@ -8922,7 +8924,28 @@ function buildCar(S, MATS) {
     const b = garageEl.querySelector(`[data-i="${carIdx}"]`);
     if (b) { const row = b.parentElement; row.scrollLeft = b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2; }
   }
-  garageEl.addEventListener('click', e => { const b = e.target.closest('.car'); if (b) selectCar(+b.dataset.i); });
+  let delAsk = { i: -1, t: 0 };
+  function delCustomCar(i, el) {                              // ✕ on my own garage card: tap twice to delete (refunds the parts)
+    const c = CARS[i]; if (!c || !c.custom || c.community || c.retired) return;
+    const say = (t, ok) => { if (state === 'ready') ovText.textContent = t; else popup(t, ok ? 'var(--ok)' : undefined); };
+    const now = Date.now();
+    if (delAsk.i !== i || now - delAsk.t > 4000) { delAsk = { i, t: now }; garageEl.querySelectorAll('.cdel.ask').forEach(x => x.classList.remove('ask')); if (el) { el.classList.add('ask'); el.textContent = '삭제?'; } say(`'${c.name}'을(를) 지울까요? ✕를 한 번 더 누르면 지워요`); sfx.grind(); return; }
+    delAsk = { i: -1, t: 0 };
+    let back = 0;
+    const k = c.by === '나' ? myBuilds.findIndex(r => cleanCarName(r.name) === c.name) : -1;
+    if (k >= 0) {
+      const r = myBuilds[k]; myBuilds.splice(k, 1);
+      back = Math.max(0, Math.round(r.paid || 0));
+      if (r.pub && fb.user && fb.D) fb.D.set(fb.D.ref(fb.db, `market/${r.pub}`), null).catch(() => {});
+    } else { const d = dlBuilds.findIndex(r => (cleanCarName(r.name) || '이름 없는 차') === c.name); if (d >= 0) dlBuilds.splice(d, 1); }
+    saveBuilds();
+    if (back) { meta.coins += back; saveMeta(); syncMetaBtn(); try { fbSaveSoon(); } catch (e) {} }
+    c.retired = true;                                         // gone from the lists; the index stays so nothing else shifts
+    if (carIdx === i) { const j = CARS.findIndex((x, n) => canDrive(n)); if (j >= 0) selectCar(j); }
+    renderCars();
+    say(back ? `'${c.name}'을(를) 지우고 🪙 ${back.toLocaleString()}을 돌려받았어요` : `'${c.name}'을(를) 지웠어요`, true);
+  }
+  garageEl.addEventListener('click', e => { const x = e.target.closest('.cdel'); if (x) { e.stopPropagation(); delCustomCar(+x.dataset.del, x); return; } const b = e.target.closest('.car'); if (b) selectCar(+b.dataset.i); });
   pickBtn.addEventListener('click', () => {
     if (state === 'offer') gameOver();                       // leaving from the revive offer records the run first
     if (state !== 'over') return;
