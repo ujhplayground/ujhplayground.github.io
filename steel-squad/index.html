@@ -59,6 +59,7 @@ input{width:120px;text-transform:uppercase;text-align:center;letter-spacing:4px}
 </div></div>
 
 <script type="module">
+import { initStageArt, drawBack, drawGround, drawMan, drawEnemy, drawBoss, playerPal } from './gfx.js';
 // ───────── 기본 ─────────
 const W = 480, H = 270, GY = H - 32;
 const $ = id => document.getElementById(id), cv = $('cv'), ctx = cv.getContext('2d');
@@ -141,17 +142,8 @@ function genLevel(n) {
   return { S, waves, items, arena };
 }
 
-function makeBG(n) {
-  const r = rng(n * 31 + 5), far = [], mid = [], stars = [];
-  const a = r() * 6, b = r() * 6;
-  for (let i = 0; i < 128; i++) far.push(Math.round(34 + 18 * Math.sin(i * .2 + a) + 10 * Math.sin(i * .53 + b)));
-  for (let i = 0; i < 64; i++) mid.push(r() < .2 ? 0 : 14 + Math.floor(r() * 6) * 10);
-  for (let i = 0; i < 60; i++) stars.push([r() * W * 2, r() * H * .7]);
-  return { far, mid, stars };
-}
-
 // ───────── 상태 ─────────
-let G = null, SD = null, LV = null, BG = null, ME = null;
+let G = null, SD = null, LV = null, ART = null, ME = null;
 let PL = {}, PLAYERS = {}, META = null, HQ = { h: [], k: [] };
 let UID = '', NAME = '', RM = null, IS_HOST = false, MYSLOT = 0, PROG = 0, UNS = [];
 
@@ -258,7 +250,7 @@ function respawn(p) {
 function shoot(p, mine) {
   const w = WP[p.wp] || WP.P; p.cd = w.r;
   const dx = p.aim ? 0 : p.face, dy = p.aim === 1 ? -1 : p.aim === 2 ? 1 : 0;
-  const ox = p.x + 6 + dx * 9, oy = p.y + (p.cr ? 7 : 11) + dy * 12, n = w.n2 || 1;
+  const ox = p.x + 6 + dx * 9, oy = p.y + (p.cr ? 7 : 9) + dy * 12, n = w.n2 || 1;
   for (let i = 0; i < n; i++) {
     const a = Math.atan2(dy, dx) + (n > 1 ? (i - (n - 1) / 2) * .13 : 0) + (p.wp === 'H' ? (R() - .5) * .08 : 0) + (p.wp === 'F' ? (R() - .5) * .2 : 0);
     G.pb.push({ x: ox, y: oy, vx: Math.cos(a) * w.s, vy: Math.sin(a) * w.s, l: w.l, wp: p.wp, mine, hit: mine && w.pi ? new Set() : null });
@@ -505,7 +497,7 @@ function clientStep() {
 // ───────── 스테이지 시작/끝 ─────────
 function startStage(n, run, late) {
   G = { run, n, host: IS_HOST, tick: 0, cam: 0, ctg: 0, st: 'play', en: new Map(), eb: [], pb: [], gn: [], fx: [], bl: [], pk: new Map(), boss: null, nb: [], dl: [], wi: 0, eid: 0, bid: 0, pkid: 0, bw: 0, et: 0, shake: 0, seenB: new Set(), seenD: new Set(), taken: new Set(), uns: [], late };
-  SD = stageDef(n); LV = genLevel(n); BG = makeBG(n);
+  SD = stageDef(n); LV = genLevel(n); ART = initStageArt(n, SD.th, LV, rng);
   ME = newPlayer(MYSLOT); HQ = { h: [], k: [] };
   for (const p of Object.values(PL)) p.ing = 0;
   if (IS_HOST) {
@@ -536,7 +528,7 @@ function endLocal(m) {
 // ───────── 네트워크 동기화 ─────────
 function sendMe() {
   const p = ME;
-  put(`${RM}/p/${UID}`, { n: NAME, c: MYSLOT, run: G.run, x: r1(p.x), y: r1(p.y), f: p.face, a: p.aim, cr: p.cr, hp: p.hp, l: p.lives, dd: p.dead, w: p.wp, am: p.am, gr: p.gr, sc: p.sc, gc: p.gc, iv: p.inv > 0 ? 1 : 0 });
+  put(`${RM}/p/${UID}`, { n: NAME, c: MYSLOT, run: G.run, x: r1(p.x), y: r1(p.y), f: p.face, a: p.aim, cr: p.cr, hp: p.hp, l: p.lives, dd: p.dead, w: p.wp, am: p.am, gr: p.gr, sc: p.sc, gc: p.gc, iv: p.inv > 0 ? 1 : 0, og: p.onG ? 1 : 0 });
 }
 function sendW() {
   const t = G.tick, B = G.boss;
@@ -593,7 +585,7 @@ function onPlayers(v) {
     P.n = s.n; P.slot = s.c;
     if (!G || s.run !== G.run) { P.ing = 0; continue; }
     if (!P.ing) { P.ing = 1; P.x = s.x; P.y = s.y; P.sc = s.sc; P.gc = s.gc; }
-    Object.assign(P, { tx: s.x, ty: s.y, face: s.f, aim: s.a, cr: s.cr, h: s.cr ? 14 : 22, hp: s.hp, lives: s.l, dead: s.dd, wp: s.w, am: s.am, gr: s.gr, inv: s.iv ? 30 : 0 });
+    Object.assign(P, { tx: s.x, ty: s.y, face: s.f, aim: s.a, cr: s.cr, h: s.cr ? 14 : 22, hp: s.hp, lives: s.l, dead: s.dd, wp: s.w, am: s.am, gr: s.gr, inv: s.iv ? 30 : 0, onG: s.og ?? 1 });
     if (s.sc > P.sc && !P.dead) for (let i = 0; i < Math.min(s.sc - P.sc, 2); i++) shoot(P, 0);
     if (s.gc > P.gc && !P.dead) throwG(P, 0);
     P.sc = s.sc; P.gc = s.gc;
@@ -641,96 +633,30 @@ function hud() {
 
 // ───────── 그리기 ─────────
 function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
-function drawBG() {
-  const th = SD.th, c = G.cam, g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, th.sky[0]); g.addColorStop(1, th.sky[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  if (th.stars) for (const [x, y] of BG.stars) rect(((x - c * .05) % (W * 2) + W * 2) % (W * 2) - W * .5, y, 1, 1, '#fff');
-  const o1 = c * .2, s1 = Math.floor(o1 / 8);
-  ctx.fillStyle = th.far;
-  for (let i = 0; i < W / 8 + 2; i++) { const h = BG.far[((s1 + i) % 128 + 128) % 128]; ctx.fillRect(i * 8 - o1 % 8, H - 96 - h, 8, h + 96); }
-  const o2 = c * .5, s2 = Math.floor(o2 / 24);
-  for (let i = 0; i < W / 24 + 2; i++) {
-    const h = BG.mid[((s2 + i) % 64 + 64) % 64]; if (!h) continue;
-    const x = Math.round(i * 24 - o2 % 24);
-    rect(x, H - 40 - h, 20, h + 40, th.mid);
-    if (th.city) for (let wy = H - 34 - h; wy < H - 44; wy += 10) { rect(x + 4, wy, 3, 4, 'rgba(255,220,120,.35)'); rect(x + 12, wy, 3, 4, 'rgba(255,220,120,.25)'); }
-  }
-}
-function drawMan(x, y, f, cr, aim, col, helm, frame, gun, fl) {
-  x = Math.round(x); y = Math.round(y);
-  const P = (dx, dy, w, h, c) => { ctx.fillStyle = fl ? '#fff' : c; ctx.fillRect(f < 0 ? x + 12 - dx - w : x + dx, y + dy, w, h); };
-  const skin = '#f1c27d';
-  if (cr) {
-    P(1, 10, 10, 4, '#3a3a3a'); P(2, 4, 8, 7, col); P(3, 0, 6, 5, skin); P(2, -1, 8, 3, helm);
-    if (gun) { P(8, 6, 9, 2, '#222'); P(6, 6, 3, 3, skin); }
-    return;
-  }
-  const lg = Math.floor(frame / 6) % 2;
-  P(2 + lg, 15, 3, 7, '#3a3a3a'); P(7 - lg, 15, 3, 7, '#3a3a3a');
-  P(2, 8, 8, 8, col); P(2, 14, 8, 2, '#5a4a2a');
-  P(3, 2, 6, 6, skin); P(2, 0, 8, 3, helm); P(7, 4, 1, 1, '#000');
-  if (gun) { if (aim === 1) P(6, -4, 2, 12, '#222'); else if (aim === 2) P(6, 12, 2, 10, '#222'); else { P(6, 10, 10, 2, '#222'); P(5, 10, 3, 3, skin); } }
-}
-function drawE(e) {
-  const th = SD.th, c = th.e[0], c2 = th.e[1], fl = e.fl > 0, x = Math.round(e.x), y = Math.round(e.y), f = e.face, F = fl ? '#fff' : null;
-  const fr = e.mv ? G.tick : 0;
-  switch (e.t) {
-    case 0: drawMan(x, y, f, 0, 0, c, c2, fr, 1, fl); break;
-    case 1: drawMan(x, y, f, 0, 0, c, c2, fr, 0, fl); rect(f > 0 ? x + 2 : x + 8, y + 1, 2, 7, F || '#f1c27d'); rect(f > 0 ? x + 1 : x + 7, y - 2, 4, 4, F || '#333'); break;
-    case 2: drawMan(x, y, f, 0, 0, '#b03030', '#601010', fr, 0, fl); rect(f > 0 ? x + 12 : x - 5, y + 10, 5, 2, F || '#ddd'); break;
-    case 3: rect(x + 1, y + 1, 12, 9, F || c); rect(f > 0 ? x + 8 : x + 3, y + 3, 3, 3, '#f33'); rect(x + 2, y + 10, 3, 4, F || c2); rect(x + 9, y + 10, 3, 4, F || c2); break;
-    case 4: rect(x, y + 3, 16, 5, F || c); rect(x + 5, y + 7, 6, 3, F || c2); rect(x + (G.tick % 4 < 2 ? 0 : 4), y, G.tick % 4 < 2 ? 16 : 8, 1, '#ccc'); rect(x + 7, y + 1, 2, 2, '#888'); break;
-    case 5: drawMan(x, y, f, 0, 0, c, c2, fr, 1, fl); rect(f > 0 ? x + 12 : x - 2, y + 3, 4, 19, F || '#9aa4ad'); rect(f > 0 ? x + 13 : x - 1, y + 5, 2, 15, F || '#c8d0d8'); break;
-    case 6: drawMan(x, y, f, 1, 0, c, c2, 0, 0, fl); rect(f > 0 ? x + 6 : x - 10, y + 6, 16, 2, F || '#222');
-      if (e.st === 1) { const t = nearestP(x, y); if (t && G.tick % 4 < 3) { ctx.strokeStyle = 'rgba(255,0,0,.7)'; ctx.beginPath(); ctx.moveTo(x + 6 + f * 10, y + 7); ctx.lineTo(t.x + 6, t.y + 10); ctx.stroke(); } } break;
-    case 7: rect(x, y + 8, 16, 6, F || c2); rect(x + 3, y + 3, 10, 6, F || c); rect(f > 0 ? x + 12 : x - 6, y + 4, 10, 3, F || '#222'); break;
-    case 8: rect(x + 6, y + 4, 16, 8, F || c); rect(f > 0 ? x - 4 : x + 22, y + 6, 10, 2, F || c2); rect(f > 0 ? x + 16 : x + 7, y + 5, 5, 4, '#9cf');
-      rect(x + 2 + (G.tick % 4 < 2 ? 0 : 6), y, G.tick % 4 < 2 ? 24 : 12, 2, '#ccc'); rect(x + 8, y + 12, 12, 2, '#333'); break;
-    case 9: rect(x, y + 12, 30, 6, '#2a2a2a'); for (let i = 0; i < 5; i++) rect(x + 2 + i * 6, y + 13, 4, 4, '#555'); rect(x + 2, y + 6, 26, 7, F || c); rect(x + 9, y + 1, 12, 6, F || c2); rect(f > 0 ? x + 20 : x, y + 3, 10, 2, F || '#222'); break;
-  }
-}
-function drawBoss(B) {
-  const th = SD.th, fl = B.fl > 0, c = fl ? '#fff' : th.e[0], c2 = fl ? '#fff' : th.e[1], x = Math.round(B.x + (B.sh ? (R() - .5) * 3 : 0)), y = Math.round(B.y), w = B.w, h = B.h, f = B.face;
-  const P = (dx, dy, ww, hh, col) => rect(f < 0 ? x + dx : x + w - dx - ww, y + dy, ww, hh, col);
-  const glow = B.ph === 2 ? '#ff3030' : '#ffd040';
-  switch (B.bi) {
-    case 0: rect(x, y + h - 16, w, 16, '#2a2a2a'); for (let i = 0; i < 8; i++) rect(x + 4 + i * 11, y + h - 13, 8, 10, '#555');
-      rect(x + 4, y + 20, w - 8, 22, c); rect(x + 4, y + 20, w - 8, 3, c2); P(28, 4, 44, 18, c2); P(-6, 9, 36, 6, '#333'); P(40, 8, 8, 6, glow); break;
-    case 1: rect(x + 10, y + 48, 12, 36, c2); rect(x + w - 22, y + 48, 12, 36, c2); rect(x + 6, y + h - 6, 20, 6, '#333'); rect(x + w - 26, y + h - 6, 20, 6, '#333');
-      rect(x, y + 14, w, 36, c); P(6, 22, 18, 10, '#9cf'); P(-10, 26, 20, 5, '#333'); P(-10, 38, 20, 5, '#333'); rect(x + w / 2 - 4, y + 6, 8, 10, c2); rect(x + w / 2 - 2, y + 8, 4, 4, glow); break;
-    case 2: rect(x + 14, y + 10, 62, 24, c); P(0, 18, 20, 12, '#9cf'); P(70, 16, 34, 6, c2); P(98, 8, 6, 16, c2); rect(x + 20, y + 34, 50, 3, '#333');
-      rect(x + (B.t ?? G.tick) % 4 * 4, y + 4, w - 12, 2, '#ccc'); rect(x + 42, y + 4, 6, 6, '#444'); P(10, 30, 16, 4, '#333'); break;
-    case 3: rect(x + 10, y, w - 10, h, c); rect(x + 10, y, w - 10, 8, c2); for (let i = 0; i < 5; i++) rect(x + 14, y + 16 + i * 26, w - 18, 4, c2);
-      for (const k of [.2, .45, .7]) { rect(x - 8, y + h * k - 3, 26, 8, '#333'); rect(x - 12, y + h * k - 1, 6, 4, '#222'); }
-      rect(x + 40, y + h * .5 - 10, 20, 20, glow); break;
-    case 4: rect(x + 10, y + 10, w - 20, 12, c); P(0, 12, 14, 8, c2); P(4, 13, 10, 4, '#9cf'); P(34, 2, 26, 10, c2); P(34, 20, 26, 10, c2); P(w - 12, 6, 12, 6, c2);
-      P(w - 2, 13, 6 + (G.tick % 4), 6, '#ff9020'); break;
-  }
-}
+const PPAL = [0, 1, 2, 3].map(playerPal);
+function poseOf(p, moving) { return p.cr ? 'cr' : !p.onG ? 'jmp' : moving ? 'run' : 'st'; }
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!G) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a3a6a'); g.addColorStop(1, '#f4c27a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); rect(0, GY, W, H - GY, '#b9783a'); rect(0, GY, W, 3, '#e0b060'); return; }
-  drawBG();
+  drawBack(ctx, ART, G.cam);
   const sx = G.shake > 0 ? Math.round((R() - .5) * 6) : 0;
   ctx.translate(-Math.round(G.cam) + sx, 0);
-  const th = SD.th, c0 = G.cam - 10, c1 = G.cam + W + 10;
-  for (const s of LV.S) {
-    if (s.x + s.w < c0 || s.x > c1) continue;
-    if (s.o) { rect(s.x, s.y, s.w, s.h, th.pl); rect(s.x, s.y, s.w, 2, th.top); continue; }
-    rect(s.x, s.y, s.w, H - s.y, th.gr); rect(s.x, s.y, s.w, 3, th.top);
-    for (let tx = Math.ceil(Math.max(s.x, c0) / 16) * 16; tx < Math.min(s.x + s.w, c1); tx += 16) rect(tx, s.y + 8, 1, H - s.y - 8, 'rgba(0,0,0,.12)');
-  }
+  drawGround(ctx, ART, LV, G.cam);
   for (const k of G.pk.values()) {
     const y = Math.round(k.y + Math.sin(G.tick * .1 + k.id) * 1.5);
     rect(k.x - 6, y - 6, 12, 12, k.k === 'B' ? '#3a6a3a' : '#c08020'); rect(k.x - 5, y - 5, 10, 10, k.k === 'B' ? '#5a9a5a' : '#ffcf40');
     ctx.fillStyle = '#222'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center'; ctx.fillText(k.k, k.x, y + 3);
   }
-  for (const e of G.en.values()) if (!(e.gone && G.tick % 4 < 2)) drawE(e);
-  if (G.boss) drawBoss(G.boss);
+  for (const e of G.en.values()) {
+    drawEnemy(ctx, e, SD.th, G.tick, e.gone);
+    if (e.t === 6 && e.st === 1) { const t = nearestP(e.x, e.y); if (t && G.tick % 4 < 3) { ctx.strokeStyle = 'rgba(255,0,0,.7)'; ctx.beginPath(); ctx.moveTo(e.x + 6 + e.face * 14, e.y + 7); ctx.lineTo(t.x + 6, t.y + 10); ctx.stroke(); } }
+  }
+  if (G.boss) drawBoss(ctx, G.boss, SD.th, G.tick);
   for (const p of allP()) {
     if (p.dead || (p.inv > 0 && G.tick % 6 < 3)) continue;
-    drawMan(p.x, p.y, p.face, p.cr, p.aim, SLOTC[p.slot], '#4a5a2a', p === ME ? p.an : G.tick, 1, 0);
-    ctx.fillStyle = SLOTC[p.slot]; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center'; ctx.fillText('P' + (p.slot + 1), Math.round(p.x + 6), Math.round(p.y) - 4);
+    const mv = p === ME ? !!p.vx : Math.abs(p.tx - p.x) > .3;
+    drawMan(ctx, { x: p.x, y: p.y + p.h, face: p.face, pose: poseOf(p, mv), f: Math.floor((p === ME ? p.an : G.tick) / 5) % 6, aim: p.aim, wp: p.wp, pal: PPAL[p.slot], hat: 'band' });
+    ctx.fillStyle = SLOTC[p.slot]; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center'; ctx.fillText('P' + (p.slot + 1), Math.round(p.x + 6), Math.round(p.y) - (p.aim === 1 ? 14 : 6));
   }
   for (const b of G.pb) {
     const w = WP[b.wp];
