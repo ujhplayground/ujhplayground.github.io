@@ -447,7 +447,7 @@ function updE(e) {
 }
 
 function spawnBoss() {
-  const bd = BODIES[SD.boss.bi], n = allP().length, hp = Math.round((240 + SD.n * 34) * (.6 + .4 * n));
+  const bd = BODIES[SD.boss.bi], n = allP().length, hp = Math.round((140 + SD.n * 20) * (.6 + .4 * n));
   const B = { id: -1, bi: SD.boss.bi, atks: SD.boss.atks, w: bd.w, h: bd.h, x: LV.arena + W - bd.w - (bd.st ? 0 : 24), y: bd.g ? GY - bd.h : 46, by: 46, vx: -.5, vy: 0, hp, max: hp, ph: 1, ai: 0, at: null, tm: 0, cd: 120, t: 0, fl: 0, las: null, face: -1, sh: 0, cs: 0, pend: [] };
   G.boss = B; G.st = 'boss'; banner('WARNING!', 120); sfx('alarm');
 }
@@ -483,7 +483,7 @@ function bossAtk(B, bd, sp, tx, ty, A) {
 function updBoss() {
   const B = G.boss; if (!B) return;
   B.t++;
-  const bd = BODIES[B.bi], sp = B.ph === 2 ? 1.5 : 1, A = LV.arena, tg = nearestP(B.x + B.w / 2, B.y + B.h / 2);
+  const bd = BODIES[B.bi], sp = B.ph === 2 ? 1.25 : 1, A = LV.arena, tg = nearestP(B.x + B.w / 2, B.y + B.h / 2);
   const tx = tg ? tg.x + 6 : A + W / 2, ty = tg ? tg.y + 10 : GY;
   B.face = bd.st ? -1 : tx < B.x + B.w / 2 ? -1 : 1;
   if (!B.at) {
@@ -492,7 +492,7 @@ function updBoss() {
     else if (B.bi === 2) { B.x += (A + W / 2 - B.w / 2 + Math.sin(B.t * .012 * sp) * (W / 2 - B.w / 2 - 12) - B.x) * .06; B.y += (B.by + Math.sin(B.t * .03) * 10 - B.y) * .06; }
     else if (B.bi === 4) { B.x += (A + W / 2 - B.w / 2 + Math.sin(B.t * .016 * sp) * (W / 2 - B.w / 2 - 8) - B.x) * .06; B.y += (B.by + Math.sin(B.t * .032 * sp) * 22 - B.y) * .06; }
     if ((B.cd -= sp) <= 0) { B.at = B.atks[B.ai++ % (B.ph === 2 ? B.atks.length : 3)]; B.tm = 0; }
-  } else { B.tm++; if (bossAtk(B, bd, sp, tx, ty, A)) { B.at = null; B.las = null; B.sh = 0; B.cd = 80 + R() * 50; } }
+  } else { B.tm++; if (bossAtk(B, bd, sp, tx, ty, A)) { B.at = null; B.las = null; B.sh = 0; B.cd = 130 + R() * 60; } }
   if (bd.g && !bd.st) {
     B.vy += .25; B.y += B.vy; if (B.bi === 1) B.x += B.vx;
     if (B.y >= GY - B.h) { if (B.vy > 3) G.shake = 8; B.y = GY - B.h; B.vy = 0; if (B.bi === 1) B.vx = 0; }
