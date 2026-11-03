@@ -8,15 +8,27 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#111;color:#fff;font-family:system-ui,'Noto Sans KR',sans-serif;overflow:hidden}
 #cv{position:absolute;inset:0;margin:auto;image-rendering:pixelated;background:#000}
-.scr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+.scr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(0,0,0,.15),rgba(0,0,0,.6))}
 .scr[hidden],[hidden]{display:none!important}
-.box{background:#1d2230;border:3px solid #e0a030;padding:22px 28px;min-width:330px;max-width:92vw;text-align:center;border-radius:6px}
-h1{margin:0 0 6px;font-size:34px;color:#ffcf40;letter-spacing:2px;text-shadow:3px 3px 0 #a33}
-button{font:inherit;font-weight:700;padding:10px 18px;margin:6px;border:0;border-radius:4px;background:#e0a030;color:#222;cursor:pointer}
+.box{background:linear-gradient(#141a28ee,#0c101aee);border:2px solid #c8902a;box-shadow:0 0 0 4px #000a,0 10px 40px #000c,inset 0 1px 0 #ffffff22;padding:22px 30px 18px;min-width:340px;max-width:92vw;text-align:center;border-radius:10px}
+h1{margin:0;font-size:58px;line-height:1;font-weight:900;letter-spacing:3px;font-style:italic;background:linear-gradient(#fffbe0 10%,#ffd040 45%,#e07818 60%,#8a2a08 95%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 3px 0 #000) drop-shadow(0 0 2px #000)}
+.sub{color:#ffcf6a;font-weight:700;letter-spacing:6px;font-size:13px;margin:6px 0 14px;text-shadow:1px 1px 0 #000}
+#who{color:#cfd6e4;font-size:14px;margin-bottom:10px}
+button{font:inherit;font-weight:800;padding:11px 22px;margin:6px;border:0;border-radius:6px;background:linear-gradient(#ffd560,#e09a20);color:#2a1a00;cursor:pointer;box-shadow:0 4px 0 #8a5a10,0 6px 10px #0008;transition:transform .05s}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #8a5a10}
 button:disabled{opacity:.5;cursor:default}
-button.sec{background:#4a5566;color:#fff}
-input,select{font:inherit;padding:9px;border-radius:4px;border:0;margin:6px;max-width:100%}
-input{width:120px;text-transform:uppercase;text-align:center;letter-spacing:4px}
+#mkBtn{font-size:20px;padding:14px 40px}
+button.sec{background:linear-gradient(#6a7486,#4a5466);color:#fff;box-shadow:0 4px 0 #2a3240,0 6px 10px #0008}
+input,select{font:inherit;padding:10px;border-radius:6px;border:2px solid #3a4458;background:#0a0e16;color:#fff;margin:6px;max-width:100%}
+input{width:130px;text-transform:uppercase;text-align:center;letter-spacing:6px;font-weight:800}
+.or{color:#7a8496;font-size:12px;margin:4px 0}
+details.keys{margin-top:12px;font-size:13px;color:#b8c0d0;text-align:left}
+details.keys summary{cursor:pointer;text-align:center;color:#ffcf6a;font-weight:700}
+details.keys table{margin:8px auto;border-collapse:collapse}
+details.keys td{padding:3px 10px}
+details.keys td:last-child{text-align:right}
+kbd{display:inline-block;min-width:22px;padding:2px 6px;margin:0 1px;border-radius:4px;background:#e8ecf4;color:#1a1e28;font:700 12px system-ui;box-shadow:0 2px 0 #8a92a4;text-align:center}
+.tip{font-size:12px;color:#8a94a8;text-align:center;line-height:1.6}
 .msg{min-height:22px;color:#ff8a7a;margin-top:6px}
 .help{font-size:13px;color:#aab;margin-top:10px;line-height:1.6}
 #plist{list-style:none;padding:0;margin:10px 0;text-align:left}
@@ -36,16 +48,30 @@ input{width:120px;text-transform:uppercase;text-align:center;letter-spacing:4px}
 <div id="banner"></div>
 
 <div id="gate" class="scr" hidden><div class="box">
-  <h1>STEEL SQUAD</h1><div>스틸 스쿼드 · 최대 4인 온라인 협동</div>
+  <h1>STEEL SQUAD</h1><div class="sub">스틸 스쿼드 · 4인 온라인 협동</div>
   <button id="gateBtn" disabled>로그인 준비 중…</button><div class="msg" id="gateMsg"></div>
 </div></div>
 
 <div id="menu" class="scr" hidden><div class="box">
-  <h1>STEEL SQUAD</h1><div id="who"></div>
+  <h1>STEEL SQUAD</h1><div class="sub">스틸 스쿼드 · 4인 온라인 협동</div><div id="who"></div>
   <div><button id="mkBtn">방 만들기</button></div>
-  <div><input id="codeIn" maxlength="4" placeholder="코드"><button id="joinBtn">참가</button></div>
+  <div class="or">또는 친구 방 코드로 참가</div>
+  <div><input id="codeIn" maxlength="4" placeholder="코드"><button id="joinBtn" class="sec">참가</button></div>
   <div class="msg" id="menuMsg"></div>
-  <div class="help"><b>조작법</b><br>이동 ← → (A D) · 점프 X / K / Space · 사격 Z / J (누르면 연사) · 수류탄 C / L<br>위로 쏘기 ↑(W)+사격 · 엎드리기 ↓(S) · 공중에서 ↓+사격: 아래로 쏘기 · 발판 위 ↓+점프: 내려가기<br>노란 상자: H 헤비머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저 · 초록 B: 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄·로켓</div>
+  <details class="keys"><summary>조작법 보기</summary><table>
+<tr><td>이동</td><td><kbd>A</kbd><kbd>D</kbd></td></tr>
+<tr><td>점프</td><td><kbd>Space</kbd> (오른손 <kbd>K</kbd>)</td></tr>
+<tr><td>사격 (누르면 연사)</td><td><kbd>F</kbd></td></tr>
+<tr><td>수류탄 (오른손)</td><td><kbd>J</kbd> 또는 <kbd>G</kbd></td></tr>
+<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>F</kbd></td></tr>
+<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>F</kbd>)</td></tr>
+<tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
+</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄 · 방향키 + Z 사격 · X 점프 · C 수류탄도 돼요</div></details>
+</div></div>
+
+<div id="over" class="scr" hidden><div class="box">
+  <h1 style="font-size:46px">GAME OVER</h1><div class="sub" id="overMsg"></div>
+  <button id="retryBtn">다시 시작</button><button id="toRoomBtn" class="sec">대기방으로</button>
 </div></div>
 
 <div id="room" class="scr" hidden><div class="box">
@@ -56,7 +82,15 @@ input{width:120px;text-transform:uppercase;text-align:center;letter-spacing:4px}
   <div id="stageInfo" class="help"></div>
   <button id="startBtn">시작</button><button id="leaveBtn" class="sec">나가기</button>
   <div class="msg" id="roomMsg"></div>
-  <div class="help"><b>조작법</b><br>이동 ← → (A D) · 점프 X / K / Space · 사격 Z / J (누르면 연사) · 수류탄 C / L<br>위로 쏘기 ↑(W)+사격 · 엎드리기 ↓(S) · 공중에서 ↓+사격: 아래로 쏘기 · 발판 위 ↓+점프: 내려가기<br>노란 상자: H 헤비머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저 · 초록 B: 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄·로켓</div>
+  <details class="keys"><summary>조작법 보기</summary><table>
+<tr><td>이동</td><td><kbd>A</kbd><kbd>D</kbd></td></tr>
+<tr><td>점프</td><td><kbd>Space</kbd> (오른손 <kbd>K</kbd>)</td></tr>
+<tr><td>사격 (누르면 연사)</td><td><kbd>F</kbd></td></tr>
+<tr><td>수류탄 (오른손)</td><td><kbd>J</kbd> 또는 <kbd>G</kbd></td></tr>
+<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>F</kbd></td></tr>
+<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>F</kbd>)</td></tr>
+<tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
+</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄 · 방향키 + Z 사격 · X 점프 · C 수류탄도 돼요</div></details>
 </div></div>
 
 <script type="module">
@@ -172,13 +206,13 @@ function phys(o, g = .25) {
 function unstick(o) { for (const s of LV.S) if (!s.o && ov(o, s)) o.y = s.y - o.h; }
 function onPlat(p) { return LV.S.some(s => s.o && Math.abs(p.y + p.h - s.y) < .5 && p.x + p.w > s.x && p.x < s.x + s.w); }
 
-function newPlayer(slot) { return { slot, x: 30 + slot * 16, y: GY - 60, vx: 0, vy: 0, w: 12, h: 22, face: 1, aim: 0, cr: 0, hp: 3, lives: 3, dead: 0, rt: 0, inv: 90, wp: 'P', am: 0, gr: 10, cd: 0, sc: 0, gc: 0, onG: 0, drop: 0, an: 0 }; }
+function newPlayer(slot) { return { slot, x: 30 + slot * 16, y: GY - 60, vx: 0, vy: 0, w: 12, h: 22, face: 1, aim: 0, cr: 0, hp: 8, lives: 3, dead: 0, rt: 0, inv: 90, wp: 'P', am: 0, gr: 10, cd: 0, sc: 0, gc: 0, onG: 0, drop: 0, an: 0 }; }
 const allP = () => [ME, ...Object.values(PL).filter(p => p.ing)].filter(Boolean);
 function nearestP(x, y) { let b = null, bd = 1e9; for (const p of allP()) { if (p.dead) continue; const d = Math.abs(p.x + 6 - x) + Math.abs(p.y + 10 - y) * .5; if (d < bd) { bd = d; b = p; } } return b; }
 
 // ───────── 입력 ─────────
 const K = {}, PR = {};
-const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', KeyK: 'j', Space: 'j', KeyZ: 'f', KeyJ: 'f', KeyC: 'g', KeyL: 'g' };
+const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', KeyK: 'j', Space: 'j', KeyZ: 'f', KeyF: 'f', KeyC: 'g', KeyJ: 'g', KeyG: 'g' };
 addEventListener('keydown', e => { if (/INPUT|SELECT/.test(e.target.tagName)) return; const k = KM[e.code]; if (!k) return; if (G) e.preventDefault(); if (!K[k]) PR[k] = 1; K[k] = 1; audio(); });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) K[k] = 0; });
 addEventListener('blur', () => { for (const k in K) K[k] = 0; });
@@ -240,13 +274,13 @@ function updMe() {
 function take(p, k) { if (k === 'B') p.gr = Math.min(30, p.gr + 10); else { p.wp = k; p.am = WP[k].a; } sfx('pick'); }
 function hurt(p, fall) {
   if (p.dead || (!fall && p.inv > 0)) return;
-  p.hp = fall ? 0 : p.hp - 1; p.inv = 70; sfx('hurt');
+  p.hp = fall ? 0 : p.hp - 1; p.inv = 110; sfx('hurt');
   if (p.hp <= 0) { p.dead = 1; p.lives--; p.rt = 100; boom(p.x + 6, p.y + 10, 0); p.wp = 'P'; p.am = 0; }
 }
 function respawn(p) {
   let x = G.cam + 30 + p.slot * 14;
   for (let i = 0; i < 30 && groundTop(x) === null; i++) x += 8;
-  Object.assign(p, { dead: 0, hp: 3, inv: 150, x, y: 10, vx: 0, vy: 0, cr: 0, h: 22, gr: Math.max(p.gr, 5) });
+  Object.assign(p, { dead: 0, hp: 8, inv: 150, x, y: 10, vx: 0, vy: 0, cr: 0, h: 22, gr: Math.max(p.gr, 5) });
 }
 function shoot(p, mine) {
   const w = WP[p.wp] || WP.P; p.cd = w.r;
@@ -485,8 +519,8 @@ function hostStep() {
     if (gt !== null && k.y + 6 >= gt && k.y + 6 - k.vy <= gt + 6) { k.y = gt - 6; k.vy = 0; }
     if (k.y > H + 20 || k.x < G.cam - 40) G.pk.delete(k.id);
   }
-  if ((G.st === 'play' || G.st === 'boss') && allP().every(p => p.dead && p.lives <= 0)) { G.st = 'over'; G.et = 150; banner('GAME OVER', 150); }
-  if ((G.st === 'clear' || G.st === 'over') && --G.et === 0) endStage();
+  if ((G.st === 'play' || G.st === 'boss') && allP().every(p => p.dead && p.lives <= 0)) { G.st = 'over'; showOver(); }
+  if (G.st === 'clear' && --G.et === 0) endStage();
 }
 function clientStep() {
   if (G.ctg > G.cam) G.cam += (G.ctg - G.cam) * .25;
@@ -497,6 +531,7 @@ function clientStep() {
 
 // ───────── 스테이지 시작/끝 ─────────
 function startStage(n, run, late) {
+  if (G) G.uns.forEach(f => f());
   G = { run, n, host: IS_HOST, tick: 0, cam: 0, ctg: 0, st: 'play', en: new Map(), eb: [], pb: [], gn: [], fx: [], bl: [], pk: new Map(), boss: null, nb: [], dl: [], wi: 0, eid: 0, bid: 0, pkid: 0, bw: 0, et: 0, shake: 0, seenB: new Set(), seenD: new Set(), taken: new Set(), uns: [], late };
   SD = stageDef(n); LV = genLevel(n); ART = initStageArt(n, SD.th, LV, rng);
   ME = newPlayer(MYSLOT); HQ = { h: [], k: [] };
@@ -549,7 +584,7 @@ function onW(w) {
   if (w.s !== G.st) {
     if (w.s === 'boss') { banner('WARNING!', 120); sfx('alarm'); }
     if (w.s === 'clear') { if (G.boss) bossBoom(G.boss); G.boss = null; G.eb = []; banner('MISSION COMPLETE!', 200); }
-    if (w.s === 'over') banner('GAME OVER', 150);
+    if (w.s === 'over') showOver();
     G.st = w.s;
   }
   const seen = new Set();
@@ -625,7 +660,7 @@ function hud() {
   const rows = allP().sort((a, b) => a.slot - b.slot).map(p => {
     const nm = p === ME ? NAME : p.n || '';
     const st = p.dead ? (p.lives > 0 ? ' (부활 대기)' : ' (탈락)') : '';
-    return `<div><b style="color:${SLOTC[p.slot]}">■ ${esc(nm)}</b> ${'♥'.repeat(Math.max(0, p.hp))}${'♡'.repeat(clamp(3 - p.hp, 0, 3))} ×${Math.max(0, p.lives)} · ${WP[p.wp].n}${p.wp === 'P' ? '' : ' ' + p.am} · 💣${p.gr}${st}</div>`;
+    return `<div><b style="color:${SLOTC[p.slot]}">■ ${esc(nm)}</b> ${'♥'.repeat(Math.max(0, p.hp))}${'♡'.repeat(clamp(8 - p.hp, 0, 8))} ×${Math.max(0, p.lives)} · ${WP[p.wp].n}${p.wp === 'P' ? '' : ' ' + p.am} · 💣${p.gr}${st}</div>`;
   });
   $('hud').innerHTML = `<div>STAGE ${SD.n} · ${SD.th.n}</div>` + rows.join('');
   const B = G.boss; $('boss').hidden = !B;
@@ -636,9 +671,22 @@ function hud() {
 function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
 const PPAL = [0, 1, 2, 3].map(playerPal);
 function poseOf(p, moving) { return p.cr ? 'cr' : !p.onG ? 'jmp' : moving ? 'run' : 'st'; }
+let TT = null;
+function drawTitle() {
+  if (!TT) { const n = 6, lv = genLevel(n); TT = { lv, art: initStageArt(n, stageDef(n).th, lv, rng), cam: 0, t: 0 }; }
+  TT.t++; TT.cam += .5; if (TT.cam > TT.lv.arena - 200) TT.cam = 0;
+  drawBack(ctx, TT.art, TT.cam);
+  ctx.save(); ctx.translate(-Math.round(TT.cam), 0); drawGround(ctx, TT.art, TT.lv, TT.cam);
+  for (let i = 0; i < 4; i++) {
+    const x = TT.cam + 70 + i * 26 + Math.sin(TT.t * .02 + i) * 8;
+    let gy = null; for (const s of TT.lv.S) if (!s.o && x + 6 >= s.x && x + 6 < s.x + s.w && (gy === null || s.y < gy)) gy = s.y;
+    drawMan(ctx, { x, y: gy ?? GY, face: 1, pose: gy === null ? 'jmp' : 'run', f: Math.floor((TT.t + i * 7) / 5) % 6, aim: 0, wp: 'HSRL'[i], pal: PPAL[i], hat: 'band' });
+  }
+  ctx.restore();
+}
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  if (!G) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a3a6a'); g.addColorStop(1, '#f4c27a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); rect(0, GY, W, H - GY, '#b9783a'); rect(0, GY, W, 3, '#e0b060'); return; }
+  if (!G) { drawTitle(); return; }
   drawBack(ctx, ART, G.cam);
   const sx = G.shake > 0 ? Math.round((R() - .5) * 6) : 0;
   ctx.translate(-Math.round(G.cam) + sx, 0);
@@ -746,7 +794,7 @@ const DB = {
 const put = (p, v) => DB.set(p, v).catch(noop);
 
 // ───────── 로그인 · 메뉴 · 방 ─────────
-function show(id) { for (const s of ['gate', 'menu', 'room']) $(s).hidden = s !== id; }
+function show(id) { for (const s of ['gate', 'menu', 'room', 'over']) $(s).hidden = s !== id; }
 async function loadProg() {
   const local = +localStorage.getItem('ss_prog_' + UID) || 0;
   if (!fb) return local;
@@ -849,6 +897,17 @@ $('startBtn').onclick = async () => {
   DB.upd(`${RM}/m`, { st: 'play', stage: +$('stageSel').value, run: Date.now(), res: null, rs: null }).catch(e => $('roomMsg').textContent = errText(e));
 };
 $('leaveBtn').onclick = () => leaveRoom('');
+function showOver() {
+  $('retryBtn').hidden = $('toRoomBtn').hidden = !IS_HOST;
+  $('overMsg').textContent = IS_HOST ? `스테이지 ${SD.n} · 다시 도전할까요?` : '방장이 다시 시작하면 바로 이어져요';
+  show('over');
+}
+$('retryBtn').onclick = async () => {
+  if (!G) return; const n = SD.n;
+  await DB.set(`${RM}/w`, null).catch(noop); await DB.set(`${RM}/h`, null).catch(noop);
+  DB.upd(`${RM}/m`, { st: 'play', stage: n, run: Date.now(), res: null, rs: null }).catch(noop);
+};
+$('toRoomBtn').onclick = () => { if (G) endStage(); };
 
 function resize() { const s = Math.min(innerWidth / W, innerHeight / H); cv.style.width = W * s + 'px'; cv.style.height = H * s + 'px'; }
 addEventListener('resize', resize); resize();
