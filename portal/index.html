@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UJH Playground</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #1d1b3a; color: #fff; min-height: 100vh; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: #2b2856; }
+  h1 { font-size: 22px; }
+  button { cursor: pointer; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 600; background: #5b5bf0; color: #fff; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 24px; }
+  .card { background: #2b2856; border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform .15s; }
+  .card:hover { transform: scale(1.05); }
+  .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: grid; place-items: center; font-size: 64px; background: linear-gradient(135deg, #5b5bf0, #e0489b); }
+  .card .row { padding: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .del { background: #e04848; padding: 2px 8px; font-size: 12px; }
+  #admin { display: none; padding: 16px 24px 0; gap: 8px; flex-wrap: wrap; }
+  #admin input { padding: 8px; border-radius: 8px; border: 0; flex: 1; min-width: 180px; }
+  #msg { padding: 8px 24px 0; color: #ffb3b3; font-size: 14px; min-height: 1em; }
+  #player { display: none; position: fixed; inset: 0; background: #000; flex-direction: column; }
+  #player iframe { flex: 1; border: 0; width: 100%; }
+  #player button { margin: 8px; align-self: flex-start; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 UJH Playground</h1>
+  <button id="loginBtn">로그인</button>
+</header>
+
+<form id="admin">
+  <input id="title" placeholder="게임 제목" maxlength="30" required>
+  <input id="thumb" placeholder="썸네일 이미지 URL (비우면 이모지)">
+  <input id="url" placeholder="게임 URL (예: /steel-squad/)" required>
+  <button>게임 추가</button>
+</form>
+<div id="msg"></div>
+
+<div id="grid"></div>
+
+<div id="player">
+  <button id="exitBtn">← 나가기</button>
+  <iframe id="frame" allow="fullscreen; gamepad; autoplay"></iframe>
+</div>
+
+<script type="module">
+  const FBV = '10.12.2', fbUrl = m => `https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`;
+  const [A, U, D] = await Promise.all([import(fbUrl('app')), import(fbUrl('auth')), import(fbUrl('database'))]);
+  const app = A.initializeApp({
+    apiKey: 'AIzaSyAysYf9IKBdQ3jYEEIarGpKPhho-dW_FTI', authDomain: 'ujh-playground.firebaseapp.com',
+    databaseURL: 'https://ujh-playground-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'ujh-playground',
+    appId: '1:652385097634:web:ba43da9ec1b60de9b004fb',
+  });
+  const auth = U.getAuth(app), db = D.getDatabase(app);
+
+  // 레이싱 게임의 관리자 UID와 같은 경로를 써서 기존 DB 규칙 그대로 동작
+  const DEV_UID = 'djIs5etGtzPGSHWFdZm3Fi7NWsv2';
+  const gamesRef = D.ref(db, `daily/GX/${DEV_UID}/portal`);
+  const BUILTIN = [
+    { id: 'racing', title: '레이싱', url: '/', emoji: '🏎️' },
+    { id: 'steel', title: '스틸 스쿼드', url: '/steel-squad/', emoji: '🔫' },
+  ];
+  const $ = id => document.getElementById(id);
+  let isAdmin = false, added = [], unsub;
+
+  $('loginBtn').onclick = () => auth.currentUser
+    ? U.signOut(auth)
+    : U.signInWithPopup(auth, new U.GoogleAuthProvider()).catch(e => $('msg').textContent = '로그인 실패: ' + e.code);
+
+  U.onAuthStateChanged(auth, user => {
+    isAdmin = user?.uid === DEV_UID;
+    $('loginBtn').textContent = user ? '로그아웃' : '로그인';
+    $('admin').style.display = isAdmin ? 'flex' : 'none';
+    $('msg').textContent = '';
+    // DB 규칙상 로그인해야 읽을 수 있어서 로그인 상태가 바뀔 때마다 다시 구독
+    unsub?.(); added = [];
+    unsub = D.onValue(gamesRef, s => {
+      const v = s.val() || {};
+      added = Object.entries(v).map(([id, g]) => ({ id, ...g })).sort((a, b) => b.at - a.at);
+      render();
+    }, () => { if (!user) $('msg').textContent = '로그인하면 추가된 게임이 더 보여요'; });
+    render();
+  });
+
+  $('admin').onsubmit = async e => {
+    e.preventDefault();
+    try {
+      await D.set(D.push(gamesRef), { title: $('title').value.trim(), thumb: $('thumb').value.trim(), url: $('url').value.trim(), at: Date.now() });
+      $('admin').reset(); $('msg').textContent = '';
+    } catch (er) { $('msg').textContent = '추가하지 못했어요: ' + er.code; }
+  };
+
+  function render() {
+    const grid = $('grid');
+    grid.innerHTML = '';
+    for (const g of [...added, ...BUILTIN]) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const thumb = document.createElement(g.thumb ? 'img' : 'div');
+      thumb.className = 'thumb';
+      if (g.thumb) thumb.src = g.thumb; else thumb.textContent = g.emoji || '🎮';
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.append(Object.assign(document.createElement('span'), { textContent: g.title }));
+      if (isAdmin && !g.emoji) {
+        const del = Object.assign(document.createElement('button'), { className: 'del', textContent: '삭제' });
+        del.onclick = ev => {
+          ev.stopPropagation();
+          if (confirm(`"${g.title}" 삭제?`)) D.remove(D.ref(db, `daily/GX/${DEV_UID}/portal/${g.id}`)).catch(er => $('msg').textContent = '삭제 실패: ' + er.code);
+        };
+        row.append(del);
+      }
+      card.append(thumb, row);
+      card.onclick = () => { $('frame').src = g.url; $('player').style.display = 'flex'; };
+      grid.append(card);
+    }
+  }
+  $('exitBtn').onclick = () => { $('frame').src = ''; $('player').style.display = 'none'; };
+  render();
+</script>
+</body>
+</html>
