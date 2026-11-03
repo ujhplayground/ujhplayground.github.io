@@ -60,13 +60,13 @@ kbd{display:inline-block;min-width:22px;padding:2px 6px;margin:0 1px;border-radi
   <div class="msg" id="menuMsg"></div>
   <details class="keys"><summary>조작법 보기</summary><table>
 <tr><td>이동</td><td><kbd>A</kbd><kbd>D</kbd></td></tr>
-<tr><td>점프</td><td><kbd>Space</kbd> (오른손 <kbd>K</kbd>)</td></tr>
-<tr><td>사격 (누르면 연사)</td><td><kbd>F</kbd></td></tr>
-<tr><td>수류탄 (오른손)</td><td><kbd>J</kbd> 또는 <kbd>G</kbd></td></tr>
-<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>F</kbd></td></tr>
-<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>F</kbd>)</td></tr>
+<tr><td>점프</td><td><kbd>Space</kbd></td></tr>
+<tr><td>사격 (누르면 연사)</td><td><kbd>J</kbd></td></tr>
+<tr><td>수류탄</td><td><kbd>K</kbd></td></tr>
+<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>J</kbd></td></tr>
+<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>J</kbd>)</td></tr>
 <tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
-</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄 · 방향키 + Z 사격 · X 점프 · C 수류탄도 돼요</div></details>
+</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄</div></details>
 </div></div>
 
 <div id="over" class="scr" hidden><div class="box">
@@ -84,13 +84,13 @@ kbd{display:inline-block;min-width:22px;padding:2px 6px;margin:0 1px;border-radi
   <div class="msg" id="roomMsg"></div>
   <details class="keys"><summary>조작법 보기</summary><table>
 <tr><td>이동</td><td><kbd>A</kbd><kbd>D</kbd></td></tr>
-<tr><td>점프</td><td><kbd>Space</kbd> (오른손 <kbd>K</kbd>)</td></tr>
-<tr><td>사격 (누르면 연사)</td><td><kbd>F</kbd></td></tr>
-<tr><td>수류탄 (오른손)</td><td><kbd>J</kbd> 또는 <kbd>G</kbd></td></tr>
-<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>F</kbd></td></tr>
-<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>F</kbd>)</td></tr>
+<tr><td>점프</td><td><kbd>Space</kbd></td></tr>
+<tr><td>사격 (누르면 연사)</td><td><kbd>J</kbd></td></tr>
+<tr><td>수류탄</td><td><kbd>K</kbd></td></tr>
+<tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>J</kbd></td></tr>
+<tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>J</kbd>)</td></tr>
 <tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
-</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄 · 방향키 + Z 사격 · X 점프 · C 수류탄도 돼요</div></details>
+</table><div class="tip">노란 상자 = 무기 (H 머신건 · S 샷건 · R 로켓 · F 화염 · L 레이저) · 초록 B = 수류탄 +10<br>방패병은 정면을 막아요 → 위·뒤에서 쏘거나 수류탄</div></details>
 </div></div>
 
 <script type="module">
@@ -212,7 +212,7 @@ function nearestP(x, y) { let b = null, bd = 1e9; for (const p of allP()) { if (
 
 // ───────── 입력 ─────────
 const K = {}, PR = {};
-const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', KeyK: 'j', Space: 'j', KeyZ: 'f', KeyF: 'f', KeyC: 'g', KeyJ: 'g', KeyG: 'g' };
+const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', Space: 'j', KeyJ: 'f', KeyK: 'g', KeyC: 'g', KeyG: 'g' };
 addEventListener('keydown', e => { if (/INPUT|SELECT/.test(e.target.tagName)) return; const k = KM[e.code]; if (!k) return; if (G) e.preventDefault(); if (!K[k]) PR[k] = 1; K[k] = 1; audio(); });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) K[k] = 0; });
 addEventListener('blur', () => { for (const k in K) K[k] = 0; });
