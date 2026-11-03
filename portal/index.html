@@ -4,31 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UJH Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #1d1b3a; color: #fff; min-height: 100vh; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: #2b2856; }
-  h1 { font-size: 22px; }
-  button { cursor: pointer; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 600; background: #5b5bf0; color: #fff; }
-  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 24px; }
-  .card { background: #2b2856; border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform .15s; }
-  .card:hover { transform: scale(1.05); }
-  .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: grid; place-items: center; font-size: 64px; background: linear-gradient(135deg, #5b5bf0, #e0489b); }
-  .card .row { padding: 10px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-  .del { background: #e04848; padding: 2px 8px; font-size: 12px; }
-  #admin { display: none; padding: 16px 24px 0; gap: 8px; flex-wrap: wrap; }
-  #admin input { padding: 8px; border-radius: 8px; border: 0; flex: 1; min-width: 180px; }
-  #msg { padding: 8px 24px 0; color: #ffb3b3; font-size: 14px; min-height: 1em; }
-  #player { display: none; position: fixed; inset: 0; background: #000; flex-direction: column; }
+  body {
+    font-family: 'Jua', system-ui, sans-serif; color: #1b1f3b; min-height: 100vh;
+    background: radial-gradient(#ffffff55 2px, transparent 2px) 0 0 / 28px 28px, linear-gradient(160deg, #7cc8ff, #a5b4ff 55%, #f5a8ff);
+    background-attachment: fixed;
+  }
+  header {
+    position: sticky; top: 12px; z-index: 5; margin: 12px auto 0; max-width: 1200px; width: calc(100% - 24px);
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 10px 20px;
+    background: #fff; border-radius: 999px; box-shadow: 0 6px 0 #0001, 0 10px 30px #3b2a8a33;
+  }
+  h1 { font-size: 26px; font-weight: 400; letter-spacing: 1px; }
+  h1 b { font-weight: 400; display: inline-block; }
+  h1 b:nth-child(1) { color: #ff4f8b; } h1 b:nth-child(2) { color: #ffb020; } h1 b:nth-child(3) { color: #2bc48a; }
+  h1 span { color: #5b5bf0; }
+  button { font-family: inherit; cursor: pointer; border: 0; border-radius: 999px; padding: 10px 20px; font-size: 16px; background: #5b5bf0; color: #fff; box-shadow: 0 4px 0 #3a3ab8; transition: transform .1s, box-shadow .1s; }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 #3a3ab8; }
+  .hero { max-width: 1200px; margin: 36px auto 4px; padding: 0 24px; color: #fff; text-shadow: 0 3px 0 #0002; }
+  .hero h2 { font-size: clamp(30px, 5vw, 48px); font-weight: 400; }
+  .hero p { font-size: 18px; opacity: .9; }
+  #grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 18px; padding: 24px; }
+  .card { position: relative; background: #fff; border-radius: 22px; overflow: hidden; cursor: pointer; border: 4px solid #fff; box-shadow: 0 6px 0 #0001, 0 12px 24px #3b2a8a33; transition: transform .2s cubic-bezier(.3,1.6,.5,1), box-shadow .2s; }
+  .card:hover { transform: translateY(-6px) rotate(-1.5deg) scale(1.04); box-shadow: 0 10px 0 #0001, 0 20px 36px #3b2a8a55; }
+  .card:first-child { grid-column: span 2; grid-row: span 2; }
+  .thumb { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; display: grid; place-items: center; font-size: 72px; border-radius: 18px; background: linear-gradient(135deg, #ff7aa8, #ffb35c); }
+  .card:first-child .thumb { font-size: 140px; }
+  .card:nth-child(4n+2) .thumb { background: linear-gradient(135deg, #5b8cff, #a66bff); }
+  .card:nth-child(4n+3) .thumb { background: linear-gradient(135deg, #2bd4a0, #3aa8ff); }
+  .card:nth-child(4n) .thumb { background: linear-gradient(135deg, #ffcf3a, #ff6b6b); }
+  .card div.thumb { transition: transform .3s; } .card:hover div.thumb { transform: scale(1.1) rotate(4deg); }
+  .card .row { position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 8px 12px; font-size: 17px; display: flex; justify-content: space-between; align-items: center; gap: 6px; background: #fffe; border-radius: 14px; box-shadow: 0 3px 0 #0001; }
+  .del { background: #ff4f6b; box-shadow: 0 3px 0 #c22a44; padding: 4px 10px; font-size: 13px; }
+  #admin { display: none; max-width: 1152px; margin: 20px auto 0; padding: 14px; gap: 10px; flex-wrap: wrap; background: #fff; border-radius: 22px; box-shadow: 0 6px 0 #0001; }
+  #admin input { font-family: inherit; font-size: 15px; padding: 10px 14px; border-radius: 999px; border: 3px solid #e6e8ff; flex: 1; min-width: 180px; outline: none; }
+  #admin input:focus { border-color: #5b5bf0; }
+  #msg { max-width: 1200px; margin: 0 auto; padding: 10px 24px 0; color: #fff; font-size: 16px; min-height: 1em; text-shadow: 0 2px 0 #0002; }
+  #player { display: none; position: fixed; inset: 0; z-index: 10; background: #12122a; flex-direction: column; }
   #player iframe { flex: 1; border: 0; width: 100%; }
-  #player button { margin: 8px; align-self: flex-start; }
+  #player button { margin: 10px; align-self: flex-start; }
+  @media (max-width: 500px) { #grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; } .card:first-child .thumb { font-size: 100px; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>🎮 UJH Playground</h1>
+  <h1><b>U</b><b>J</b><b>H</b> <span>Playground</span></h1>
   <button id="loginBtn">로그인</button>
 </header>
+<section class="hero">
+  <h2>오늘은 뭐 하고 놀까? 🕹️</h2>
+  <p>설치 없이 바로 하는 내 게임들</p>
+</section>
 
 <form id="admin">
   <input id="title" placeholder="게임 제목" maxlength="30" required>
