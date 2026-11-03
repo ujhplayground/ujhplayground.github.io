@@ -63,6 +63,7 @@ kbd{display:inline-block;min-width:22px;padding:2px 6px;margin:0 1px;border-radi
 <tr><td>점프</td><td><kbd>Space</kbd></td></tr>
 <tr><td>사격 (누르면 연사)</td><td><kbd>J</kbd></td></tr>
 <tr><td>수류탄</td><td><kbd>K</kbd></td></tr>
+<tr><td>주운 무기 버리기 (권총으로)</td><td><kbd>L</kbd></td></tr>
 <tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>J</kbd></td></tr>
 <tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>J</kbd>)</td></tr>
 <tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
@@ -87,6 +88,7 @@ kbd{display:inline-block;min-width:22px;padding:2px 6px;margin:0 1px;border-radi
 <tr><td>점프</td><td><kbd>Space</kbd></td></tr>
 <tr><td>사격 (누르면 연사)</td><td><kbd>J</kbd></td></tr>
 <tr><td>수류탄</td><td><kbd>K</kbd></td></tr>
+<tr><td>주운 무기 버리기 (권총으로)</td><td><kbd>L</kbd></td></tr>
 <tr><td>위로 쏘기</td><td><kbd>W</kbd> + <kbd>J</kbd></td></tr>
 <tr><td>엎드리기 / 공중에서 아래로 쏘기</td><td><kbd>S</kbd> (+ <kbd>J</kbd>)</td></tr>
 <tr><td>발판 아래로 내려가기</td><td><kbd>S</kbd> + <kbd>Space</kbd></td></tr>
@@ -212,7 +214,7 @@ function nearestP(x, y) { let b = null, bd = 1e9; for (const p of allP()) { if (
 
 // ───────── 입력 ─────────
 const K = {}, PR = {};
-const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', Space: 'j', KeyJ: 'f', KeyK: 'g', KeyC: 'g', KeyG: 'g' };
+const KM = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', ArrowUp: 'u', KeyW: 'u', ArrowDown: 'd', KeyS: 'd', KeyX: 'j', Space: 'j', KeyJ: 'f', KeyK: 'g', KeyC: 'g', KeyG: 'g', KeyL: 'x' };
 addEventListener('keydown', e => { if (/INPUT|SELECT/.test(e.target.tagName)) return; const k = KM[e.code]; if (!k) return; if (G) e.preventDefault(); if (!K[k]) PR[k] = 1; K[k] = 1; audio(); });
 addEventListener('keyup', e => { const k = KM[e.code]; if (k) K[k] = 0; });
 addEventListener('blur', () => { for (const k in K) K[k] = 0; });
@@ -258,6 +260,7 @@ function updMe() {
   if (p.y > H + 30) { hurt(p, 1); return; }
   if (p.vx && p.onG) p.an++;
   if (K.f && p.cd <= 0) { shoot(p, 1); p.sc++; }
+  if (PR.x && p.wp !== 'P') { p.wp = 'P'; p.am = 0; sfx('pick'); }
   if (PR.g && p.gr > 0) { p.gr--; p.gc++; throwG(p, 1); }
   for (const k of G.pk.values()) {
     if (G.taken.has(k.id) || !ov(p, { x: k.x - 6, y: k.y - 6, w: 12, h: 12 })) continue;
