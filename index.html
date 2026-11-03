@@ -2855,7 +2855,10 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
              ['e3', 'V10', 800, { top: 32, accel: 0.15 }], ['e4', 'V12', 1200, { top: 40, accel: 0.14 }], ['e5', '전기 모터', 1000, { top: 28, accel: 0.22 }]],
     wheel:  [['w0', '기본 17인치', 0, {}], ['w1', '스포츠 18인치', 200, { grip: 0.03 }], ['w2', '레이싱 19인치', 450, { grip: 0.07, accel: -0.01 }], ['w3', '오프로드 휠', 300, { grip: 0.05, top: -6 }]],
     drive:  [['d0', '후륜', 0, {}], ['d1', '4륜', 500, { grip: 0.06 }]],
-    body:   [['b0', '기본 차체', 0, {}], ['b1', '하이퍼카 차체', 45000, { top: 8, grip: 0.04 }]],
+    body:   [['b0', '기본 차체', 0, {}], ['b1', '하이퍼카 차체', 30000, { top: 8, grip: 0.04 }],
+             ['b2', '스포츠 쿠페 차체', 1500, { grip: 0.04 }], ['b3', '머슬 차체', 1500, { accel: 0.03, grip: -0.02 }], ['b4', '클래식 머슬 차체', 1200, { accel: 0.02 }],
+             ['b5', '70년대 패스트백 차체', 1500, { top: 2 }], ['b6', 'GT 차체', 3000, { top: 4 }], ['b7', '그랜드 투어러 차체', 3000, { top: 3, grip: 0.02 }],
+             ['b8', '르망 프로토타입 차체', 6000, { top: 6, grip: 0.04 }], ['b9', '웨지 하이퍼 차체', 8000, { top: 7, grip: 0.03 }], ['b10', '미드십 터보 차체', 2500, { grip: 0.03, top: 2 }]],
     exhaust:[['x0', '쌍발', 0, {}], ['x1', '4발', 300, { accel: 0.01 }], ['x2', '가운데 육각 1발', 400, { top: 2 }], ['x3', '높은 쌍발', 400, { top: 1 }],
              ['x4', '육각 쌍발', 350, { accel: 0.01 }], ['x5', '양끝 쌍발', 300, {}], ['x6', '가운데 3발 (티타늄)', 600, { top: 2, accel: 0.01 }]],
     tail:   [['t0', '일자 바', 0, {}], ['t1', 'X자', 200, {}], ['t2', 'Y자', 200, {}], ['t3', '동그라미 4개', 150, {}], ['t4', 'ㄷ자', 150, {}], ['t5', '두 줄 칼날', 250, {}]],
@@ -2919,6 +2922,17 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       stripes: [['body', 0.3, h - 0.1], ['cabin', -h + 0.6, 0]], louvres: [[-h + 0.62, -h + 1.1, 5, 0.9]], grille: { v: headV - 0.06, w: 0.9, h: 0.14 },
       unlock: 20000, custom: true, by: by || '', build: b,
     };
+    const FROM = { b2: '벨라트릭스 RS', b3: '카노푸스 SS', b4: '베텔게우스 427', b5: '안드로메다 RT', b6: '알데바란 GTS', b7: '오로라 V12', b8: '카스토르 LM', b9: '이클립스 제로', b10: '미라지 V6' }[b.body];
+    const src = FROM && CARS.find(x => x.name === FROM && !x.custom && !x.hyper);
+    if (src) {                                                  // another car's body: its shape and trim, with your colours, spoiler, exhaust and numbers
+      const keep = { ...c };
+      for (const k of ['L', 'W', 'r', 'ride', 'fu', 'ru', 'rw', 'body', 'cabin', 'tail', 'head', 'pods', 'doors', 'grille', 'scoop', 'stripes', 'livery', 'intake', 'louvres', 'shaker', 'bumpers', 'flank', 'roofscoop', 'pillarU', 'arch', 'sharp', 'conv', 'diff', 'bulge'])
+        if (src[k] !== undefined) c[k] = src[k];
+      c.extras = [...new Set([...(src.extras || []).filter(x => x !== 'wing' && x !== 'ducktail' && x !== 'fin'), ...X.filter(x => x === 'wing' || x === 'ducktail' || x === 'fin' || keep.extras.includes(x) && !['scoop', 'louvres', 'grille', 'stripes', 'livery', 'roadster'].includes(x) || (src[x] !== undefined))])];
+      const h2 = c.L / 2, top0 = (c.tail && c.tail.v) || 0.8;
+      c.wing = { u: -h2 + 0.32, v: top0 + (b.aero === 'a3' ? 0.5 : b.aero === 'a5' ? 0.55 : 0.36), strut: 0.1 };
+      if (c.conv) c.conv = { ...c.conv, topOpen: Math.max(240, c.top - 25) };
+    }
     if (b.body === 'b1') {                                    // the Fenrir-type lofted hypercar body, dressed from the same parts
       const HL = { s0: 4.75, s1: 4.45, s2: 5.0, s3: 4.8 }[b.size] + (b.rear === 'r2' ? 0.2 : 0);
       // every other part shapes the hypercar too: nose, cabin, tail, spoiler, exhaust, lamps and the decorations
