@@ -8,11 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Jua', system-ui, sans-serif; color: #1b1f3b; min-height: 100vh;
-    background: radial-gradient(#ffffff55 2px, transparent 2px) 0 0 / 28px 28px, linear-gradient(160deg, #7cc8ff, #a5b4ff 55%, #f5a8ff);
-    background-attachment: fixed;
-  }
+  body { font-family: 'Jua', system-ui, sans-serif; color: #1b1f3b; min-height: 100vh; background: #f3f5fb; }
   header {
     position: sticky; top: 12px; z-index: 5; margin: 12px auto 0; max-width: 1200px; width: calc(100% - 24px);
     display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 10px 20px;
@@ -24,7 +20,7 @@
   h1 span { color: #5b5bf0; }
   button { font-family: inherit; cursor: pointer; border: 0; border-radius: 999px; padding: 10px 20px; font-size: 16px; background: #5b5bf0; color: #fff; box-shadow: 0 4px 0 #3a3ab8; transition: transform .1s, box-shadow .1s; }
   button:active { transform: translateY(3px); box-shadow: 0 1px 0 #3a3ab8; }
-  .hero { max-width: 1200px; margin: 36px auto 4px; padding: 0 24px; color: #fff; text-shadow: 0 3px 0 #0002; }
+  .hero { max-width: 1200px; margin: 36px auto 4px; padding: 0 24px; }
   .hero h2 { font-size: clamp(30px, 5vw, 48px); font-weight: 400; }
   .hero p { font-size: 18px; opacity: .9; }
   #grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 18px; padding: 24px; }
@@ -38,11 +34,6 @@
   .card:nth-child(4n) .thumb { background: linear-gradient(135deg, #ffcf3a, #ff6b6b); }
   .card div.thumb { transition: transform .3s; } .card:hover div.thumb { transform: scale(1.1) rotate(4deg); }
   .card .row { position: absolute; left: 8px; right: 8px; bottom: 8px; padding: 8px 12px; font-size: 17px; display: flex; justify-content: space-between; align-items: center; gap: 6px; background: #fffe; border-radius: 14px; box-shadow: 0 3px 0 #0001; }
-  .del { background: #ff4f6b; box-shadow: 0 3px 0 #c22a44; padding: 4px 10px; font-size: 13px; }
-  #admin { display: none; max-width: 1152px; margin: 20px auto 0; padding: 14px; gap: 10px; flex-wrap: wrap; background: #fff; border-radius: 22px; box-shadow: 0 6px 0 #0001; }
-  #admin input { font-family: inherit; font-size: 15px; padding: 10px 14px; border-radius: 999px; border: 3px solid #e6e8ff; flex: 1; min-width: 180px; outline: none; }
-  #admin input:focus { border-color: #5b5bf0; }
-  #msg { max-width: 1200px; margin: 0 auto; padding: 10px 24px 0; color: #fff; font-size: 16px; min-height: 1em; text-shadow: 0 2px 0 #0002; }
   #player { display: none; position: fixed; inset: 0; z-index: 10; background: #12122a; flex-direction: column; }
   #player iframe { flex: 1; border: 0; width: 100%; }
   #player button { margin: 10px; align-self: flex-start; }
@@ -52,19 +43,11 @@
 <body>
 <header>
   <h1><b>U</b><b>J</b><b>H</b> <span>Playground</span></h1>
-  <button id="loginBtn">로그인</button>
 </header>
 <section class="hero">
   <h2>운중고 놀이터 🎮</h2>
 </section>
 
-<form id="admin">
-  <input id="title" placeholder="게임 제목" maxlength="30" required>
-  <input id="thumb" placeholder="썸네일 이미지 URL (비우면 이모지)">
-  <input id="url" placeholder="게임 URL (예: /steel-squad/)" required>
-  <button>게임 추가</button>
-</form>
-<div id="msg"></div>
 
 <div id="grid"></div>
 
@@ -73,80 +56,20 @@
   <iframe id="frame" allow="fullscreen; gamepad; autoplay"></iframe>
 </div>
 
-<script type="module">
-  const FBV = '10.12.2', fbUrl = m => `https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`;
-  const [A, U, D] = await Promise.all([import(fbUrl('app')), import(fbUrl('auth')), import(fbUrl('database'))]);
-  const app = A.initializeApp({
-    apiKey: 'AIzaSyAysYf9IKBdQ3jYEEIarGpKPhho-dW_FTI', authDomain: 'ujh-playground.firebaseapp.com',
-    databaseURL: 'https://ujh-playground-default-rtdb.asia-southeast1.firebasedatabase.app', projectId: 'ujh-playground',
-    appId: '1:652385097634:web:ba43da9ec1b60de9b004fb',
-  });
-  const auth = U.getAuth(app), db = D.getDatabase(app);
-
-  // 레이싱 게임의 관리자 UID와 같은 경로를 써서 기존 DB 규칙 그대로 동작
-  const DEV_UID = 'djIs5etGtzPGSHWFdZm3Fi7NWsv2';
-  const gamesRef = D.ref(db, `daily/GX/${DEV_UID}/portal`);
-  const BUILTIN = [
-    { id: 'racing', title: '레이싱', url: '/', emoji: '🏎️' },
-    { id: 'steel', title: '스틸 스쿼드', url: '/steel-squad/', emoji: '🔫' },
+<script>
+  const GAMES = [
+    { title: '레이싱', url: '/', emoji: '🏎️' },
+    { title: '스틸 스쿼드', url: '/steel-squad/', emoji: '🔫' },
   ];
   const $ = id => document.getElementById(id);
-  let isAdmin = false, added = [], unsub;
-
-  $('loginBtn').onclick = () => auth.currentUser
-    ? U.signOut(auth)
-    : U.signInWithPopup(auth, new U.GoogleAuthProvider()).catch(e => $('msg').textContent = '로그인 실패: ' + e.code);
-
-  U.onAuthStateChanged(auth, user => {
-    isAdmin = user?.uid === DEV_UID;
-    $('loginBtn').textContent = user ? '로그아웃' : '로그인';
-    $('admin').style.display = isAdmin ? 'flex' : 'none';
-    $('msg').textContent = '';
-    // DB 규칙상 로그인해야 읽을 수 있어서 로그인 상태가 바뀔 때마다 다시 구독
-    unsub?.(); added = [];
-    unsub = D.onValue(gamesRef, s => {
-      const v = s.val() || {};
-      added = Object.entries(v).map(([id, g]) => ({ id, ...g })).sort((a, b) => b.at - a.at);
-      render();
-    }, () => { if (!user) $('msg').textContent = '로그인하면 추가된 게임이 더 보여요'; });
-    render();
-  });
-
-  $('admin').onsubmit = async e => {
-    e.preventDefault();
-    try {
-      await D.set(D.push(gamesRef), { title: $('title').value.trim(), thumb: $('thumb').value.trim(), url: $('url').value.trim(), at: Date.now() });
-      $('admin').reset(); $('msg').textContent = '';
-    } catch (er) { $('msg').textContent = '추가하지 못했어요: ' + er.code; }
-  };
-
-  function render() {
-    const grid = $('grid');
-    grid.innerHTML = '';
-    for (const g of [...added, ...BUILTIN]) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      const thumb = document.createElement(g.thumb ? 'img' : 'div');
-      thumb.className = 'thumb';
-      if (g.thumb) thumb.src = g.thumb; else thumb.textContent = g.emoji || '🎮';
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.append(Object.assign(document.createElement('span'), { textContent: g.title }));
-      if (isAdmin && !g.emoji) {
-        const del = Object.assign(document.createElement('button'), { className: 'del', textContent: '삭제' });
-        del.onclick = ev => {
-          ev.stopPropagation();
-          if (confirm(`"${g.title}" 삭제?`)) D.remove(D.ref(db, `daily/GX/${DEV_UID}/portal/${g.id}`)).catch(er => $('msg').textContent = '삭제 실패: ' + er.code);
-        };
-        row.append(del);
-      }
-      card.append(thumb, row);
-      card.onclick = () => { $('frame').src = g.url; $('player').style.display = 'flex'; };
-      grid.append(card);
-    }
+  for (const g of GAMES) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<div class="thumb">${g.emoji}</div><div class="row"><span>${g.title}</span></div>`;
+    card.onclick = () => { $('frame').src = g.url; $('player').style.display = 'flex'; };
+    $('grid').append(card);
   }
   $('exitBtn').onclick = () => { $('frame').src = ''; $('player').style.display = 'none'; };
-  render();
 </script>
 </body>
 </html>
