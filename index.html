@@ -346,7 +346,7 @@ button.go:hover { filter: brightness(1.08); }
 .brick.on { outline: 3px solid #fff; outline-offset: 2px; }
 .brick.buy { filter: saturate(.35) brightness(.8); }
 .brick.buy small { color: #fff; background: rgba(0, 0, 0, .45); border-radius: 6px; padding: 1px 6px; justify-self: start; opacity: 1; }
-.bd-sw { display: flex; flex-wrap: wrap; gap: 8px; } .bd-sw .swb { width: 30px; height: 30px; flex: none; }
+.bd-sw { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } .bd-pick { font-size: .78rem; } .bd-sw .swb { width: 30px; height: 30px; flex: none; }
 .bd-stats .tier, .bd-list .tier { position: static; display: inline-grid; place-items: center; min-width: 30px; } .bd-body h5 { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
 .bd-stats { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; padding: 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); }
 .bd-stats .tier { grid-row: span 3; font-size: 1.3rem; padding: 6px 10px; }
@@ -717,6 +717,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>수동 5단</h3><div class="cars" id="carsM" role="group" aria-label="수동 변속 차"></div></div>
       <div class="grp"><h3>자동 9·10단</h3><div class="cars" id="carsA" role="group" aria-label="자동 변속 차"></div></div>
       <div class="grp"><h3>🛠 내가 만든 차</h3><div class="cars" id="carsC" role="group" aria-label="내가 만든 차"></div></div>
+      <div class="grp"><h3>🌐 커뮤니티 차</h3><div class="cars" id="carsW" role="group" aria-label="다른 사람이 출시한 차"></div></div>
     </div>
     <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button><button class="rankbtn hardbtn" id="hardBtn" hidden>💀 하드 모드</button><button class="rankbtn buildbtn" id="buildBtn">🛠 조립 차고</button><button class="rankbtn chatbtn" id="giftBtn" hidden>🎁 선물함<span class="chat-badge" id="giftBadge" hidden></span></button></div>
     <dl class="keys">
@@ -2892,7 +2893,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
     for (const k of BP_KINDS) o[k] = b && bpPart(k, b[k]) ? b[k] : BP[k][0][0];
     if (b && Array.isArray(b.deco)) o.deco = b.deco.filter(d => bpPart('deco', d)).slice(0, 8);
     o.color = b && Number.isInteger(b.color) && b.color >= 0 && b.color < 0x1000000 ? b.color : 0xff8a12;
-    o.accent = b && BP_ACC.includes(b.accent) ? b.accent : BP_ACC[0];
+    o.accent = b && Number.isInteger(b.accent) && b.accent >= 0 && b.accent < 0x1000000 ? b.accent : BP_ACC[0];
     return o;
   }
   function buildStats(b) {
@@ -6532,8 +6533,8 @@ function buildCar(S, MATS) {
   const ENG_TXT = [['순정', '공장 세팅 그대로', ''], ['엔진 튠 1', '흡·배기 손질, 조금 더 빨라요', '최고·가속 +4%'], ['엔진 튠 2', 'ECU를 다시 맞춰 상단이 시원해요', '최고·가속 +8%']];
   const TIRE_TXT = [['순정', '공장 타이어', ''], ['스포츠 타이어', '접지가 좋아지고 젖은 길에 강해요', '접지 +4%'], ['레이싱 타이어', '접지 최고, 비 오는 길에서 특히 좋아요', '접지 +8%']];
   const ENG_M = [0, 3000, 10000], TIRE_M = [0, 5000, 15000];       // tyres: metres driven in THAT car (all its runs added up)
-  const tireOpen = (ci, t) => (carDist[ci] || 0) >= (TIRE_M[t] || 0);
-  const opened = (m, ci = carIdx) => m < 0 ? lvlOf(ci) >= -m : bestDist >= (m || 0);
+  const tireOpen = (ci, t) => devOn() || (carDist[ci] || 0) >= (TIRE_M[t] || 0);
+  const opened = (m, ci = carIdx) => devOn() || (m < 0 ? lvlOf(ci) >= -m : bestDist >= (m || 0));
   lookGate = (L, ci) => {
     const pi = L.paint == null ? -1 : PAINTS.findIndex(p => p[1] === L.paint);
     if (MP) L = { ...L, ex: 0, kit: 0, eng: 0, tire: 0 };       // multi: colours only, every car stock underneath
@@ -6696,8 +6697,11 @@ function buildCar(S, MATS) {
       const kinds = [...BP_KINDS, 'deco', 'paint'];
       let parts = '';
       if (bdKind === 'paint') {
-        parts = `<div class="bd-sw">${PAINTS.map(p => `<button class="swb" data-col="${p[1]}" style="--c:#${p[1].toString(16).padStart(6, '0')}" aria-label="${p[0]}" aria-pressed="${draft.color === p[1]}"></button>`).join('')}</div>
-          <h5>포인트 색 (휠·장식)</h5><div class="bd-sw">${BP_ACC.map(a => `<button class="swb" data-acc="${a}" style="--c:#${a.toString(16).padStart(6, '0')}" aria-pressed="${draft.accent === a}"></button>`).join('')}</div>`;
+        const hx = v => '#' + v.toString(16).padStart(6, '0');
+        parts = `<h5>차체 색</h5><div class="bd-sw">${PAINTS.map(p => `<button class="swb" data-col="${p[1]}" style="--c:${hx(p[1])}" aria-label="${p[0]}" aria-pressed="${draft.color === p[1]}"></button>`).join('')}
+            <label class="cu-pick bd-pick"><input type="color" id="bdColPick" value="${hx(draft.color)}" aria-label="차체 색 직접 고르기"><span>직접 고르기</span></label></div>
+          <h5>포인트 색 (휠·장식)</h5><div class="bd-sw">${BP_ACC.map(a => `<button class="swb" data-acc="${a}" style="--c:${hx(a)}" aria-pressed="${draft.accent === a}"></button>`).join('')}
+            <label class="cu-pick bd-pick"><input type="color" id="bdAccPick" value="${hx(draft.accent)}" aria-label="포인트 색 직접 고르기"><span>직접 고르기</span></label></div>`;
       } else {
         const list = BP[bdKind];
         parts = `<div class="bd-parts">${list.map(([id, n, price, d]) => {
@@ -6717,7 +6721,7 @@ function buildCar(S, MATS) {
     } else if (bdTab === 'mine') {
       bdBody.innerHTML = myBuilds.length ? `<ul class="bd-list">${myBuilds.map((r, k) => { const st = buildStats(cleanBuild(r.b));
         return `<li class="${bdEditing === r.name ? 'sel' : ''}" data-view="${k}"><span class="tier t-${tierOf(st)}">${tierOf(st)}</span><div><b>${escH(r.name)}</b><small>${st.top}km/h · ${r.pub ? '🌐 출시됨' : '내 차고에만 있어요'}</small></div>
-          <button class="rankbtn" data-edit="${k}">수정</button><button class="rankbtn" data-pub="${k}">${r.pub ? '출시 취소' : '출시'}</button><button class="rankbtn" data-del="${k}">삭제</button></li>`; }).join('')}</ul>`
+          <button class="rankbtn" data-ride="${k}">🚗 타기</button><button class="rankbtn" data-edit="${k}">수정</button><button class="rankbtn" data-pub="${k}">${r.pub ? '출시 취소' : '출시'}</button><button class="rankbtn" data-del="${k}">삭제</button></li>`; }).join('')}</ul>`
         : '<p class="bd-empty">아직 만든 차가 없어요. 조립 탭에서 첫 차를 만들어 보세요!</p>';
     } else {
       if (!fb.user) { bdBody.innerHTML = '<p class="bd-empty">커뮤니티 차고는 구글 로그인하면 볼 수 있어요.</p>'; return; }
@@ -6742,6 +6746,23 @@ function buildCar(S, MATS) {
     for (const r of myBuilds) if (r.pub) { try { const sn = await fb.D.get(fb.D.ref(fb.db, `daily/L${r.pub}`)); const c = sn.exists() ? Object.keys(sn.val()).length : 0; if (c > (paid[r.pub] || 0)) { gain += 50 * (c - (paid[r.pub] || 0)); n += c - (paid[r.pub] || 0); paid[r.pub] = c; } } catch (e) {} }
     if (gain) { meta.coins += gain; meta.earned += gain; saveMeta(); try { syncMetaBtn(); fbSaveSoon(); localStorage.setItem('nh3d-likepaid', JSON.stringify(paid)); } catch (e) {} popup(`👍 내 차에 좋아요 ${n}개! 🪙 +${gain}`, 'var(--ok)'); }
   }
+  // everyone's released cars ride in every garage (newest 24), under 🌐 커뮤니티 차 — no download step
+  let commSig = '';
+  function syncCommunity() {
+    if (!fb.user) return;
+    const list = market.filter(m => m.by !== fb.user.uid).slice(0, 24), sig = list.map(m => m.id + m.at).join();
+    if (sig === commSig) return; commSig = sig;
+    for (const c of CARS) if (c.community) c.retired = true;     // old entries leave the lists (indices stay put)
+    for (const m of list) {
+      let name = m.name; if (CARS.some(c => c.name === name && !c.community && !c.retired)) name = (m.name + '·' + m.n).slice(0, 16);
+      const ex = CARS.findIndex(c => c.community && c.commId === m.id);
+      const c = buildSpec(m.b, name, m.n); c.community = true; c.commId = m.id;
+      let idx; if (ex >= 0) { CARS[ex] = c; idx = ex; } else { CARS.push(c); idx = CARS.length - 1; }
+      try { thumbs[idx] = makeThumbs(idx); } catch (e) {}
+    }
+    try { if (state === 'ready' || state === 'over') renderCars(); } catch (e) {}
+  }
+  setInterval(() => { try { if (!marketOn && fb.user && fb.D) startMarket(); } catch (e) {} }, 2000);   // once signed in, released cars load into the garage
   function startMarket() {
     if (marketOn || !fb.user || !fb.D) return; marketOn = true;
     const { D, db } = fb;
@@ -6750,6 +6771,7 @@ function buildCar(S, MATS) {
       market = Object.entries(v).map(([id, o]) => { let b = null; try { b = JSON.parse(o.spec); } catch (e) {} return o && b ? { id, by: String(o.by || ''), n: cleanNick(o.n || '') || '드라이버', name: cleanCarName(o.name) || '이름 없는 차', b, at: +o.at || 0 } : null; })
         .filter(Boolean).sort((a, b) => b.at - a.at);
       marketReady = true; if (!buildEl.hidden && bdTab === 'shop') renderBuild();
+      syncCommunity();
       likeFetch(market.filter(m => likeCnt[m.id] == null).map(m => m.id));
     }, () => { marketReady = true; market = []; });
   }
@@ -6812,6 +6834,8 @@ function buildCar(S, MATS) {
     if (lv && !e.target.closest('button')) { const r = myBuilds[+lv.dataset.view]; if (r) { draft = cleanBuild(r.b); bdEditing = r.name; previewDraft(); bdSay(`'${r.name}' 보는 중 · 수정하려면 [수정]`, true); renderBuild(); } return; }
     const t = e.target.closest('button'); if (!t) return;
     if (t.dataset.kind) { bdKind = t.dataset.kind; renderBuild(); return; }
+    if (t.dataset.ride != null) { const r = myBuilds[+t.dataset.ride], ci = r ? CARS.findIndex((c, i) => i >= BUILT_IN && c.custom && !c.community && !c.draft && !c.retired && c.name === r.name) : -1;
+      if (ci >= 0) { closeBuild(ci); ovText.textContent = `'${r.name}'을(를) 골랐어요. 출발하면 이 차로 달려요`; } return; }
     if (t.dataset.col) { draft.color = +t.dataset.col; previewDraft(); renderBuild(); return; }
     if (t.dataset.acc) { draft.accent = +t.dataset.acc; previewDraft(); renderBuild(); return; }
     if (t.dataset.part) {                                     // try it on: parts snap on at once; new ones are paid for when the car is saved
@@ -6860,6 +6884,11 @@ function buildCar(S, MATS) {
     }
   });
   bdBody.addEventListener('keydown', e => e.stopPropagation());
+  bdBody.addEventListener('input', e => {                       // the colour pickers: any colour, live on the turntable
+    if (e.target.id === 'bdColPick') { draft.color = parseInt(e.target.value.slice(1), 16); previewDraft(); }
+    if (e.target.id === 'bdAccPick') { draft.accent = parseInt(e.target.value.slice(1), 16); previewDraft(); }
+  });
+  bdBody.addEventListener('change', e => { if (e.target.id === 'bdColPick' || e.target.id === 'bdAccPick') renderBuild(); });
   $('buildClose').addEventListener('click', () => closeBuild());
   $('buildBtn').addEventListener('click', openBuild);
   window.addEventListener('keydown', e => { if (buildEl.hidden) return; if (e.target && e.target.closest && e.target.closest('input')) return; if (e.code === 'Escape') closeBuild(); e.stopPropagation(); }, true);   // no driving or car-flipping behind the panel
@@ -8800,7 +8829,7 @@ function buildCar(S, MATS) {
   }
   function toGarage() { neutral = true; lever = 'P'; nRpm = 0.2; holdT = 0; syncMode(); renderShifter(); hudKey = ''; }
 
-  const carsM = $('carsM'), carsA = $('carsA'), carsC = $('carsC'), garageEl = $('garage');
+  const carsM = $('carsM'), carsA = $('carsA'), carsC = $('carsC'), carsW = $('carsW'), garageEl = $('garage');
   let thumbs = [];
   const pickBtn = $('pickBtn');
   function showMenu(show, pausing) { ov.hidden = !show; stage.classList.toggle('menu', !!show && !pausing); $('homeBtn').hidden = !(show && state === 'pause'); if (show || state === 'play' || state === 'count') deadMsg.hidden = true; garageEl.hidden = !!pausing; pickBtn.hidden = true; }   // after a wreck: pick another car
@@ -8849,7 +8878,9 @@ function buildCar(S, MATS) {
     const pass = (c, i) => !c.retired && !c.custom && (!MP || MP_CARS.includes(i)) && (filt.trans === 'all' || c.trans === filt.trans) && (!filt.open || canDrive(i));
     carsM.innerHTML = CARS.map((c, i) => c.trans === 'manual' && pass(c, i) ? cardHtml(c, i) : '').join('');
     carsA.innerHTML = CARS.map((c, i) => c.trans === 'auto' && pass(c, i) ? cardHtml(c, i) : '').join('');
-    carsC.innerHTML = MP ? '' : CARS.map((c, i) => c.custom && !c.draft && !c.retired ? cardHtml(c, i) : '').join('');
+    carsC.innerHTML = MP ? '' : CARS.map((c, i) => c.custom && !c.community && !c.draft && !c.retired ? cardHtml(c, i) : '').join('');
+    carsW.innerHTML = MP ? '' : CARS.map((c, i) => c.community && !c.retired ? cardHtml(c, i) : '').join('');
+    carsW.parentElement.style.display = carsW.innerHTML ? '' : 'none';
     carsC.parentElement.style.display = carsC.innerHTML ? '' : 'none';
     carsM.parentElement.style.display = carsM.innerHTML ? '' : 'none';
     carsA.parentElement.style.display = carsA.innerHTML ? '' : 'none';
