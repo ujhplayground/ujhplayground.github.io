@@ -7687,6 +7687,7 @@ function buildCar(S, MATS) {
   });
   async function doLogin() {
     if (!fb.ready || fb.user) return;
+    try { if (window.top !== window) { window.top.location.href = location.href; return; } } catch (e) {}   // inside the portal's frame Google sign-in fails on phones: open the game full page instead
     const prov = new fb.U.GoogleAuthProvider(), say = m => { gateMsg.textContent = m; popup(m, 'var(--brake)'); };
     try { await fb.U.signInWithPopup(fb.auth, prov); }
     catch (e) {
