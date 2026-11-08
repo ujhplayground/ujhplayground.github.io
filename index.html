@@ -311,6 +311,15 @@ kbd { font-family: var(--mono); font-size: .75rem; color: var(--paint); border: 
 .car .badge { position: absolute; top: 5px; left: 5px; padding: 1px 7px; border-radius: 999px; font-size: .6rem; font-weight: 600; color: var(--night); background: var(--ok); }
 .car .badges { position: absolute; top: 5px; left: 5px; display: flex; gap: 3px; }
 .car .cdel { position: absolute; top: 4px; right: 4px; z-index: 2; min-width: 24px; height: 24px; padding: 0 6px; display: grid; place-items: center; border-radius: 999px; font-size: .72rem; font-weight: 700; color: #fff; background: rgba(0, 0, 0, .72); border: 1px solid var(--edge); }
+.adm-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.adm-sum div { padding: 8px 10px; border: 1px solid var(--edge); border-radius: 10px; background: rgba(255,255,255,.03); }
+.adm-sum b { display: block; font-size: 1.15rem; color: var(--lamp); }
+.adm-sum small { color: var(--muted); font-size: .74rem; }
+.adm-list { display: grid; gap: 6px; }
+.adm-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 10px; border: 1px solid var(--edge); border-radius: 10px; font-size: .84rem; }
+.adm-row .who { font-weight: 600; } .adm-row .on { color: var(--ok); }
+.adm-row .mail { grid-column: 1 / -1; color: var(--muted); font-size: .76rem; word-break: break-all; }
+.adm-row .tm { text-align: right; color: var(--muted); font-size: .78rem; }
 .car .cdel.ask { background: #c62828; border-color: #ff8a80; }
 .car .badges .badge { position: static; }
 .car .badge.drv { color: #0c0f15; background: #ffcf8a; }                    /* 후륜 */
@@ -721,7 +730,7 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <div class="grp"><h3>🛠 내가 만든 차</h3><div class="cars" id="carsC" role="group" aria-label="내가 만든 차"></div></div>
       <div class="grp"><h3>🌐 커뮤니티 차</h3><div class="cars" id="carsW" role="group" aria-label="다른 사람이 출시한 차"></div></div>
     </div>
-    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button><button class="rankbtn hardbtn" id="hardBtn" hidden>💀 하드 모드</button><button class="rankbtn buildbtn" id="buildBtn">🛠 조립 차고</button><button class="rankbtn chatbtn" id="giftBtn" hidden>🎁 선물함<span class="chat-badge" id="giftBadge" hidden></span></button></div>
+    <div class="gorow"><button class="go" id="goBtn">출발</button><button class="rankbtn homebtn" id="homeBtn" hidden>🏠 홈으로</button><button class="rewardbtn" id="reviveBtn" hidden>▶ 이어하기</button><button class="rankbtn" id="rankBtn">🏆 랭킹 <kbd>L</kbd></button><button class="rankbtn" id="helpBtn">❓ 조작법</button><button class="rankbtn gone" id="dexBtn" hidden>📖 도감</button><button class="rankbtn" id="metaBtn">🏅 업적</button><button class="rankbtn gone" id="duelBtn" hidden>👥 2인 대결</button><button class="rankbtn mpbtn" id="mpBtn">🌐 멀티</button><button class="rankbtn" id="loginBtn" hidden>🔑 구글 로그인</button><button class="rankbtn chatbtn" id="chatBtn" hidden>💬 채팅<span class="chat-badge" id="chatBadge" hidden></span></button><button class="rankbtn" id="pickBtn" hidden>🚗 차 다시 선택</button><button class="rankbtn gone" id="ghostBtn" hidden>👻 고스트</button><button class="rankbtn" id="custBtn">🎨 커스텀 <kbd>G</kbd></button><button class="rankbtn hardbtn" id="hardBtn" hidden>💀 하드 모드</button><button class="rankbtn buildbtn" id="buildBtn">🛠 조립 차고</button><button class="rankbtn chatbtn" id="giftBtn" hidden>🎁 선물함<span class="chat-badge" id="giftBadge" hidden></span></button><button class="rankbtn" id="admBtn" hidden>⚙ 관리</button></div>
     <dl class="keys">
       <div><dt><kbd>W</kbd><kbd>S</kbd></dt><dd>가속 · 브레이크</dd></div>
       <div><dt><kbd>A</kbd><kbd>D</kbd></dt><dd>핸들 · 공중 회전</dd></div>
@@ -768,6 +777,14 @@ button:focus-visible { outline: 3px solid var(--paint); outline-offset: 3px; }
       <h4 class="mp-h">코드로 들어가기</h4>
       <div class="mp-join"><input id="mpCode" maxlength="8" placeholder="방 코드 (예: K7Q2M)" autocomplete="off" autocapitalize="characters" spellcheck="false"><input id="mpJoinPw" maxlength="12" placeholder="비밀번호" autocomplete="off"><button class="rankbtn" id="mpJoin">참가</button></div>
       <small class="mp-note" id="mpNote"></small>
+    </div>
+  </div>
+  <div class="rank" id="admM" hidden>
+    <div class="rank-card" role="dialog" aria-modal="true" aria-labelledby="admTitle">
+      <div class="rank-head"><h3 id="admTitle">⚙ 관리 (개발자 전용)</h3><button class="rank-x" id="admClose" aria-label="닫기">✕</button></div>
+      <div class="rank-tabs" id="admTabs"><button data-d="0" aria-pressed="true">오늘</button><button data-d="1" aria-pressed="false">어제</button><button data-d="7" aria-pressed="false">최근 7일</button><button data-d="r" aria-pressed="false">↻ 새로고침</button></div>
+      <div class="meta-body" id="admBody"></div>
+      <small class="dex-note" id="admNote"></small>
     </div>
   </div>
   <div class="rank" id="giftM" hidden>
@@ -6222,6 +6239,66 @@ function buildCar(S, MATS) {
   });
   const isDev = id => DEV_UIDS.includes(id);
   const devOn = () => { try { return !!(fb.user && isDev(fb.user.uid)); } catch (e) { return false; } };
+  // ── ⚙ developer panel: who signed in, how many came today, how long they played ──
+  //    daily/A<day>/<uid> = { nick, t (s open), d (s driving), runs, first, last } — readable by signed-in players, so no names or emails;
+  //    users/<uid>/info = { name, email, at } — owner-only; the developer reads it once the users rule allows the dev uid.
+  const admDayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  let admLoc = { day: '', t: 0, d: 0, runs: 0, first: 0 }, admTick = 0, admWasPlay = false, admInfoUid = '';
+  try { admLoc = Object.assign(admLoc, JSON.parse(localStorage.getItem('ujh-adm') || '{}')); } catch (e) {}
+  function admPush() {
+    if (!fb.user || !fb.D) return;
+    try { fb.D.set(fb.D.ref(fb.db, `daily/A${admLoc.day}/${fb.user.uid}`), { nick: nick || '', t: admLoc.t, d: admLoc.d, runs: admLoc.runs, first: admLoc.first, last: Date.now() }).catch(() => {}); } catch (e) {}
+  }
+  setInterval(() => {
+    if (!fb.user || !fb.D) return;
+    if (admInfoUid !== fb.user.uid) { admInfoUid = fb.user.uid; try { fb.D.set(fb.D.ref(fb.db, `users/${fb.user.uid}/info`), { name: String(fb.user.displayName || '').slice(0, 40), email: String(fb.user.email || '').slice(0, 80), at: Date.now() }).catch(() => {}); } catch (e) {} }
+    const dk = admDayKey(); if (admLoc.day !== dk) admLoc = { day: dk, t: 0, d: 0, runs: 0, first: Date.now() };
+    if (document.visibilityState !== 'visible') return;
+    const play = state === 'play'; admLoc.t += 15; if (play) admLoc.d += 15; if (play && !admWasPlay) admLoc.runs++; admWasPlay = play;
+    try { localStorage.setItem('ujh-adm', JSON.stringify(admLoc)); } catch (e) {}
+    if (admTick++ % 4 === 0) admPush();                        // the first tick and then once a minute
+  }, 15000);
+  window.addEventListener('pagehide', () => { if (admLoc.day) admPush(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && admLoc.day) admPush(); });
+  const admM = $('admM'), admBody = $('admBody'), admNote = $('admNote'), admBtn = $('admBtn'), admTabs = $('admTabs');
+  let admView = '0', admInfo = {}, admInfoBlocked = false;
+  const admEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const admT = s => { s = Math.round(+s || 0); if (s < 60) return s + '초'; const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h}시간 ${m}분` : `${m}분`; };
+  const admClock = ms => { if (!ms) return '-'; const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  async function admGetDay(dk) { try { const sn = await fb.D.get(fb.D.ref(fb.db, `daily/A${dk}`)); return sn.exists() ? sn.val() || {} : {}; } catch (e) { return {}; } }
+  async function admLoadInfo(uids) {
+    await Promise.all(uids.filter(u => !(u in admInfo)).map(async u => {
+      try { const sn = await fb.D.get(fb.D.ref(fb.db, `users/${u}/info`)); admInfo[u] = sn.exists() ? sn.val() : null; }
+      catch (e) { admInfoBlocked = true; }
+    }));
+  }
+  async function admRender() {
+    if (!devOn()) { admM.hidden = true; return; }
+    admTabs.querySelectorAll('button[data-d]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.d === admView)));
+    admBody.innerHTML = '<p class="bd-empty">불러오는 중…</p>'; admNote.textContent = '';
+    const days = admView === '7' ? 7 : 1, off = admView === '1' ? 1 : 0, per = [], all = {};
+    for (let k = 0; k < days; k++) { const d = new Date(); d.setDate(d.getDate() - off - k); const dk = admDayKey(d), v = await admGetDay(dk); per.push([dk, v]);
+      for (const [u, o] of Object.entries(v)) { if (!o) continue; const a = all[u] || (all[u] = { nick: '', t: 0, d: 0, runs: 0, first: 0, last: 0, days: 0 });
+        a.t += +o.t || 0; a.d += +o.d || 0; a.runs += +o.runs || 0; a.days++; if (!a.nick || (+o.last || 0) >= a.last) a.nick = o.nick || a.nick;
+        a.last = Math.max(a.last, +o.last || 0); a.first = a.first ? Math.min(a.first, +o.first || a.first) : (+o.first || 0); } }
+    const uids = Object.keys(all); await admLoadInfo(uids);
+    const tot = uids.reduce((s, u) => s + all[u].t, 0), drv = uids.reduce((s, u) => s + all[u].d, 0), now = Date.now();
+    const onNow = uids.filter(u => now - all[u].last < 150000).length;
+    const rows = uids.sort((a, b) => all[b].last - all[a].last).map(u => { const a = all[u], inf = admInfo[u];
+      const mail = inf ? `${admEsc(inf.name || '')}${inf.email ? ' · ' + admEsc(inf.email) : ''}` : admInfoBlocked ? '🔒 이름·이메일: 규칙 추가 필요' : '(계정 정보 아직 없음)';
+      return `<div class="adm-row"><span class="who">${now - a.last < 150000 ? '<span class="on">● </span>' : ''}${admEsc(a.nick || '닉네임 없음')}${isDev(u) ? ' 🛠' : ''}</span><span class="tm">마지막 ${admClock(a.last)}</span>
+        <span class="mail">${mail}</span><span>접속 ${admT(a.t)} · 주행 ${admT(a.d)} · ${a.runs}판${days > 1 ? ` · ${a.days}일 방문` : ''}</span><span class="tm">처음 ${admClock(a.first)}</span></div>`; }).join('');
+    const perHtml = days > 1 ? `<div class="adm-list">${per.map(([dk, v]) => { const n = Object.keys(v).length, t = Object.values(v).reduce((s, o) => s + (+(o && o.t) || 0), 0); return `<div class="adm-row"><span class="who">${dk}</span><span class="tm">${n}명 · ${admT(t)}</span></div>`; }).join('')}</div>` : '';
+    admBody.innerHTML = `<div class="adm-sum"><div><b>${uids.length}명</b><small>${days > 1 ? '7일간 방문자' : off ? '어제 접속자' : '오늘 접속자'}</small></div><div><b>${onNow}명</b><small>지금 접속 중 (2분 내)</small></div>
+      <div><b>${admT(tot)}</b><small>총 접속 시간</small></div><div><b>${admT(drv)}</b><small>총 주행 시간</small></div><div><b>${uids.length ? admT(tot / uids.length) : '-'}</b><small>1인 평균 접속</small></div></div>
+      ${perHtml}<div class="adm-list">${rows || '<p class="bd-empty">기록이 아직 없어요 (이 기능을 올린 뒤부터 쌓여요)</p>'}</div>`;
+    admNote.textContent = admInfoBlocked ? '이름·이메일을 보려면 Firebase 규칙에서 users 읽기에 개발자 계정을 추가해야 해요.' : '로그인한 사람만 집계돼요. 시간은 화면을 켜 둔 동안 15초 단위로 쌓여요.';
+  }
+  setInterval(() => { admBtn.hidden = !devOn(); }, 1500);
+  admBtn.addEventListener('click', () => { if (!devOn()) return; admM.hidden = false; admRender(); });
+  admTabs.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; if (b.dataset.d !== 'r') admView = b.dataset.d; else admInfo = {}, admInfoBlocked = false; admRender(); });
+  $('admClose').addEventListener('click', () => { admM.hidden = true; });
+  admM.addEventListener('pointerdown', e => { if (e.target === admM) admM.hidden = true; });
   const devEl = () => { const d = document.createElement('span'); d.className = 'devb'; d.textContent = '🛠 DEV'; return d; };
   try {
     if (localStorage.getItem('nh3d-retired-v1') !== '1') {
